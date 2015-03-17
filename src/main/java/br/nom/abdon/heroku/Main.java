@@ -1,5 +1,9 @@
 package br.nom.abdon.heroku;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
@@ -10,7 +14,28 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public class Main {
 
+    public static BasicDataSource connectionPool;
+
+    private static void inicializaConnectionPool() throws URISyntaxException, SQLException {
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + dbUri.getPath();
+        connectionPool = new BasicDataSource();
+
+        if (dbUri.getUserInfo() != null) {
+            connectionPool.setUsername(dbUri.getUserInfo().split(":")[0]);
+            connectionPool.setPassword(dbUri.getUserInfo().split(":")[1]);
+        }
+        connectionPool.setDriverClassName("org.postgresql.Driver");
+        connectionPool.setUrl(dbUrl);
+        connectionPool.setInitialSize(1);
+    }
+
     public static void main(String[] args) throws Exception{
+        inicializaConnectionPool();
+        inicializaServidorWeb();
+    }
+
+    private static void inicializaServidorWeb() throws NumberFormatException, InterruptedException, Exception {
         // The port that we should run on can be set into an environment variable
         // Look for that variable and default to 8080 if it isn't there.
         String webPort = System.getenv("PORT");

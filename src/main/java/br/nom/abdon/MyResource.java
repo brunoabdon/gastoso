@@ -3,8 +3,17 @@ package br.nom.abdon;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.Movimentacao;
+import br.nom.abdon.heroku.Main;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -59,6 +68,26 @@ public class MyResource {
         saque.setData(LocalDate.now());
         saque.setDescricao("Saque");
         saque.setLancamentos(lancamentos);
+        
+        Connection conn;
+        try {
+            conn = Main.connectionPool.getConnection();
+            PreparedStatement ps = conn.prepareStatement("select * from ticks");
+            ResultSet rs = ps.executeQuery();
+            
+            while(rs.next()){
+                Date date = rs.getDate("tick");
+                saque.setData(date.toLocalDate());
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(MyResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        
+        
         
         return saque;
     }
