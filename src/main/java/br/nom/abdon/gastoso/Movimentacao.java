@@ -6,9 +6,6 @@
 
 package br.nom.abdon.gastoso;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import java.time.LocalDate;
 import java.util.List;
 
 /**

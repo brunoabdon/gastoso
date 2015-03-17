@@ -3,7 +3,6 @@ package br.nom.abdon;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.Movimentacao;
-import java.time.LocalDate;
 import java.util.LinkedList;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -56,7 +55,7 @@ public class MyResource {
         lancamentos.add(l2);
         
         Movimentacao saque = new Movimentacao();
-        saque.setData(LocalDate.now());
+//        saque.setData(LocalDate.now());
         saque.setDescricao("Saque");
         saque.setLancamentos(lancamentos);
         
