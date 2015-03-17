@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class Movimentacao {
 
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private LocalDate data;
+//    @JsonSerialize(using = LocalDateSerializer.class)
+//    private LocalDate data;
     private String descricao;
     private List<Lancamento> lancamentos;
     
@@ -26,13 +26,13 @@ public class Movimentacao {
     public Movimentacao() {
     }
 
-    public LocalDate getData() {
-        return data;
-    }
+//    public LocalDate getData() {
+//        return data;
+//    }
 
-    public void setData(LocalDate data) {
-        this.data = data;
-    }
+//    public void setData(LocalDate data) {
+//        this.data = data;
+//    }
 
     public String getDescricao() {
         return descricao;
