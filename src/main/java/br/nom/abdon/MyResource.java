@@ -1,5 +1,10 @@
 package br.nom.abdon;
 
+import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.Lancamento;
+import br.nom.abdon.gastoso.Movimentacao;
+import java.time.LocalDate;
+import java.util.LinkedList;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -18,8 +23,43 @@ public class MyResource {
      * @return String that will be returned as a text/plain response.
      */
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_XML)
     public String getIt() {
         return "Hello, Heroku!";
+    }
+    
+    @GET @Path("/jax")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Movimentacao getMyBean() {
+        
+        final int valorSaque = 20;
+        
+        Conta bb = new Conta();
+        bb.setNome("Banco do Brasil");
+        bb.setId(1);
+        Lancamento l1 = new Lancamento();
+        l1.setId(0);
+        l1.setConta(bb);
+        l1.setValor(-valorSaque);
+        
+
+        Conta carteira = new Conta();
+        carteira.setNome("Carteira");
+        carteira.setId(2);
+        Lancamento l2 = new Lancamento();
+        l2.setId(1);
+        l2.setConta(bb);
+        l2.setValor(+valorSaque);
+
+        LinkedList<Lancamento> lancamentos = new LinkedList<>();
+        lancamentos.add(l1);
+        lancamentos.add(l2);
+        
+        Movimentacao saque = new Movimentacao();
+        saque.setData(LocalDate.now());
+        saque.setDescricao("Saque");
+        saque.setLancamentos(lancamentos);
+        
+        return saque;
     }
 }
