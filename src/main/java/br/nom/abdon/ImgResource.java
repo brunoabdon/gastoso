@@ -20,10 +20,11 @@ import javax.ws.rs.core.Response;
  * @author bruno
  */
 @Path("img")
-@Produces("image/*")
+
 public class ImgResource {
 
     @GET
+    @Produces("image/*")
     public Response getImage() {
         File f = new File("/home/bruno/Images/fotos/eu/brunoabdon3x4.JPG");
 
@@ -35,4 +36,5 @@ public class ImgResource {
         return Response.ok(f, "image/png").build();
     }
 
+    
 }
