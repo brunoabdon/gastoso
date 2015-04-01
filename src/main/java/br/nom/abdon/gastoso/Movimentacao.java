@@ -8,30 +8,55 @@ package br.nom.abdon.gastoso;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 /**
  *
  * @author bruno
  */
-public class Movimentacao {
+@Entity
+public class Movimentacao implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false)
     @JsonSerialize(using = LocalDateSerializer.class)
-    private LocalDate data;
+    private LocalDate dia;
+    
+    @Column(length = 70, nullable = false, unique = true)
     private String descricao;
+    
+    @OneToMany(orphanRemoval = true)
     private List<Lancamento> lancamentos;
     
 
     public Movimentacao() {
     }
 
-    public LocalDate getData() {
-        return data;
+    public Integer getId() {
+        return id;
     }
 
-    public void setData(LocalDate data) {
-        this.data = data;
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public LocalDate getDia() {
+        return dia;
+    }
+
+    public void setDia(LocalDate dia) {
+        this.dia = dia;
     }
 
     public String getDescricao() {

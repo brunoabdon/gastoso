@@ -6,18 +6,32 @@
 
 package br.nom.abdon.gastoso;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  *
  * @author bruno
  */
 
-@XmlRootElement
-public class Lancamento {
+
+@Entity
+public class Lancamento implements Serializable {
     
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
     private Conta conta;
+    
+    @Column(precision=11, scale=0)
     private int valor;
 
     public Lancamento() {
