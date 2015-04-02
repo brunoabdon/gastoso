@@ -6,7 +6,7 @@
 
 package br.nom.abdon.gastoso.rest;
 
-import br.nom.abdon.gastoso.Conta;
+
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -29,67 +29,70 @@ import javax.ws.rs.core.MediaType;
  *
  * @author bruno
  */
-@Path("gastoso")
 @Produces(MediaType.APPLICATION_JSON)
-public class GastosoRest {
+public abstract class AbstractRestCrud<X> {
 
     private static final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("gastoso_peruni");
     private static final EntityManager entityManager = entityManagerFactory.createEntityManager();    
+    
+    
+    private final Class<X> klass;
 
+    public AbstractRestCrud(Class<X> klass) {
+        this.klass = klass;
+    }
     
     @POST
-    @Path("/contas")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Conta criarConta(Conta conta){
+    public X criar(X x){
         entityManager.getTransaction().begin();
-        entityManager.persist(conta);
+        entityManager.persist(x);
         entityManager.getTransaction().commit();
-        return conta;
+        return x;
     }
     
     @GET
-    @Path("/contas")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Conta> contas(){
+    public List<X> listar(){
+        System.out.println("listando...");
+        CriteriaQuery<X> cq = 
+            entityManager.getCriteriaBuilder().createQuery(klass);
+        Root<X> x = cq.from(klass);
+        cq.select(x);
         
-        CriteriaQuery<Conta> cq = 
-            entityManager.getCriteriaBuilder().createQuery(Conta.class);
-        Root<Conta> conta = cq.from(Conta.class);
-        cq.select(conta);
+        TypedQuery<X> tq = entityManager.createQuery(cq);
         
-        TypedQuery<Conta> tq = entityManager.createQuery(cq);
-        
-        List<Conta> contas = tq.getResultList();
+        List<X> contas = tq.getResultList();
             
         return contas;
     }
     
     @GET
-    @Path("/contas/{id}")
+    @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Conta pegaConta(@PathParam("id") int id){
+    public X pegar(@PathParam("id") int id){
 
-        Conta conta = entityManager.find(Conta.class, id);
+        X x = entityManager.find(klass, id);
         
-        if(conta == null) //sujou aqui. usar excecao da app e ExceptionMapper 
+        if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
             throw new NotFoundException(); 
         
-        return conta;
+        return x;
         
     }
 
     @PUT
-    @Path("/contas/{id}")
+    @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void atualizaConta(@PathParam("id") int id, Conta conta){
+    public void atualizar(@PathParam("id") int id, X x){
         
-        if(conta == null) //sujou aqui. usar excecao da app e ExceptionMapper 
+        if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
             throw new NotFoundException(); 
 
-        conta.setId(id);
+//        x.setId(id);
         entityManager.getTransaction().begin();
-        entityManager.merge(conta);
+        entityManager.merge(x);
         entityManager.getTransaction().commit();
     }
     
@@ -97,21 +100,17 @@ public class GastosoRest {
 
     
     @DELETE
-    @Path("/contas/{id}")
+    @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public void deletaConta(@PathParam("id") int id){
 
-        Conta conta = entityManager.find(Conta.class, id);
+        X x = entityManager.find(klass, id);
         
-        if(conta == null) //sujou aqui. usar excecao da app e ExceptionMapper 
+        if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
             throw new NotFoundException(); 
         
         entityManager.getTransaction().begin();
-        entityManager.remove(conta);
+        entityManager.remove(x);
         entityManager.getTransaction().commit();
     }
-    
-
-    
-    
 }
