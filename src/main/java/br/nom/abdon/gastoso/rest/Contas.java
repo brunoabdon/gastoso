@@ -6,6 +6,7 @@
 
 package br.nom.abdon.gastoso.rest;
 
+import br.nom.abdon.rest.AbstractRestCrud;
 import br.nom.abdon.gastoso.Conta;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -15,11 +16,11 @@ import javax.ws.rs.core.MediaType;
  *
  * @author bruno
  */
-@Path("gastoso/contas")
+@Path("contas")
 @Produces(MediaType.APPLICATION_JSON)
-public class GastosoRest extends AbstractRestCrud<Conta>{
+public class Contas extends AbstractRestCrud<Conta,Integer>{
 
-    public GastosoRest() {
+    public Contas() {
         super(Conta.class);
     }
 

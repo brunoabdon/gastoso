@@ -6,28 +6,19 @@
 
 package br.nom.abdon.gastoso;
 
+import br.nom.abdon.modelo.EntidadeBaseInt;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 /**
  *
  * @author bruno
  */
-@Entity
-public class Movimentacao implements Serializable {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class Movimentacao extends EntidadeBaseInt {
 
     @Column(nullable = false)
     @JsonSerialize(using = LocalDateSerializer.class)
@@ -41,14 +32,6 @@ public class Movimentacao implements Serializable {
     
 
     public Movimentacao() {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public LocalDate getDia() {
