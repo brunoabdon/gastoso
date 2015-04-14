@@ -8,11 +8,13 @@ package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 
 /**
  *
  * @author bruno
  */
+@Entity
 public class Conta extends EntidadeBaseInt {
     
     @Column(length = 50, nullable = false, unique = true)

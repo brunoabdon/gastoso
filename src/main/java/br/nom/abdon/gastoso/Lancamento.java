@@ -8,6 +8,7 @@ package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 
@@ -15,6 +16,7 @@ import javax.persistence.ManyToOne;
  *
  * @author bruno
  */
+@Entity
 public class Lancamento extends EntidadeBaseInt {
     
     @ManyToOne(fetch = FetchType.EAGER)

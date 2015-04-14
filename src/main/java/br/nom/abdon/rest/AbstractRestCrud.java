@@ -80,7 +80,7 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
             throw new NotFoundException(); 
         
         return x;
-        
+            
     }
 
     @PUT

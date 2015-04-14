@@ -12,12 +12,14 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 
 /**
  *
  * @author bruno
  */
+@Entity
 public class Movimentacao extends EntidadeBaseInt {
 
     @Column(nullable = false)
