@@ -8,7 +8,10 @@ package br.nom.abdon.rest;
 
 
 import br.nom.abdon.modelo.Entidade;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -35,13 +38,41 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
 
-    private static final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("gastoso_peruni");
-    private static final EntityManager entityManager = entityManagerFactory.createEntityManager();    
+    
+    private static final EntityManagerFactory emf;
+    
+    static {
+        final String databaseUrl = System.getenv("DATABASE_URL");
+        final StringTokenizer st = new StringTokenizer(databaseUrl, ":@/");
+        
+        final String dbVendor = st.nextToken(); //if DATABASE_URL is set
+        final String userName = st.nextToken();
+        final String password = st.nextToken();
+        final String host = st.nextToken();
+        final String port = st.nextToken();
+        final String databaseName = st.nextToken();
+
+        final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory", host, port, databaseName);
+
+        System.out.println(jdbcUrl);
+        
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("javax.persistence.jdbc.url", jdbcUrl );
+        properties.put("javax.persistence.jdbc.user", userName );
+        properties.put("javax.persistence.jdbc.password", password );
+        properties.put("javax.persistence.jdbc.driver", "org.postgresql.Driver");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+
+        emf = Persistence.createEntityManagerFactory("gastoso_peruni", properties);        
+    }
+            
     
     private final Class<X> klass;
+    private final EntityManager entityManager;
 
     public AbstractRestCrud(Class<X> klass) {
         this.klass = klass;
+        this.entityManager = emf.createEntityManager();    
     }
     
     @POST
@@ -103,7 +134,7 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void deleta(@PathParam("id") int id){
+    public void deletar(@PathParam("id") int id){
 
         X x = entityManager.find(klass, id);
         
