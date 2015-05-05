@@ -9,7 +9,7 @@
 
         <init-param>
               <param-name>allowedOrigins</param-name>
-              <param-value>http://localhost:8080</param-value>
+              <param-value>http://localhost:8000,http://brunoabdon.github.io/</param-value>
         </init-param>
         <init-param>
             <param-name>allowedMethods</param-name>
