@@ -3,8 +3,12 @@ package br.nom.abdon.heroku;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.EnumSet;
+import javax.servlet.DispatcherType;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
@@ -54,6 +58,16 @@ public class Main {
         // Read more here: http://wiki.eclipse.org/Jetty/Reference/Jetty_Classloading
         root.setParentLoaderPriority(true);
 
+        String corsAllowedOrigins = System.getenv("ABD_HTTP_ALLOWED_ORIGINS");
+        System.out.println("allowedOrigins: " + corsAllowedOrigins);
+        if(corsAllowedOrigins != null){
+            FilterHolder corsFilter = new FilterHolder(CrossOriginFilter.class);
+            corsFilter.setInitParameter("allowedOrigins", corsAllowedOrigins);
+            corsFilter.setInitParameter("allowedHeaders", "X-Requested-With,Content-Type,Accept,Origin");
+            corsFilter.setInitParameter("allowedMethods", "*");
+            root.addFilter(corsFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
+        }
+        
         final String webappDirLocation = "src/main/webapp/";
         root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(webappDirLocation);
