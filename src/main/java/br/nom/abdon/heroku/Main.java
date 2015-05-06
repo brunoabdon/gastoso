@@ -1,5 +1,6 @@
 package br.nom.abdon.heroku;
 
+import br.nom.abdon.gastoso.CrossOriginFilter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
@@ -8,7 +9,6 @@ import javax.servlet.DispatcherType;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
@@ -62,9 +62,9 @@ public class Main {
         System.out.println("allowedOrigins: " + corsAllowedOrigins);
         if(corsAllowedOrigins != null){
             FilterHolder corsFilter = new FilterHolder(CrossOriginFilter.class);
-            corsFilter.setInitParameter("allowedOrigins", corsAllowedOrigins);
-            corsFilter.setInitParameter("allowedHeaders", "X-Requested-With,Content-Type,Accept,Origin");
-            corsFilter.setInitParameter("allowedMethods", "*");
+            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, corsAllowedOrigins);
+            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, ALLOWED_HEADERS);
+            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "*");
             root.addFilter(corsFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
         }
         
@@ -74,7 +74,12 @@ public class Main {
 
         server.setHandler(root);
 
+        
+        
+        
         server.start();
         server.join();
     }
+    
+    private static final String ALLOWED_HEADERS = "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host";
 }
