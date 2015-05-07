@@ -18,11 +18,13 @@
 
 package br.nom.abdon.gastoso;
 
+import br.nom.abdon.rest.AbstractRestCrud;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,9 +91,7 @@ import javax.servlet.http.HttpServletResponse;
  * &lt;/web-app&gt;
  * </pre></p>
  */
-public class CrossOriginFilter implements Filter
-{
-    
+public class CrossOriginFilter implements Filter {
     
     // Request headers
     private static final String ORIGIN_HEADER = "Origin";

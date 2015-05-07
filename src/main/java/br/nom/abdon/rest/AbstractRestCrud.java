@@ -8,16 +8,21 @@ package br.nom.abdon.rest;
 
 
 import br.nom.abdon.modelo.Entidade;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,7 +32,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -36,7 +43,10 @@ import javax.ws.rs.core.MediaType;
  * @param <Key>
  */
 @Produces(MediaType.APPLICATION_JSON)
-public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
+public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
+
+    private static final Logger LOG = 
+        Logger.getLogger(AbstractRestCrud.class.getName());
 
     
     private static final EntityManagerFactory emf;
@@ -54,7 +64,7 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
 
         final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory", host, port, databaseName);
 
-        System.out.println(jdbcUrl);
+//        System.out.println(jdbcUrl);
         
         final Map<String, String> properties = new HashMap<>();
         properties.put("javax.persistence.jdbc.url", jdbcUrl );
@@ -65,29 +75,44 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
 
         emf = Persistence.createEntityManagerFactory("gastoso_peruni", properties);        
     }
-            
     
     private final Class<X> klass;
-    private final EntityManager entityManager;
+    private final String path;
+    protected final EntityManager entityManager;
 
-    public AbstractRestCrud(Class<X> klass) {
+    public AbstractRestCrud(Class<X> klass, String path) {
         this.klass = klass;
+        this.path = path + "/" ;
         this.entityManager = emf.createEntityManager();    
     }
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public X criar(X x){
+    public Response criar(@Context final HttpServletResponse respnse, X x){
         entityManager.getTransaction().begin();
         entityManager.persist(x);
+        System.out.println("criando " + x);
         entityManager.getTransaction().commit();
-        return x;
+        return Response.created(makeURI(x)).entity(x).build(); //sujou
+    }
+    
+    protected URI makeURI(X x) {
+        URI uri;
+        
+        try {
+            uri = new URI(path + String.valueOf(x.getId()));
+        } catch (URISyntaxException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            uri = null;
+        }
+        return uri;
     }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<X> listar(){
+    public List<? super X> listar(){
+        
         CriteriaQuery<X> cq = 
             entityManager.getCriteriaBuilder().createQuery(klass);
         Root<X> x = cq.from(klass);
@@ -111,7 +136,6 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
             throw new NotFoundException(); 
         
         return x;
-            
     }
 
     @PUT
@@ -128,9 +152,6 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
         entityManager.getTransaction().commit();
     }
     
-    
-
-    
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -145,4 +166,6 @@ public abstract class  AbstractRestCrud<X extends Entidade<Key>,Key> {
         entityManager.remove(x);
         entityManager.getTransaction().commit();
     }
+
+    
 }

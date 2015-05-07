@@ -16,12 +16,13 @@ import javax.ws.rs.core.MediaType;
  *
  * @author bruno
  */
-@Path("contas")
+@Path(Contas.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 public class Contas extends AbstractRestCrud<Conta,Integer>{
 
+    static final String PATH = "contas";
+    
     public Contas() {
-        super(Conta.class);
+        super(Conta.class,PATH);
     }
-
 }

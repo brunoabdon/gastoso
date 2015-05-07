@@ -1,14 +1,13 @@
 package br.nom.abdon.heroku;
 
 import br.nom.abdon.gastoso.CrossOriginFilter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.SQLException;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
+import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_HEADERS_PARAM;
+import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_METHODS_PARAM;
+import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_ORIGINS_PARAM;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
@@ -18,24 +17,10 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public class Main {
 
-    public static BasicDataSource connectionPool;
-
-    private static void inicializaConnectionPool() throws URISyntaxException, SQLException {
-        URI dbUri = new URI(System.getenv("DATABASE_URL"));
-        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + dbUri.getPath();
-        connectionPool = new BasicDataSource();
-
-        if (dbUri.getUserInfo() != null) {
-            connectionPool.setUsername(dbUri.getUserInfo().split(":")[0]);
-            connectionPool.setPassword(dbUri.getUserInfo().split(":")[1]);
-        }
-        connectionPool.setDriverClassName("org.postgresql.Driver");
-        connectionPool.setUrl(dbUrl);
-        connectionPool.setInitialSize(1);
-    }
+    private static final String ALLOWED_HEADERS = "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host";
+    private static final String ALLOWED_METHODS = "GET,POST,PUT,HEAD,OPTIONS,DELETE";
 
     public static void main(String[] args) throws Exception{
-//        inicializaConnectionPool();
         inicializaServidorWeb();
     }
 
@@ -58,13 +43,14 @@ public class Main {
         // Read more here: http://wiki.eclipse.org/Jetty/Reference/Jetty_Classloading
         root.setParentLoaderPriority(true);
 
-        String corsAllowedOrigins = System.getenv("ABD_HTTP_ALLOWED_ORIGINS");
-        System.out.println("allowedOrigins: " + corsAllowedOrigins);
+        final String corsAllowedOrigins = 
+            System.getenv("ABD_HTTP_ALLOWED_ORIGINS");
+        
         if(corsAllowedOrigins != null){
             FilterHolder corsFilter = new FilterHolder(CrossOriginFilter.class);
-            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, corsAllowedOrigins);
-            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, ALLOWED_HEADERS);
-            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "*");
+            corsFilter.setInitParameter(ALLOWED_ORIGINS_PARAM, corsAllowedOrigins);
+            corsFilter.setInitParameter(ALLOWED_HEADERS_PARAM, ALLOWED_HEADERS);
+            corsFilter.setInitParameter(ALLOWED_METHODS_PARAM, ALLOWED_METHODS);
             root.addFilter(corsFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
         }
         
@@ -73,13 +59,9 @@ public class Main {
         root.setResourceBase(webappDirLocation);
 
         server.setHandler(root);
-
-        
-        
         
         server.start();
         server.join();
     }
     
-    private static final String ALLOWED_HEADERS = "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host";
 }

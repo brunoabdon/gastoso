@@ -10,10 +10,8 @@ import br.nom.abdon.modelo.EntidadeBaseInt;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import java.time.LocalDate;
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
 
 /**
  *
@@ -24,15 +22,11 @@ public class Movimentacao extends EntidadeBaseInt {
 
     @Column(nullable = false)
     @JsonSerialize(using = LocalDateSerializer.class)
-    private LocalDate dia;
+    private LocalDate dia = LocalDate.now();
     
     @Column(length = 70, nullable = false, unique = true)
     private String descricao;
     
-    @OneToMany(orphanRemoval = true)
-    private List<Lancamento> lancamentos;
-    
-
     public Movimentacao() {
     }
 
@@ -50,13 +44,5 @@ public class Movimentacao extends EntidadeBaseInt {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
-    }
-
-    public List<Lancamento> getLancamentos() {
-        return lancamentos;
-    }
-
-    public void setLancamentos(List<Lancamento> lancamentos) {
-        this.lancamentos = lancamentos;
     }
 }
