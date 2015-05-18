@@ -19,13 +19,13 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Lancamento extends EntidadeBaseInt {
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Movimentacao movimentacao;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Conta conta;
     
-    @Column(precision=11, scale=0)
+    @Column(precision=11, scale=0, nullable = false)
     private int valor;
 
     public Lancamento() {

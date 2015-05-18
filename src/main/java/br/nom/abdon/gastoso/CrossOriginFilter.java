@@ -18,13 +18,11 @@
 
 package br.nom.abdon.gastoso;
 
-import br.nom.abdon.rest.AbstractRestCrud;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,26 +115,28 @@ public class CrossOriginFilter implements Filter {
     private static final List<String> SIMPLE_HTTP_METHODS = Arrays.asList("GET", "POST", "HEAD");
 
     private boolean anyOriginAllowed;
-    private List<String> allowedOrigins = new ArrayList<String>();
-    private List<String> allowedMethods = new ArrayList<String>();
-    private List<String> allowedHeaders = new ArrayList<String>();
-    private List<String> exposedHeaders = new ArrayList<String>();
+    private final List<String> allowedOrigins = new ArrayList<>();
+    private final List<String> allowedMethods = new ArrayList<>();
+    private final List<String> allowedHeaders = new ArrayList<>();
+    private final List<String> exposedHeaders = new ArrayList<>();
+    
     private int preflightMaxAge;
     private boolean allowCredentials;
     private boolean chainPreflight;
 
+    @Override
     public void init(FilterConfig config) throws ServletException
     {
         logerr("init");
         
         String allowedOriginsConfig = config.getInitParameter(ALLOWED_ORIGINS_PARAM);
-        if (allowedOriginsConfig == null)
-            allowedOriginsConfig = "*";
-        String[] allowedOrigins = allowedOriginsConfig.split(",");
+        if (allowedOriginsConfig == null) allowedOriginsConfig = "*";
+        
+        String[] allowedOriginsArray = allowedOriginsConfig.split(",");
 
-        logerr(ALLOWED_ORIGINS_PARAM,allowedOrigins);
+        logerr(ALLOWED_ORIGINS_PARAM, (Object[]) allowedOriginsArray);
 
-        for (String allowedOrigin : allowedOrigins)
+        for (String allowedOrigin : allowedOriginsArray)
         {
             allowedOrigin = allowedOrigin.trim();
             if (allowedOrigin.length() > 0)
@@ -437,6 +437,16 @@ public class CrossOriginFilter implements Filter {
         for (Object param : params) {
             System.err.println("\t " + param + " ");
         }
+    }
+ 
+    
+    public static void main(String[] args) {
+        
+        String[] arr = {"Primeiro","Segundo"};
+        
+        logerr("Cast to Object",(Object)arr);
+        logerr("Cast to Object[]",(Object[])arr);
+        logerr("Cast to String[]",(String[])arr);
     }
     
 }

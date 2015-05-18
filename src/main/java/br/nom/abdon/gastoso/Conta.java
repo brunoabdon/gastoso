@@ -30,5 +30,9 @@ public class Conta extends EntidadeBaseInt {
     public void setNome(String nome) {
         this.nome = nome;
     }
+ 
+    public static Conta fromString(String str){
+        return EntidadeBaseInt.fromString(Conta.class, str);
+    }
     
 }

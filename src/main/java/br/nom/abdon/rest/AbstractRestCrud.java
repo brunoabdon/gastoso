@@ -22,7 +22,6 @@ import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -32,7 +31,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -47,7 +45,6 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
 
     private static final Logger LOG = 
         Logger.getLogger(AbstractRestCrud.class.getName());
-
     
     private static final EntityManagerFactory emf;
     
@@ -89,7 +86,7 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response criar(@Context final HttpServletResponse respnse, X x){
+    public Response criar(X x){
         entityManager.getTransaction().begin();
         entityManager.persist(x);
         System.out.println("criando " + x);
