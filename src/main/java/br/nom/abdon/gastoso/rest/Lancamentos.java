@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.nom.abdon.gastoso.rest;
 
 import br.nom.abdon.gastoso.Lancamento;
@@ -12,9 +7,7 @@ import br.nom.abdon.gastoso.Movimentacao;
 import br.nom.abdon.gastoso.Movimentacao_;
 import br.nom.abdon.rest.AbstractRestCrud;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -60,8 +53,7 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         List<Lancamento> lancamentos;
         
         Conta conta = getConta();
-        
-        
+       
         if(conta != null){
             lancamentos = filtrar(
                 (cb, r) -> {return cb.equal(r.get(Lancamento_.conta), conta);}
@@ -72,8 +64,8 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
                 lancamentos = filtrar(
                     (cb, r) -> {
                         return cb.equal(
-                                r.get(Lancamento_.movimentacao), 
-                                movimentacao);
+                            r.get(Lancamento_.movimentacao), 
+                            movimentacao);
                     }
                 );
             } else {
@@ -112,10 +104,9 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         
         cq.where(predicado);
 
+        final TypedQuery<Lancamento> tq = entityManager.createQuery(cq);
         
-        TypedQuery<Lancamento> tq = entityManager.createQuery(cq);
-        
-        List<Lancamento> xis = tq.getResultList();
+        final List<Lancamento> xis = tq.getResultList();
             
         return xis;
     }
