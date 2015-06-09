@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 public class LocalDateISO8601Deserializer extends LocalDateDeserializer{
     
     public LocalDateISO8601Deserializer(){
-        super(DateTimeFormatter.ISO_INSTANT);
+        super(DateTimeFormatter.ISO_LOCAL_DATE);
     }
     
 }

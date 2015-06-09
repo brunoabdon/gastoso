@@ -126,5 +126,4 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     public void setMovimentacao(Movimentacao movimentacao) {
         this.movimentacao = movimentacao;
     }
-    
 }

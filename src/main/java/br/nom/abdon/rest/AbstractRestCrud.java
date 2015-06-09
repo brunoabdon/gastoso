@@ -7,6 +7,7 @@
 package br.nom.abdon.rest;
 
 
+import br.nom.abdon.modelo.CriacaoExpcetion;
 import br.nom.abdon.modelo.Entidade;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -86,9 +88,13 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response criar(X x){
+    public Response criar(X x) throws CriacaoExpcetion{
         entityManager.getTransaction().begin();
-        entityManager.persist(x);
+        try {
+            entityManager.persist(x);
+        } catch (PersistenceException e){
+            throw new CriacaoExpcetion(e,x);
+        }
         System.out.println("criando " + x);
         entityManager.getTransaction().commit();
         return Response.created(makeURI(x)).entity(x).build(); //sujou

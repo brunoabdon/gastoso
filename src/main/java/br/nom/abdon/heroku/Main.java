@@ -54,6 +54,10 @@ public class Main {
             root.addFilter(corsFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
         }
         
+        root.setInitParameter(
+            "jersey.config.server.provider.packages", 
+            "br.nom.abdon.gastoso.rest");
+        
         final String webappDirLocation = "src/main/webapp/";
         root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(webappDirLocation);

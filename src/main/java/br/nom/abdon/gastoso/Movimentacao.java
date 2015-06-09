@@ -28,7 +28,7 @@ public class Movimentacao extends EntidadeBaseInt {
     @JsonSerialize(using = LocalDateISO8601Serializer.class)
     @JsonDeserialize(using = LocalDateISO8601Deserializer.class)
     @Convert(converter = LocalDateTimePersistenceConverter.class)
-    private LocalDate dia = LocalDate.now();
+    private LocalDate dia;
     
     @Column(length = 70, nullable = false, unique = false)
     private String descricao;
@@ -55,5 +55,4 @@ public class Movimentacao extends EntidadeBaseInt {
     public static Movimentacao fromString(String str){
         return EntidadeBaseInt.fromString(Movimentacao.class, str);
     }
-
 }
