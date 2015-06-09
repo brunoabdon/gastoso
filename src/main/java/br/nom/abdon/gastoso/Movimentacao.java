@@ -7,9 +7,11 @@
 package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
+import br.nom.abdon.util.LocalDateISO8601Deserializer;
+import br.nom.abdon.util.LocalDateISO8601Serializer;
 import br.nom.abdon.util.LocalDateTimePersistenceConverter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -23,7 +25,8 @@ import javax.persistence.Entity;
 public class Movimentacao extends EntidadeBaseInt {
 
     @Column(nullable = false)
-    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonSerialize(using = LocalDateISO8601Serializer.class)
+    @JsonDeserialize(using = LocalDateISO8601Deserializer.class)
     @Convert(converter = LocalDateTimePersistenceConverter.class)
     private LocalDate dia = LocalDate.now();
     
