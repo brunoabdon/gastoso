@@ -11,7 +11,6 @@ import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.Movimentacao;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import javax.persistence.EntityManager;
