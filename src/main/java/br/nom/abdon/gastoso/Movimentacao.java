@@ -24,13 +24,15 @@ import javax.persistence.Entity;
 @Entity
 public class Movimentacao extends EntidadeBaseInt {
 
+    public static final int DESC_MAX_LEN = 70;
+    
     @Column(nullable = false)
     @JsonSerialize(using = LocalDateISO8601Serializer.class)
     @JsonDeserialize(using = LocalDateISO8601Deserializer.class)
     @Convert(converter = LocalDateTimePersistenceConverter.class)
     private LocalDate dia;
     
-    @Column(length = 70, nullable = false, unique = false)
+    @Column(length = DESC_MAX_LEN, nullable = false, unique = false)
     private String descricao;
     
     public Movimentacao() {
@@ -55,4 +57,5 @@ public class Movimentacao extends EntidadeBaseInt {
     public static Movimentacao fromString(String str){
         return EntidadeBaseInt.fromString(Movimentacao.class, str);
     }
+
 }

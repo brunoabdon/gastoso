@@ -1,2 +1,2 @@
-web-debug: java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=y -cp target/classes:target/dependency/* br.nom.abdon.heroku.Main
-web: java -cp target/classes:target/dependency/* br.nom.abdon.heroku.Main
+web: java  -cp target/classes:target/dependency/* br.nom.abdon.heroku.Main  
+#web: java -Xdebug -Xrunjdwp:transport=dt_socket,address=7001,server=y -cp target/classes:target/dependency/* br.nom.abdon.heroku.Main  

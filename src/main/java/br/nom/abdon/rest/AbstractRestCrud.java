@@ -7,7 +7,6 @@
 package br.nom.abdon.rest;
 
 
-import br.nom.abdon.modelo.CriacaoExpcetion;
 import br.nom.abdon.modelo.Entidade;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,18 +81,22 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     public AbstractRestCrud(Class<X> klass, String path) {
         this.klass = klass;
         this.path = path + "/" ;
-        this.entityManager = emf.createEntityManager();    
+        this.entityManager = emf.createEntityManager();
+        LOG.finest("criando entityManager imortal " + entityManager);
     }
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response criar(X x) throws CriacaoExpcetion{
+    public Response criar(X x) throws CrudException{
+        
+        validarCriacao(x);
+        
         entityManager.getTransaction().begin();
         try {
             entityManager.persist(x);
         } catch (PersistenceException e){
-            throw new CriacaoExpcetion(e,x);
+            throw new CriacaoException(e,x);
         }
         System.out.println("criando " + x);
         entityManager.getTransaction().commit();
@@ -168,6 +171,10 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
         entityManager.getTransaction().begin();
         entityManager.remove(x);
         entityManager.getTransaction().commit();
+    }
+
+    protected void validarCriacao(X x) throws ValidacaoException{
+        return;
     }
 
     
