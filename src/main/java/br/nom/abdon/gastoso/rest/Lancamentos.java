@@ -8,6 +8,7 @@ import br.nom.abdon.gastoso.Movimentacao_;
 import br.nom.abdon.rest.AbstractRestCrud;
 import java.util.List;
 import java.util.function.BiFunction;
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -50,16 +51,16 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     @Override
     public List<Lancamento> listar(){
         
-        List<Lancamento> lancamentos;
+        final List<Lancamento> lancamentos;
         
-        Conta conta = getConta();
+        final Conta conta = getConta();
        
         if(conta != null){
             lancamentos = filtrar(
                 (cb, r) -> {return cb.equal(r.get(Lancamento_.conta), conta);}
             );
         } else {
-            Movimentacao movimentacao = getMovimentacao();
+            final Movimentacao movimentacao = getMovimentacao();
             if (movimentacao != null){
                 lancamentos = filtrar(
                     (cb, r) -> {
@@ -81,18 +82,20 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         
         System.out.println("conta:" + conta);
         
-        Metamodel metamodel = entityManager.getMetamodel();
-        EntityType<Lancamento> lancamentoMetamodel = 
+        final EntityManager entityManager = emf.createEntityManager();
+
+        final Metamodel metamodel = entityManager.getMetamodel();
+        final EntityType<Lancamento> lancamentoMetamodel = 
             metamodel.entity(Lancamento.class);
         
-        CriteriaBuilder criteriaBuilder = 
+        final CriteriaBuilder criteriaBuilder = 
             entityManager.getCriteriaBuilder();
         
-        CriteriaQuery<Lancamento> cq = 
+        final CriteriaQuery<Lancamento> cq = 
             criteriaBuilder.createQuery(Lancamento.class);
         
-        Root<Lancamento> rootLancamento = cq.from(lancamentoMetamodel);
-        Join<Lancamento,Movimentacao> join = 
+        final Root<Lancamento> rootLancamento = cq.from(lancamentoMetamodel);
+        final Join<Lancamento,Movimentacao> join = 
             rootLancamento.join(Lancamento_.movimentacao);
         
         cq.orderBy(criteriaBuilder.asc(join.get(Movimentacao_.dia)));

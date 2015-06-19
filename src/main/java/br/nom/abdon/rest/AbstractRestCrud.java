@@ -1,25 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package br.nom.abdon.rest;
 
 
 import br.nom.abdon.modelo.Entidade;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
+import javax.persistence.PersistenceUnit;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -47,42 +38,15 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     private static final Logger LOG = 
         Logger.getLogger(AbstractRestCrud.class.getName());
     
-    private static final EntityManagerFactory emf;
-    
-    static {
-        final String databaseUrl = System.getenv("DATABASE_URL");
-        final StringTokenizer st = new StringTokenizer(databaseUrl, ":@/");
-        
-        final String dbVendor = st.nextToken(); //if DATABASE_URL is set
-        final String userName = st.nextToken();
-        final String password = st.nextToken();
-        final String host = st.nextToken();
-        final String port = st.nextToken();
-        final String databaseName = st.nextToken();
+    @PersistenceUnit(unitName = "gastoso_peruni")
+    protected EntityManagerFactory emf;
 
-        final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory", host, port, databaseName);
-
-//        System.out.println(jdbcUrl);
-        
-        final Map<String, String> properties = new HashMap<>();
-        properties.put("javax.persistence.jdbc.url", jdbcUrl );
-        properties.put("javax.persistence.jdbc.user", userName );
-        properties.put("javax.persistence.jdbc.password", password );
-        properties.put("javax.persistence.jdbc.driver", "org.postgresql.Driver");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-
-        emf = Persistence.createEntityManagerFactory("gastoso_peruni", properties);        
-    }
-    
     private final Class<X> klass;
     private final String path;
-    protected final EntityManager entityManager;
 
     public AbstractRestCrud(Class<X> klass, String path) {
         this.klass = klass;
         this.path = path + "/" ;
-        this.entityManager = emf.createEntityManager();
-        LOG.finest("criando entityManager imortal " + entityManager);
     }
     
     @POST
@@ -91,15 +55,22 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     public Response criar(X x) throws CrudException{
         
         validarCriacao(x);
-        
-        entityManager.getTransaction().begin();
+
+        EntityManager entityManager = emf.createEntityManager();
         try {
+            
+            entityManager.getTransaction().begin();
+            
             entityManager.persist(x);
+
+            entityManager.getTransaction().commit();
         } catch (PersistenceException e){
             throw new CriacaoException(e,x);
+        } finally {
+            entityManager.close();
         }
         System.out.println("criando " + x);
-        entityManager.getTransaction().commit();
+        
         return Response.created(makeURI(x)).entity(x).build(); //sujou
     }
     
@@ -119,14 +90,22 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     @Produces(MediaType.APPLICATION_JSON)
     public List<? super X> listar(){
         
-        CriteriaQuery<X> cq = 
-            entityManager.getCriteriaBuilder().createQuery(klass);
-        Root<X> x = cq.from(klass);
-        cq.select(x);
-        
-        TypedQuery<X> tq = entityManager.createQuery(cq);
-        
-        List<X> xis = tq.getResultList();
+        final List<X> xis;
+        System.out.println("emf = " + emf);
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            
+            CriteriaQuery<X> cq = 
+                entityManager.getCriteriaBuilder().createQuery(klass);
+            Root<X> x = cq.from(klass);
+            cq.select(x);
+
+            TypedQuery<X> tq = entityManager.createQuery(cq);
+
+            xis = tq.getResultList();
+        } finally {
+            entityManager.close();
+        }
             
         return xis;
     }
@@ -136,11 +115,18 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     @Produces(MediaType.APPLICATION_JSON)
     public X pegar(@PathParam("id") int id){
 
-        X x = entityManager.find(klass, id);
+        X x;
+        
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            x = entityManager.find(klass, id);
+        } finally {
+            entityManager.close();
+        }
         
         if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
             throw new NotFoundException(); 
-        
+
         return x;
     }
 
@@ -153,9 +139,14 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
             throw new NotFoundException(); 
 
         x.setId(id);
-        entityManager.getTransaction().begin();
-        entityManager.merge(x);
-        entityManager.getTransaction().commit();
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.merge(x);
+            entityManager.getTransaction().commit();
+        } finally {
+            entityManager.close();
+        }
     }
     
     @DELETE
@@ -163,14 +154,21 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     @Produces(MediaType.APPLICATION_JSON)
     public void deletar(@PathParam("id") int id){
 
-        X x = entityManager.find(klass, id);
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            X x = entityManager.find(klass, id);
         
-        if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
-            throw new NotFoundException(); 
+            if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
+                throw new NotFoundException(); 
         
-        entityManager.getTransaction().begin();
-        entityManager.remove(x);
-        entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
+            entityManager.remove(x);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
+        
     }
 
     protected void validarCriacao(X x) throws ValidacaoException{

@@ -6,7 +6,6 @@ import java.io.Writer;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -59,15 +58,11 @@ public class Main {
             root.addFilter(corsFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
         }
         
-        root.setInitParameter(
-            "jersey.config.server.provider.packages", 
-            "br.nom.abdon.gastoso.rest");
-        
         final String webappDirLocation = "src/main/webapp/";
         root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(webappDirLocation);
 
-        ErrorHandler errHand = new ErrorHandler(){
+        final ErrorHandler errHand = new ErrorHandler(){
             @Override
             protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
                 if(message != null){
