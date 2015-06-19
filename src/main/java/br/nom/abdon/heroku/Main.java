@@ -1,9 +1,14 @@
 package br.nom.abdon.heroku;
 
 import br.nom.abdon.gastoso.CrossOriginFilter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_HEADERS_PARAM;
 import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_METHODS_PARAM;
@@ -62,6 +67,18 @@ public class Main {
         root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(webappDirLocation);
 
+        ErrorHandler errHand = new ErrorHandler(){
+            @Override
+            protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
+                if(message != null){
+                    writer.write(message);
+                }
+                writer.close();
+            }
+        };
+        
+        root.setErrorHandler(errHand);
+        
         server.setHandler(root);
         
         server.start();
