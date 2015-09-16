@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
@@ -22,7 +16,7 @@ import javax.persistence.Entity;
  * @author bruno
  */
 @Entity
-public class Movimentacao extends EntidadeBaseInt {
+public class Fato extends EntidadeBaseInt {
 
     public static final int DESC_MAX_LEN = 70;
     
@@ -35,7 +29,7 @@ public class Movimentacao extends EntidadeBaseInt {
     @Column(length = DESC_MAX_LEN, nullable = false, unique = false)
     private String descricao;
     
-    public Movimentacao() {
+    public Fato() {
     }
 
     public LocalDate getDia() {
@@ -54,8 +48,8 @@ public class Movimentacao extends EntidadeBaseInt {
         this.descricao = descricao;
     }
     
-    public static Movimentacao fromString(String str){
-        return EntidadeBaseInt.fromString(Movimentacao.class, str);
+    public static Fato fromString(String str){
+        return EntidadeBaseInt.fromString(Fato.class, str);
     }
 
 }

@@ -2,9 +2,9 @@ package br.nom.abdon.gastoso.rest;
 
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.Fato;
+import br.nom.abdon.gastoso.Fato_;
 import br.nom.abdon.gastoso.Lancamento_;
-import br.nom.abdon.gastoso.Movimentacao;
-import br.nom.abdon.gastoso.Movimentacao_;
 import br.nom.abdon.rest.AbstractRestCrud;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -39,8 +39,8 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     @QueryParam("conta") 
     private Conta conta;
 
-    @QueryParam("movimentacao") 
-    private Movimentacao movimentacao;
+    @QueryParam("fato") 
+    private Fato fato;
 
     public Lancamentos() {
         super(Lancamento.class, PATH);
@@ -60,13 +60,13 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
                 (cb, r) -> {return cb.equal(r.get(Lancamento_.conta), conta);}
             );
         } else {
-            final Movimentacao movimentacao = getMovimentacao();
-            if (movimentacao != null){
+            final Fato fato = getFato();
+            if (fato != null){
                 lancamentos = filtrar(
                     (cb, r) -> {
                         return cb.equal(
-                            r.get(Lancamento_.movimentacao), 
-                            movimentacao);
+                            r.get(Lancamento_.fato), 
+                            fato);
                     }
                 );
             } else {
@@ -95,10 +95,10 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
             criteriaBuilder.createQuery(Lancamento.class);
         
         final Root<Lancamento> rootLancamento = cq.from(lancamentoMetamodel);
-        final Join<Lancamento,Movimentacao> join = 
-            rootLancamento.join(Lancamento_.movimentacao);
+        final Join<Lancamento,Fato> join = 
+            rootLancamento.join(Lancamento_.fato);
         
-        cq.orderBy(criteriaBuilder.asc(join.get(Movimentacao_.dia)));
+        cq.orderBy(criteriaBuilder.asc(join.get(Fato_.dia)));
         
         cq.select(rootLancamento);
 
@@ -122,11 +122,11 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         this.conta = conta;
     }
     
-    public Movimentacao getMovimentacao() {
-        return movimentacao;
+    public Fato getFato() {
+        return fato;
     }
 
-    public void setMovimentacao(Movimentacao movimentacao) {
-        this.movimentacao = movimentacao;
+    public void setFato(Fato fato) {
+        this.fato = fato;
     }
 }

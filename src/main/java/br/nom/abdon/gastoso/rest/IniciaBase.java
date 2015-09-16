@@ -8,7 +8,7 @@ package br.nom.abdon.gastoso.rest;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.Movimentacao;
+import br.nom.abdon.gastoso.Fato;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,12 +59,12 @@ public class IniciaBase {
     
     @GET
     public String incializar(){    
-        Movimentacao saque = new Movimentacao();
+        Fato saque = new Fato();
         saque.setDescricao("Saque");
         saque.setDia(LocalDate.now());
         
 
-        Movimentacao almoco = new Movimentacao();
+        Fato almoco = new Fato();
         almoco.setDescricao("Almoço");
         almoco.setDia(LocalDate.now());
 
@@ -87,17 +87,17 @@ public class IniciaBase {
         
         
         Lancamento l1 = new Lancamento();
-        l1.setMovimentacao(saque);
+        l1.setFato(saque);
         l1.setConta(bb);
         l1.setValor(-100);
         
         Lancamento l2 = new Lancamento();
-        l2.setMovimentacao(saque);
+        l2.setFato(saque);
         l2.setConta(carteira);
         l2.setValor(100);
         
         Lancamento l3 = new Lancamento();
-        l3.setMovimentacao(almoco);
+        l3.setFato(almoco);
         l3.setConta(cielo);
         l3.setValor(-16);
 
