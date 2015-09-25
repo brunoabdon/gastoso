@@ -69,7 +69,6 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
         } finally {
             entityManager.close();
         }
-        System.out.println("criando " + x);
         
         return Response.created(makeURI(x)).entity(x).build(); //sujou
     }
@@ -91,7 +90,6 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     public List<? super X> listar(){
         
         final List<X> xis;
-        System.out.println("emf = " + emf);
         
         EntityManager entityManager = emf.createEntityManager();
         try {
