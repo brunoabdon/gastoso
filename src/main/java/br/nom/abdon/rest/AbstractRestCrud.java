@@ -92,6 +92,7 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
         
         final List<X> xis;
         System.out.println("emf = " + emf);
+        
         EntityManager entityManager = emf.createEntityManager();
         try {
             
@@ -152,16 +153,21 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void deletar(@PathParam("id") int id){
+    public Response deletar(@PathParam("id") int id) throws CrudException{
 
         EntityManager entityManager = emf.createEntityManager();
         try {
             X x = entityManager.find(klass, id);
-        
+            
             if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
                 throw new NotFoundException(); 
-        
+            
+            validarExclusao(entityManager,x);
+
             entityManager.getTransaction().begin();
+
+            deletaDependencias(entityManager, x);
+            
             entityManager.remove(x);
             entityManager.getTransaction().commit();
 
@@ -169,11 +175,16 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
             entityManager.close();
         }
         
+        return Response.noContent().build(); //sujou
     }
 
     protected void validarCriacao(X x) throws ValidacaoException{
-        return;
     }
 
+    protected void validarExclusao(EntityManager entityManager, X x) throws ExclusaoException{
+    }
+
+    protected void deletaDependencias(EntityManager entityManager, X x) throws ExclusaoException{
+    }
     
 }

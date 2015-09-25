@@ -16,9 +16,4 @@ public class ValidacaoException extends CrudException {
     public ValidacaoException(String message) {
         super(Response.Status.BAD_REQUEST,"Erro de Validação. " + message);
     }
-    
-    
-        
-    
-
 }

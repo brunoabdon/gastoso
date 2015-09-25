@@ -54,36 +54,42 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         final List<Lancamento> lancamentos;
         
         final Conta conta = getConta();
-       
-        if(conta != null){
-            lancamentos = filtrar(
-                (cb, r) -> {return cb.equal(r.get(Lancamento_.conta), conta);}
-            );
-        } else {
-            final Fato fato = getFato();
-            if (fato != null){
-                lancamentos = filtrar(
-                    (cb, r) -> {
-                        return cb.equal(
-                            r.get(Lancamento_.fato), 
-                            fato);
-                    }
+        
+        final EntityManager entityManager = emf.createEntityManager();
+
+        try {
+
+            if(conta != null){
+                lancamentos = filtrar(entityManager,
+                    (cb, r) -> {return cb.equal(r.get(Lancamento_.conta), conta);}
                 );
             } else {
-                throw new WebApplicationException(ERRO_CONTA_NULA.build());
+                final Fato fato = getFato();
+                if (fato != null){
+                    lancamentos = filtrar(
+                        entityManager,
+                        (cb, r) -> {
+                            return cb.equal(
+                                r.get(Lancamento_.fato), 
+                                fato);
+                        }
+                    );
+                } else {
+                    throw new WebApplicationException(ERRO_CONTA_NULA.build());
+                }
             }
+        } finally {
+            entityManager.close();
         }
             
         return lancamentos;
     }
         
     
-    private List<Lancamento> filtrar(BiFunction<CriteriaBuilder, Root<Lancamento>,Predicate> predicateProducer){
+    private List<Lancamento> filtrar(
+        EntityManager entityManager, 
+        BiFunction<CriteriaBuilder, Root<Lancamento>,Predicate> predicateProducer){
         
-        System.out.println("conta:" + conta);
-        
-        final EntityManager entityManager = emf.createEntityManager();
-
         final Metamodel metamodel = entityManager.getMetamodel();
         final EntityType<Lancamento> lancamentoMetamodel = 
             metamodel.entity(Lancamento.class);
