@@ -129,7 +129,7 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
         return x;
     }
 
-    @PUT
+    @POST
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     public void atualizar(@PathParam("id") Key id, X x){
