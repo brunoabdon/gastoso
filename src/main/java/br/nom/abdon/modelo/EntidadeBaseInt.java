@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.nom.abdon.modelo;
 
-import br.nom.abdon.gastoso.Conta;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -47,7 +41,4 @@ public class EntidadeBaseInt implements Entidade<Integer>{
 
         return entidade;
     }
-
-    
-
 }
