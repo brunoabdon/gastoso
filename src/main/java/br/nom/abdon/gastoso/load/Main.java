@@ -3,14 +3,19 @@ package br.nom.abdon.gastoso.load;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
+import br.nom.abdon.heroku.HerokuUtils;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -30,12 +35,12 @@ public class Main {
     
     public static void main(String[] args) {
         
-//        //banco
-//        final Map<String, String> properties = 
-//            HerokuUtils.getEMFEnvProperties();
-//        
-//        final EntityManagerFactory emf = 
-//            Persistence.createEntityManagerFactory(PERSISTENT_UNIT, properties);        
+        //banco
+        final Map<String, String> properties = 
+            HerokuUtils.getEMFEnvProperties();
+        
+        final EntityManagerFactory emf = 
+            Persistence.createEntityManagerFactory(PERSISTENT_UNIT, properties);        
         
         
         //arquivo excell...
@@ -52,6 +57,8 @@ public class Main {
             System.exit(1);
         }
 
+        final EntityManager em = emf.createEntityManager();
+        
         try {
             
             final Workbook wb = new XSSFWorkbook(arquivoXLS);
@@ -61,6 +68,7 @@ public class Main {
             
             final Conta[] contas = new Conta[numCells-2];
             
+            em.getTransaction().begin();
             //contas
             for (short i = 2; i < numCells; i++) {
                 final Cell cellConta = linhaContas.getCell(i);
@@ -68,8 +76,11 @@ public class Main {
                     cellConta
                     .getStringCellValue()
                     .replaceAll("\\s*(\\r|\\n)\\s*", " ");
-                System.out.printf("%2d) %s\n",i,nomeDaConta);
-                contas[i-2] = new Conta(nomeDaConta);
+//                System.out.printf("%2d) %s\n",i,nomeDaConta);
+                
+                final Conta conta = new Conta(nomeDaConta);
+                em.persist(conta);
+                contas[i-2] = conta;
             }
            
             final FormulaEvaluator evaluator = 
@@ -97,13 +108,12 @@ public class Main {
                 String descricao = celulaDescricao.getStringCellValue();
                 Fato fato = new Fato(date,descricao);
                 
-                System.out.println(fato);
+                em.persist(fato);
+                //System.out.println(fato);
                 
                 for (short i = 2; i < numCells; i++) {
                     final Cell celulaLancamento = linhaFato.getCell(i);
                     final int cellType = celulaLancamento.getCellType();
-
-//                    System.out.println("cell type " + cellType);
 
                     double cellValue;
 
@@ -127,20 +137,24 @@ public class Main {
                     int valor = (int)Math.floor(cellValue*100d);
                     Conta conta = contas[i-2];
                     Lancamento lancamento = new Lancamento(fato,conta,valor);
-                    
+
                     System.out.printf("\t%s #%f#\n",
                         lancamento.getConta(),
                         BigDecimal.valueOf(lancamento.getValor(), 2).floatValue());
+                    
+                    em.persist(lancamento);
                 }
                 rowNum++;
             }
             
-                    
+            em.getTransaction().commit();
             
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidFormatException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            em.close();
         }
         
         
