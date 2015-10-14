@@ -30,6 +30,12 @@ public class Lancamento extends EntidadeBaseInt {
 
     public Lancamento() {
     }
+
+    public Lancamento(Fato fato, Conta conta, int valor) {
+        this.fato = fato;
+        this.conta = conta;
+        this.valor = valor;
+    }
     
     public Conta getConta() {
         return conta;
@@ -53,5 +59,6 @@ public class Lancamento extends EntidadeBaseInt {
 
     public void setFato(Fato fato) {
         this.fato = fato;
-    }     
+    }
+    
 }

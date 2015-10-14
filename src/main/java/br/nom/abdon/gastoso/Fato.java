@@ -32,6 +32,12 @@ public class Fato extends EntidadeBaseInt {
     public Fato() {
     }
 
+
+    public Fato(LocalDate dia, String descricao) {
+        this.dia = dia;
+        this.descricao = descricao;
+    }
+    
     public LocalDate getDia() {
         return dia;
     }
@@ -51,5 +57,13 @@ public class Fato extends EntidadeBaseInt {
     public static Fato fromString(String str){
         return EntidadeBaseInt.fromString(Fato.class, str);
     }
+
+    @Override
+    public String toString() {
+        return dia == null? null : dia.toString()
+                + " - " + descricao;
+    }
+    
+    
 
 }

@@ -22,6 +22,10 @@ public class Conta extends EntidadeBaseInt {
 
     public Conta() {
     }
+
+    public Conta(String nome) {
+        this.nome = nome;
+    }
     
     public String getNome() {
         return nome;
@@ -34,5 +38,12 @@ public class Conta extends EntidadeBaseInt {
     public static Conta fromString(String str){
         return EntidadeBaseInt.fromString(Conta.class, str);
     }
+
+    @Override
+    public String toString() {
+        return nome;
+    }
+
+    
     
 }
