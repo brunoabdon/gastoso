@@ -1,6 +1,6 @@
 package br.nom.abdon.heroku;
 
-import br.nom.abdon.gastoso.CrossOriginFilter;
+import br.nom.abdon.util.CrossOriginFilter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
