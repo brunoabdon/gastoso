@@ -10,12 +10,20 @@ import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 
 /**
  *
  * @author bruno
  */
 @Entity
+@NamedQueries({
+    @NamedQuery(
+        name="Fato.porPeriodo",
+        query = "SELECT f from Fato f where f.dia BETWEEN :dataMinima AND :dataMaxima ORDER BY f.dia, f.id"
+    )
+})
 public class Fato extends EntidadeBaseInt {
 
     public static final int DESC_MAX_LEN = 70;
@@ -60,8 +68,8 @@ public class Fato extends EntidadeBaseInt {
 
     @Override
     public String toString() {
-        return dia == null? null : dia.toString()
-                + " - " + descricao;
+        return "[Fato:" + (dia == null? null : dia.toString())
+                + " - " + descricao + "]";
     }
     
     

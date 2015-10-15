@@ -1,18 +1,32 @@
+/*
+ * Copyright (C) 2015 Bruno Abdon
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package br.nom.abdon.rest;
 
+import br.nom.abdon.dal.DalException;
+import br.nom.abdon.dal.Dao;
+import br.nom.abdon.dal.EntityNotFoundException;
 import br.nom.abdon.modelo.Entidade;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
 import javax.persistence.PersistenceUnit;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -25,57 +39,142 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- *
- * @author bruno
- * @param <X>
+ * @param <E>
  * @param <Key>
+
+ * @author Bruno Abdon
  */
-@Produces(MediaType.APPLICATION_JSON)
-public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
+public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
 
     private static final Logger LOG = 
         Logger.getLogger(AbstractRestCrud.class.getName());
+
     
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
-    private final Class<X> klass;
     private final String path;
 
-    public AbstractRestCrud(Class<X> klass, String path) {
-        this.klass = klass;
+    public AbstractRestCrud(String path) {
         this.path = path + "/" ;
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response criar(X x) throws CrudException{
+    public Response criar(E entity) {
         
-        validarCriacao(x);
-
-        EntityManager entityManager = emf.createEntityManager();
+        Response response;
+        
+        final EntityManager entityManager = emf.createEntityManager();
         try {
             
             entityManager.getTransaction().begin();
             
-            entityManager.persist(x);
+            getDao().criar(entityManager, entity);
 
             entityManager.getTransaction().commit();
-        } catch (PersistenceException e){
-            throw new CriacaoException(e,x);
+            
+            response = Response.created(makeURI(entity)).entity(entity).build();
+            
+        } catch (DalException e){
+            response = 
+                Response.status(Response.Status.CONFLICT)
+                        .entity(e.getMessage())
+                        .build();
         } finally {
             entityManager.close();
         }
         
-        return Response.created(makeURI(x)).entity(x).build(); //sujou
+        return response;
     }
     
-    protected URI makeURI(X x) {
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public E pegar(@PathParam("id") Key id){
+
+        E entity;
+        
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            entity = getDao().find(entityManager, id);
+        } catch (DalException ex) {
+            throw new NotFoundException(ex);
+        } finally {
+            entityManager.close();
+        }
+        return entity;
+    }
+
+    @POST
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response atualizar(@PathParam("id") Key id, E entity){
+        
+        Response response;
+        
+        if(entity == null) throw new NotFoundException(); 
+
+        entity.setId(id);
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            entityManager.getTransaction().begin();
+            
+            getDao().atualizar(entityManager, entity);
+            
+            entityManager.getTransaction().commit();
+            
+            response = Response.noContent().build();
+        } catch (DalException e) {
+            response =
+                Response.status(Response.Status.CONFLICT)
+                        .entity(e.getMessage())
+                        .build();
+
+        } finally {
+            entityManager.close();
+        }
+        return response;
+    }
+    
+    @DELETE
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deletar(@PathParam("id") Key id) {
+
+        Response response;
+        
+        EntityManager entityManager = emf.createEntityManager();
+        try {
+            entityManager.getTransaction().begin();
+
+            getDao().deletar(entityManager, id);
+            
+            entityManager.getTransaction().commit();
+
+            response = Response.noContent().build();
+            
+        } catch(EntityNotFoundException ex){
+            throw new NotFoundException(ex);
+        } catch (DalException e) {
+            response =
+                Response.status(Response.Status.CONFLICT)
+                        .entity(e.getMessage())
+                        .build();
+        } finally {
+            entityManager.close();
+        }
+        
+        return response;
+    }
+
+    
+    protected URI makeURI(E entity) {
         URI uri;
         
         try {
-            uri = new URI(path + String.valueOf(x.getId()));
+            uri = new URI(path + String.valueOf(entity.getId()));
         } catch (URISyntaxException ex) {
             LOG.log(Level.SEVERE, null, ex);
             uri = null;
@@ -83,104 +182,6 @@ public abstract class AbstractRestCrud<X extends Entidade<Key>,Key> {
         return uri;
     }
     
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<? super X> listar(){
-        
-        final List<X> xis;
-        
-        EntityManager entityManager = emf.createEntityManager();
-        try {
-            
-            CriteriaQuery<X> cq = 
-                entityManager.getCriteriaBuilder().createQuery(klass);
-            Root<X> x = cq.from(klass);
-            cq.select(x);
-
-            TypedQuery<X> tq = entityManager.createQuery(cq);
-
-            xis = tq.getResultList();
-        } finally {
-            entityManager.close();
-        }
-            
-        return xis;
-    }
-    
-    @GET
-    @Path("{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public X pegar(@PathParam("id") int id){
-
-        X x;
-        
-        EntityManager entityManager = emf.createEntityManager();
-        try {
-            x = entityManager.find(klass, id);
-        } finally {
-            entityManager.close();
-        }
-        
-        if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
-            throw new NotFoundException(); 
-
-        return x;
-    }
-
-    @POST
-    @Path("{id}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void atualizar(@PathParam("id") Key id, X x){
-        
-        if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
-            throw new NotFoundException(); 
-
-        x.setId(id);
-        EntityManager entityManager = emf.createEntityManager();
-        try {
-            entityManager.getTransaction().begin();
-            entityManager.merge(x);
-            entityManager.getTransaction().commit();
-        } finally {
-            entityManager.close();
-        }
-    }
-    
-    @DELETE
-    @Path("{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deletar(@PathParam("id") int id) throws CrudException{
-
-        EntityManager entityManager = emf.createEntityManager();
-        try {
-            X x = entityManager.find(klass, id);
-            
-            if(x == null) //sujou aqui. usar excecao da app e ExceptionMapper 
-                throw new NotFoundException(); 
-            
-            validarExclusao(entityManager,x);
-
-            entityManager.getTransaction().begin();
-
-            deletaDependencias(entityManager, x);
-            
-            entityManager.remove(x);
-            entityManager.getTransaction().commit();
-
-        } finally {
-            entityManager.close();
-        }
-        
-        return Response.noContent().build(); //sujou
-    }
-
-    protected void validarCriacao(X x) throws ValidacaoException{
-    }
-
-    protected void validarExclusao(EntityManager entityManager, X x) throws ExclusaoException{
-    }
-
-    protected void deletaDependencias(EntityManager entityManager, X x) throws ExclusaoException{
-    }
+    protected abstract Dao<E,Key> getDao();
     
 }

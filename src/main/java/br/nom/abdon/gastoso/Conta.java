@@ -1,23 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.NamedQuery;
+import javax.persistence.NamedQueries;
 
 /**
  *
  * @author bruno
  */
 @Entity
+@NamedQueries({
+ @NamedQuery(
+    name = "Conta.all",
+    query = "SELECT c FROM Conta c ORDER BY c.nome"),
+ @NamedQuery(
+    name = "Conta.temLancamento",
+    query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.conta = :conta"), 
+ @NamedQuery(
+    name = "Conta.nomeEmUso",
+    query = "SELECT COUNT(c.id) > 0 FROM Conta c WHERE c.nome = :nome")
+})
 public class Conta extends EntidadeBaseInt {
     
-    @Column(length = 50, nullable = false, unique = true)
+    public static final int NOME_MAX_LEN = 50;
+    
+    @Column(length = NOME_MAX_LEN, nullable = false, unique = true)
     private String nome;
 
     public Conta() {
@@ -41,7 +50,7 @@ public class Conta extends EntidadeBaseInt {
 
     @Override
     public String toString() {
-        return nome;
+        return "[Conta: " + nome + "]";
     }
 
     

@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
@@ -11,12 +5,33 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 
 /**
  *
  * @author bruno
  */
 @Entity
+@NamedQueries({
+    @NamedQuery(
+        name="Lancamento.porFato",
+        query = "SELECT l FROM Lancamento l WHERE l.fato = :fato ORDER BY l.conta"
+    ),
+    @NamedQuery(
+        name = "Lancamento.porContaPeriodo",
+        query = "SELECT l FROM Lancamento l WHERE l.conta = :conta AND l.fato.dia BETWEEN :dataMin AND :dataMax ORDER BY l.fato.dia, l.id"
+    ),
+    
+    @NamedQuery(
+        name = "Lancamento.deletarPorFato",
+        query = "DELETE FROM Lancamento l WHERE l.fato = :fato"
+    ),
+    @NamedQuery(
+        name = "Lancamento.existeDuplicata",
+        query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.fato = :fato AND l.conta = :conta"
+    )
+})
 public class Lancamento extends EntidadeBaseInt {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
