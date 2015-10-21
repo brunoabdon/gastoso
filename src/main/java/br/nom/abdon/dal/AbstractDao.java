@@ -33,8 +33,6 @@ public abstract class AbstractDao<E extends Entidade<K>, K> implements Dao<E, K>
         this.klass = klass;
     }
     
-    
-    
     @Override
     public E find(EntityManager em, K key) throws DalException{
         E entity = em.find(klass, key);
@@ -44,8 +42,6 @@ public abstract class AbstractDao<E extends Entidade<K>, K> implements Dao<E, K>
         return entity;
     }
 
-    
-    
     @Override
     public E criar(EntityManager em, E entity) throws DalException {
         validarPraCriacao(em,entity);
@@ -82,6 +78,4 @@ public abstract class AbstractDao<E extends Entidade<K>, K> implements Dao<E, K>
     protected void prepararDelecao(EntityManager em, E entity) 
             throws DalException{
     };
-
-    
 }
