@@ -49,7 +49,6 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
     private static final Logger LOG = 
         Logger.getLogger(AbstractRestCrud.class.getName());
 
-    
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
