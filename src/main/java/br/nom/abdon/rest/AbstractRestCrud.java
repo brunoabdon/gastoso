@@ -35,6 +35,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -49,6 +50,11 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
     private static final Logger LOG = 
         Logger.getLogger(AbstractRestCrud.class.getName());
 
+    private static final Response ERROR_MISSING_ENTITY = 
+        Response.status(Response.Status.BAD_REQUEST)
+                .entity("br.nom.abdon.rest.MISSING_ENTITY")
+                .build();
+    
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
@@ -62,29 +68,35 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response criar(E entity) {
-        
-        Response response;
-        
-        final EntityManager entityManager = emf.createEntityManager();
-        try {
-            
-            entityManager.getTransaction().begin();
-            
-            getDao().criar(entityManager, entity);
 
-            entityManager.getTransaction().commit();
+        Response response;
+
+        if(entity == null){
+            response = ERROR_MISSING_ENTITY;
             
-            response = Response.created(makeURI(entity)).entity(entity).build();
-            
-        } catch (DalException e){
-            response = 
-                Response.status(Response.Status.CONFLICT)
-                        .entity(e.getMessage())
-                        .build();
-        } finally {
-            entityManager.close();
+        } else {
+
+            final EntityManager entityManager = emf.createEntityManager();
+            try {
+
+                entityManager.getTransaction().begin();
+
+                getDao().criar(entityManager, entity);
+
+                entityManager.getTransaction().commit();
+
+                response = 
+                    Response.created(makeURI(entity)).entity(entity).build();
+
+            } catch (DalException e){
+                response = 
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(e.getMessage())
+                            .build();
+            } finally {
+                entityManager.close();
+            }
         }
-        
         return response;
     }
     
@@ -98,8 +110,12 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
         EntityManager entityManager = emf.createEntityManager();
         try {
             entity = getDao().find(entityManager, id);
-        } catch (DalException ex) {
+        } catch ( EntityNotFoundException ex){
             throw new NotFoundException(ex);
+        } catch (DalException ex) {
+            throw new WebApplicationException(
+                ex.getMessage(), 
+                Response.Status.BAD_REQUEST);
         } finally {
             entityManager.close();
         }
@@ -113,26 +129,30 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
         
         Response response;
         
-        if(entity == null) throw new NotFoundException(); 
+        if(entity == null){
+            response = ERROR_MISSING_ENTITY;
+            
+        } else {
 
-        entity.setId(id);
-        EntityManager entityManager = emf.createEntityManager();
-        try {
-            entityManager.getTransaction().begin();
-            
-            getDao().atualizar(entityManager, entity);
-            
-            entityManager.getTransaction().commit();
-            
-            response = Response.noContent().build();
-        } catch (DalException e) {
-            response =
-                Response.status(Response.Status.CONFLICT)
-                        .entity(e.getMessage())
-                        .build();
+            entity.setId(id);
+            EntityManager entityManager = emf.createEntityManager();
+            try {
+                entityManager.getTransaction().begin();
 
-        } finally {
-            entityManager.close();
+                getDao().atualizar(entityManager, entity);
+
+                entityManager.getTransaction().commit();
+
+                response = Response.noContent().build();
+            } catch (DalException e) {
+                response =
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(e.getMessage())
+                            .build();
+
+            } finally {
+                entityManager.close();
+            }
         }
         return response;
     }
