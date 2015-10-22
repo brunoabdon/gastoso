@@ -40,29 +40,35 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
     }
     
     @Override
-    protected void validar(EntityManager em, Lancamento lancamento) throws DalException {
-        final Fato fato = lancamento.getFato();
-        if(fato == null){
-            throw new DalException(ERRO_FATO_VAZIO);
-        }
+    protected void validarPraCriacao(EntityManager em, Lancamento lancamento) throws DalException {
+        validaBasico(lancamento);
         
-        final Conta conta = lancamento.getConta();
-        if(conta == null){
-            throw new DalException(ERRO_CONTA_VAZIA);
-        }
-        
-        Boolean existeDuplicata = 
+        final Boolean existeDuplicata = 
             em.createNamedQuery("Lancamento.existeDuplicata",Boolean.class)
-            .setParameter("fato", fato)
-            .setParameter("conta", conta)
+            .setParameter("fato", lancamento.getFato())
+            .setParameter("conta", lancamento.getConta())
             .getSingleResult();
         
         if(existeDuplicata){
             throw new DalException(ERRO_DUPLICATA);
         }
-            
     }
 
+    @Override
+    protected void validarPraAtualizacao(EntityManager em, Lancamento lancamento) throws DalException {
+        validaBasico(lancamento);
+    }
+
+    private void validaBasico(Lancamento lancamento) throws DalException{
+        if(lancamento.getFato() == null){
+            throw new DalException(ERRO_FATO_VAZIO);
+        }
+        
+        if(lancamento.getConta() == null){
+            throw new DalException(ERRO_CONTA_VAZIA);
+        }
+    }
+    
     public boolean existe(final EntityManager em, final Conta conta){
         return em.createNamedQuery("Conta.temLancamento", Boolean.class)
                 .setParameter("conta", conta)
