@@ -14,45 +14,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.rest;
+package br.nom.abdon.rest.paramconverters;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.Temporal;
+import java.util.function.Function;
 import javax.ws.rs.ext.ParamConverter;
 
 /**
- *
+ * @param <T> o temporal que é convertido por essa classe
  * @author Bruno Abdon
  */
-public class TimeParamConverter implements ParamConverter<LocalDate>{
+public abstract class AbstractTemporalParamConveter<T extends Temporal> 
+        implements ParamConverter<T>{
 
-    public static TimeParamConverter instance = new TimeParamConverter();
-
-    private TimeParamConverter() {}
-    
     @Override
-    public LocalDate fromString(final String strLocalDate) {
-        
-        if(strLocalDate == null)
-            throw new IllegalArgumentException(strLocalDate);
+    public T fromString(String strTemporal) {
+       if(strTemporal == null)
+            throw new IllegalArgumentException(strTemporal);
             
-        final LocalDate localDate;
+        final T temporal;
         
         try {
-            localDate = LocalDate.parse(strLocalDate);
+            temporal = parse(strTemporal);
             
         } catch (DateTimeParseException e){
-            throw new IllegalArgumentException(strLocalDate);
+            throw new IllegalArgumentException(strTemporal);
         }
         
-        return localDate;
-        
+        return temporal;
+         
     }
 
     @Override
-    public String toString(LocalDate localDate) {
-        if(localDate == null) throw new IllegalArgumentException();
-        return localDate.toString();
+    public String toString(T temporal) {
+        return temporal.toString();
     }
+    
+    protected abstract T parse(String strTemporal);
     
 }

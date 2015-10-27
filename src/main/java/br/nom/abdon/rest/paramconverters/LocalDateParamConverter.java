@@ -14,32 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.rest;
+package br.nom.abdon.rest.paramconverters;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.time.LocalDate;
-import javax.ws.rs.ext.ParamConverter;
-import javax.ws.rs.ext.ParamConverterProvider;
-import javax.ws.rs.ext.Provider;
 
 /**
  *
  * @author Bruno Abdon
  */
-@Provider
-public class TimeParamConverterProvider implements ParamConverterProvider{
+public class LocalDateParamConverter extends AbstractTemporalParamConveter<LocalDate>{
+
+    public static LocalDateParamConverter 
+        instance = new LocalDateParamConverter();
 
     @Override
-    public <T> ParamConverter<T> getConverter(
-            Class<T> rawType, 
-            Type genericType, 
-            Annotation[] annotations) {
-        return rawType == LocalDate.class 
-            ? (ParamConverter<T>)TimeParamConverter.instance
-            : null;
+    protected LocalDate parse(String strTemporal) {
+        return LocalDate.parse(strTemporal);
     }
-
-    
-    
 }
