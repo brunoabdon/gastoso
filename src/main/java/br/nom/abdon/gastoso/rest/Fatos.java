@@ -44,20 +44,23 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         
         final List<Fato> fatos;
 
-        if(dataMin == null || dataMax == null){
+        if(dataMax == null){
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         
         final LocalDate dataMinima, dataMaxima;
 
         try {
-            dataMinima = LocalDate.parse(dataMin);
             dataMaxima = LocalDate.parse(dataMax);
+            dataMinima = dataMin != null
+                ? LocalDate.parse(dataMin)
+                : dataMaxima.minusMonths(1);
+            
         } catch (DateTimeParseException e){
             throw new WebApplicationException(e,Response.Status.BAD_REQUEST);
         }
         
-        EntityManager entityManager = emf.createEntityManager();
+        final EntityManager entityManager = emf.createEntityManager();
         
         try {
             fatos = dao.listar(entityManager, dataMinima, dataMaxima);
