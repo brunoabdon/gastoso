@@ -6,7 +6,6 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
 import br.nom.abdon.rest.AbstractRestCrud;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.ws.rs.GET;
