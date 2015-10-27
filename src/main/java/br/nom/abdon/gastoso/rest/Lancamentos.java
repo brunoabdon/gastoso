@@ -6,6 +6,7 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
 import br.nom.abdon.rest.AbstractRestCrud;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.ws.rs.GET;
@@ -42,23 +43,33 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     public List<Lancamento> listar(
             final @QueryParam("fato") Fato fato,
             final @QueryParam("conta") Conta conta,
-            final @QueryParam("dataMin") LocalDate dataMinima,
-            final @QueryParam("dataMax") LocalDate dataMaxima){
+            final @QueryParam("mes") YearMonth mes,
+            @QueryParam("dataMin") LocalDate dataMinima,
+            @QueryParam("dataMax") LocalDate dataMaxima){
         
         final List<Lancamento> lancamentos;
 
         final EntityManager entityManager = emf.createEntityManager();
-        
+
         try {
             if(fato != null){
                 lancamentos = dao.listar(entityManager, fato);
-            } else if (conta != null && dataMinima != null && dataMaxima != null){
-                
+            } else if (conta != null
+                        &&
+                            (mes != null 
+                            || 
+                            (dataMinima != null && dataMaxima != null))
+                    ){
+                if(mes != null){
+                    dataMinima = mes.atDay(1);
+                    dataMaxima = mes.atEndOfMonth();
+                }
+                    
                 lancamentos = dao.listar(
-                                entityManager, 
-                                conta, 
-                                dataMinima, 
-                                dataMaxima);
+                            entityManager, 
+                            conta, 
+                            dataMinima, 
+                            dataMaxima);
             } else {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
