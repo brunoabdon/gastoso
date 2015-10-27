@@ -4,6 +4,7 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.dal.FatosDao;
 import br.nom.abdon.rest.AbstractRestCrud;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -39,27 +40,17 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
     
     @GET
     public List<Fato> listar(
-        final @QueryParam("dataMin") String dataMin,
-        final @QueryParam("dataMax") String dataMax){
-        
+        @QueryParam("dataMin") LocalDate dataMinima,
+        final @QueryParam("dataMax") LocalDate dataMaxima){
+
         final List<Fato> fatos;
 
-        if(dataMax == null){
+        if(dataMaxima == null){
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        
-        final LocalDate dataMinima, dataMaxima;
 
-        try {
-            dataMaxima = LocalDate.parse(dataMax);
-            dataMinima = dataMin != null
-                ? LocalDate.parse(dataMin)
-                : dataMaxima.minusMonths(1);
+        if(dataMinima == null) dataMinima = dataMaxima.minusMonths(1);
             
-        } catch (DateTimeParseException e){
-            throw new WebApplicationException(e,Response.Status.BAD_REQUEST);
-        }
-        
         final EntityManager entityManager = emf.createEntityManager();
         
         try {

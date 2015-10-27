@@ -43,8 +43,8 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     public List<Lancamento> listar(
             final @QueryParam("fato") Fato fato,
             final @QueryParam("conta") Conta conta,
-            final @QueryParam("dataMin") String dataMin,
-            final @QueryParam("dataMax") String dataMax){
+            final @QueryParam("dataMin") LocalDate dataMinima,
+            final @QueryParam("dataMax") LocalDate dataMaxima){
         
         final List<Lancamento> lancamentos;
 
@@ -53,18 +53,13 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         try {
             if(fato != null){
                 lancamentos = dao.listar(entityManager, fato);
-            } else if (conta != null && dataMin != null && dataMax != null){
+            } else if (conta != null && dataMinima != null && dataMaxima != null){
                 
-                final LocalDate dataMinima, dataMaxima;
-                
-                try {
-                    dataMinima = LocalDate.parse(dataMin);
-                    dataMaxima = LocalDate.parse(dataMax);
-                } catch (DateTimeParseException e){
-                    throw new WebApplicationException(e,Response.Status.BAD_REQUEST);
-                }
-                
-                lancamentos = dao.listar(entityManager, conta, dataMinima, dataMaxima);
+                lancamentos = dao.listar(
+                                entityManager, 
+                                conta, 
+                                dataMinima, 
+                                dataMaxima);
             } else {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
