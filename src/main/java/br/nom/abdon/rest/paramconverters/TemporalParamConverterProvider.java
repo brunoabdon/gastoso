@@ -43,7 +43,4 @@ public class TemporalParamConverterProvider implements ParamConverterProvider{
                         ? YearMonthParamConverter.instance
                         : null);
     }
-
-    
-    
 }
