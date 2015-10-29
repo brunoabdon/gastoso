@@ -71,7 +71,4 @@ public class Fato extends EntidadeBaseInt {
         return "[Fato:" + (dia == null? null : dia.toString())
                 + " - " + descricao + "]";
     }
-    
-    
-
 }

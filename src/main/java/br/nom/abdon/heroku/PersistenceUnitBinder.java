@@ -2,7 +2,6 @@ package br.nom.abdon.heroku;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;

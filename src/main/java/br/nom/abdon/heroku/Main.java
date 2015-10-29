@@ -37,6 +37,7 @@ public class Main {
         }
 
         final Server server = new Server(Integer.valueOf(webPort));
+
         final WebAppContext root = new WebAppContext();
 
         root.setContextPath("/");
