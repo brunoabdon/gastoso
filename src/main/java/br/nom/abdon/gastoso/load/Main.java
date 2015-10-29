@@ -32,7 +32,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class Main {
 
     private static final String PERSISTENT_UNIT = "gastoso_peruni";
-    
+
+    private static final ZoneId ZONE_ID = ZoneId.systemDefault();
+
     public static void main(String[] args) {
         
         //banco
@@ -41,7 +43,6 @@ public class Main {
         
         final EntityManagerFactory emf = 
             Persistence.createEntityManagerFactory(PERSISTENT_UNIT, properties);        
-        
         
         //arquivo excell...
         final String fileName = System.getenv("XLS_FILE");
@@ -76,7 +77,6 @@ public class Main {
                     cellConta
                     .getStringCellValue()
                     .replaceAll("\\s*(\\r|\\n)\\s*", " ");
-//                System.out.printf("%2d) %s\n",i,nomeDaConta);
                 
                 final Conta conta = new Conta(nomeDaConta);
                 em.persist(conta);
@@ -86,8 +86,7 @@ public class Main {
             final FormulaEvaluator evaluator = 
                 wb.getCreationHelper().createFormulaEvaluator();
             
-            Date data = null;
-            
+            LocalDate date = null;
             short rowNum = 4;
 
             while(true){
@@ -101,15 +100,14 @@ public class Main {
              
                 final Cell celulaData = linhaFato.getCell(0);
                 if(celulaData.getCellType() != Cell.CELL_TYPE_BLANK){
-                    data = celulaData.getDateCellValue();
+                    Date data = celulaData.getDateCellValue();
+                    date = data.toInstant().atZone(ZONE_ID).toLocalDate();
                 }
 
-                LocalDate date = data.toInstant().atZone(ZONE_ID).toLocalDate();
                 String descricao = celulaDescricao.getStringCellValue();
                 Fato fato = new Fato(date,descricao);
                 
                 em.persist(fato);
-                //System.out.println(fato);
                 
                 for (short i = 2; i < numCells; i++) {
                     final Cell celulaLancamento = linhaFato.getCell(i);
@@ -129,6 +127,13 @@ public class Main {
                             break;
                         case Cell.CELL_TYPE_BLANK:
                             continue;
+                        case Cell.CELL_TYPE_STRING:
+                            String strVal = 
+                                celulaLancamento
+                                .getStringCellValue()
+                                .replace("R$ ", "");
+                            cellValue = Double.parseDouble(strVal);
+                            
                         default: 
                             throw new RuntimeException(
                                 String.valueOf(celulaLancamento.getCellType()));
@@ -149,17 +154,12 @@ public class Main {
             
             em.getTransaction().commit();
             
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidFormatException ex) {
+        } catch (IOException | InvalidFormatException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } finally{
             em.close();
         }
         
-        
         System.exit(0);
     }
-    private static final ZoneId ZONE_ID = ZoneId.systemDefault();
-    
 }
