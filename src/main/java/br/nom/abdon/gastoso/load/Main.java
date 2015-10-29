@@ -102,10 +102,13 @@ public class Main {
                 if(celulaData.getCellType() != Cell.CELL_TYPE_BLANK){
                     Date data = celulaData.getDateCellValue();
                     date = data.toInstant().atZone(ZONE_ID).toLocalDate();
+                    System.out.printf("%s\n",date);
                 }
 
                 String descricao = celulaDescricao.getStringCellValue();
                 Fato fato = new Fato(date,descricao);
+                
+                System.out.printf("\t%s\n",fato.getDescricao());
                 
                 em.persist(fato);
                 
@@ -127,12 +130,6 @@ public class Main {
                             break;
                         case Cell.CELL_TYPE_BLANK:
                             continue;
-                        case Cell.CELL_TYPE_STRING:
-                            String strVal = 
-                                celulaLancamento
-                                .getStringCellValue()
-                                .replace("R$ ", "");
-                            cellValue = Double.parseDouble(strVal);
                             
                         default: 
                             throw new RuntimeException(
@@ -143,8 +140,8 @@ public class Main {
                     Conta conta = contas[i-2];
                     Lancamento lancamento = new Lancamento(fato,conta,valor);
 
-                    System.out.printf("\t%s #%f#\n",
-                        lancamento.getConta(),
+                    System.out.printf("\t\t%s R$ %f\n",
+                        lancamento.getConta().getNome(),
                         BigDecimal.valueOf(lancamento.getValor(), 2).floatValue());
                     
                     em.persist(lancamento);
