@@ -37,12 +37,14 @@ public class LoginRS {
     private static final Logger log = Logger.getLogger(LoginRS.class.getName());
     
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public AuthToken login(@FormParam("password") final String password){
+    public AuthToken login(final String password){
         
         final AuthToken authToken;
 
+        System.out.println("senha: " + password);
+        
         try {
             String strToken = Auth.getInstance().login(password);
             authToken = new AuthToken(strToken);
