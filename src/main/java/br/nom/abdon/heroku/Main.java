@@ -21,7 +21,8 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public class Main {
 
-    private static final String ALLOWED_HEADERS = "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host";
+    private static final String ALLOWED_HEADERS = 
+        "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host,X-Abd-auth_token";
     private static final String ALLOWED_METHODS = "GET,POST,PUT,HEAD,OPTIONS,DELETE";
 
     public static void main(String[] args) throws Exception{
