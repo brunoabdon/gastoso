@@ -330,12 +330,9 @@ public class CrossOriginFilter implements Filter {
 
     private boolean isPreflightRequest(HttpServletRequest request)
     {
-        String method = request.getMethod();
-        if (!"OPTIONS".equalsIgnoreCase(method))
-            return false;
-        if (request.getHeader(ACCESS_CONTROL_REQUEST_METHOD_HEADER) == null)
-            return false;
-        return true;
+        return 
+            "OPTIONS".equalsIgnoreCase(request.getMethod())
+            && request.getHeader(ACCESS_CONTROL_REQUEST_METHOD_HEADER) != null;
     }
 
     private void handleSimpleResponse(HttpServletRequest request, HttpServletResponse response, String origin)
