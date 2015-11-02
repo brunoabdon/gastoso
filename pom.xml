@@ -64,7 +64,6 @@
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
          <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -91,7 +90,6 @@
             <artifactId>jersey-test-framework-provider-bundle</artifactId>
             <type>pom</type>
             <scope>test</scope>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
