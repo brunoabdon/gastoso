@@ -40,7 +40,7 @@ public class AuthorizationFilter implements ContainerRequestFilter{
     public void filter(final ContainerRequestContext requestCtx) throws IOException {
  
         final String path = requestCtx.getUriInfo().getPath();
-        log.log(Level.INFO, "Filtering request path: {0}", path);
+        log.log(Level.FINEST, "Filtering request path: {0}", path);
  
         // IMPORTANT!!! First, Acknowledge any pre-flight test from browsers for 
         // this case before validating the headers (CORS stuff)

@@ -27,15 +27,16 @@ public class EntidadeBaseInt implements Entidade<Integer>{
     }
 
     public static <X extends EntidadeBaseInt> X fromString(Class<X> klass, String str){
-        X entidade;
+        final X entidade;
 
-        System.out.println("parsing " + str);        
         try {
-            int id = Integer.parseInt(str);
+            final int id = Integer.parseInt(str);
         
             entidade = klass.newInstance();
             entidade.setId(id);
-        } catch (InstantiationException | IllegalAccessException | NumberFormatException e){
+        } catch (InstantiationException 
+                | IllegalAccessException 
+                | NumberFormatException e){
             throw new RuntimeException(e);
         }
 
