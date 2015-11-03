@@ -121,6 +121,11 @@
             <artifactId>poi-ooxml</artifactId>
             <version>3.13</version>
         </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>3.2.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -129,7 +134,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>3.3</version>
                 <inherited>true</inherited>
                 <configuration>
                     <source>1.8</source>
@@ -160,7 +165,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
-            <version>4.3.9.Final</version>
+            <version>4.3.11.Final</version>
         </dependency>
     </dependencies>
 </plugin>            
@@ -176,6 +181,23 @@
                         </goals>
                         <configuration>
                             <includeScope>compile</includeScope>
+                            
+        <artifactItems>
+          <artifactItem>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>3.2.1</version>
+            <destFileName>flyway.jar</destFileName>
+          </artifactItem>
+          <artifactItem>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.4-1204-jdbc41</version>
+            <destFileName>postgres.jar</destFileName>
+          </artifactItem>
+        </artifactItems>
+                            
+                            
                         </configuration>
                     </execution>
                 </executions>
