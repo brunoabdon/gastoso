@@ -75,5 +75,4 @@ public class Lancamento extends EntidadeBaseInt {
     public void setFato(Fato fato) {
         this.fato = fato;
     }
-    
 }

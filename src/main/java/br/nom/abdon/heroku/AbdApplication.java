@@ -11,6 +11,4 @@ public class AbdApplication extends ResourceConfig{
     public AbdApplication() {
         register(new PersistenceUnitBinder());
     }
-    
-    
 }

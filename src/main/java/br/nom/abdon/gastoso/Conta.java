@@ -52,7 +52,4 @@ public class Conta extends EntidadeBaseInt {
     public String toString() {
         return "[Conta: " + nome + "]";
     }
-
-    
-    
 }
