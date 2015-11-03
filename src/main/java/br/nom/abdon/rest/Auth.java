@@ -20,6 +20,7 @@ import java.security.GeneralSecurityException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  *
@@ -41,7 +42,9 @@ public class Auth {
     
     public String login(final String password) throws GeneralSecurityException{
         
-        if(!"segredo".equals(password)){
+        final String md5pass = DigestUtils.md5Hex(password);
+  
+        if(!"cbb72318565824672fdb2b7b4c84df20".equals(md5pass)){
             throw new GeneralSecurityException();
         }
         
