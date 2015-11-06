@@ -1,12 +1,14 @@
 package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  *
@@ -75,4 +77,29 @@ public class Lancamento extends EntidadeBaseInt {
     public void setFato(Fato fato) {
         this.fato = fato;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal = obj != null && (obj instanceof Lancamento);
+        if(equal){
+            final Lancamento lancamento = (Lancamento) obj;
+            equal = 
+                    Objects.equals(this.getId(), lancamento.getId())
+                    && Objects.equals(this.getValor(), lancamento.getValor())
+                    && Objects.equals(this.getConta(), lancamento.getConta())
+                    && Objects.equals(this.getFato(), lancamento.getFato());
+        }
+        return equal;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(3, 11)
+            .append(getId())
+            .append(getValor())
+            .append(getFato())
+            .append(getConta())
+            .toHashCode();
+    }    
+    
 }

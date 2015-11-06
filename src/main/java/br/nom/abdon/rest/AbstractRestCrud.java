@@ -22,6 +22,7 @@ import br.nom.abdon.dal.EntityNotFoundException;
 import br.nom.abdon.modelo.Entidade;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
@@ -36,7 +37,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 /**
@@ -103,13 +107,24 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public E pegar(@PathParam("id") Key id){
+    public Response pegar(@Context Request request, @PathParam("id") Key id){
 
-        E entity;
+        final Response response;
         
-        EntityManager entityManager = emf.createEntityManager();
+        final EntityManager entityManager = emf.createEntityManager();
         try {
-            entity = getDao().find(entityManager, id);
+            final E entity = getDao().find(entityManager, id);
+            
+            final EntityTag tag = new EntityTag(Integer.toString(entity.hashCode()));
+            Response.ResponseBuilder builder = request.evaluatePreconditions(tag);
+            if(builder==null){
+		//preconditions are not met and the cache is invalid
+		//need to send new value with reponse code 200 (OK)
+		builder = Response.ok(entity);
+		builder.tag(tag);
+            }
+            response = builder.build();
+            
         } catch ( EntityNotFoundException ex){
             throw new NotFoundException(ex);
         } catch (DalException ex) {
@@ -119,7 +134,7 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
         } finally {
             entityManager.close();
         }
-        return entity;
+        return response;
     }
 
     @POST
@@ -188,7 +203,23 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
         return response;
     }
 
-    
+    protected Response buildResponse(
+            final Request request, final List<E> entidades){
+        
+        final EntityTag tag = 
+            new EntityTag(Integer.toString(entidades.hashCode()));
+
+        Response.ResponseBuilder builder = request.evaluatePreconditions(tag);
+        
+        if(builder==null){
+            //preconditions are not met and the cache is invalid
+            //need to send new value with reponse code 200 (OK)
+            builder = Response.ok(entidades);
+            builder.tag(tag);
+        }
+        return builder.build();
+    }
+
     protected URI makeURI(E entity) {
         URI uri;
         

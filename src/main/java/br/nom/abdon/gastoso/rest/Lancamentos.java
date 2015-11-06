@@ -14,7 +14,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 /**
@@ -40,7 +42,8 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     }
 
     @GET
-    public List<Lancamento> listar(
+    public Response listar(
+            final @Context Request request,
             final @QueryParam("fato") Fato fato,
             final @QueryParam("conta") Conta conta,
             final @QueryParam("mes") YearMonth mes,
@@ -78,6 +81,6 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
             entityManager.close();
         }
             
-        return lancamentos;
+        return buildResponse(request, lancamentos);
     }
 }

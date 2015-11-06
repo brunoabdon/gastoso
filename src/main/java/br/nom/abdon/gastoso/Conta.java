@@ -1,10 +1,13 @@
 package br.nom.abdon.gastoso;
 
 import br.nom.abdon.modelo.EntidadeBaseInt;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.NamedQuery;
 import javax.persistence.NamedQueries;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  *
@@ -52,4 +55,26 @@ public class Conta extends EntidadeBaseInt {
     public String toString() {
         return "[Conta: " + nome + "]";
     }
+
+        @Override
+    public boolean equals(Object obj) {
+        boolean equal = obj != null && (obj instanceof Conta);
+        if(equal){
+            final Conta conta = (Conta) obj;
+            equal = Objects.equals(this.getId(), conta.getId())
+                    && Objects.equals(this.getNome(), conta.getNome());
+        }
+        return equal;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(3, 11)
+            .append(getId())
+            .append(getNome())
+            .toHashCode();
+    }    
+ 
+    
+    
 }

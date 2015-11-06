@@ -8,7 +8,10 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -32,10 +35,10 @@ public class Contas extends AbstractRestCrud<Conta,Integer>{
     }
     
     @GET
-    public List<Conta> listar() {
+    public Response listar(final @Context Request request) {
         final List<Conta> contas;
         
-        EntityManager em = emf.createEntityManager();
+        final EntityManager em = emf.createEntityManager();
         
         try {
             contas = dao.listar(em);
@@ -43,6 +46,6 @@ public class Contas extends AbstractRestCrud<Conta,Integer>{
             em.close();
         }
         
-        return contas;
+        return super.buildResponse(request,contas);
     }
  }

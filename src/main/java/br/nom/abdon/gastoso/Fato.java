@@ -7,11 +7,13 @@ import br.nom.abdon.util.LocalDateTimePersistenceConverter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  *
@@ -39,7 +41,6 @@ public class Fato extends EntidadeBaseInt {
     
     public Fato() {
     }
-
 
     public Fato(LocalDate dia, String descricao) {
         this.dia = dia;
@@ -70,5 +71,27 @@ public class Fato extends EntidadeBaseInt {
     public String toString() {
         return "[Fato:" + (dia == null? null : dia.toString())
                 + " - " + descricao + "]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal = obj != null && (obj instanceof Fato);
+        if(equal){
+            final Fato fato = (Fato) obj;
+            equal = 
+                Objects.equals(this.getId(), fato.getId())
+                && Objects.equals(this.getDescricao(), fato.getDescricao())
+                && Objects.equals(this.getDia(), fato.getDia());
+        }
+        return equal;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(79, 79)
+            .append(getId())
+            .append(getDia())
+            .append(getDescricao())
+            .toHashCode();
     }
 }
