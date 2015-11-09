@@ -1,19 +1,12 @@
 package br.nom.abdon.heroku;
 
-import br.nom.abdon.util.CrossOriginFilter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
-import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_HEADERS_PARAM;
-import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_METHODS_PARAM;
-import static org.eclipse.jetty.servlets.CrossOriginFilter.ALLOWED_ORIGINS_PARAM;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
@@ -25,10 +18,6 @@ public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
     
-    private static final String ALLOWED_HEADERS = 
-        "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host,X-Abd-auth_token";
-    private static final String ALLOWED_METHODS = "GET,POST,PUT,HEAD,OPTIONS,DELETE";
-
     public static void main(String[] args) throws Exception{
         inicializaServidorWeb();
     }
@@ -53,17 +42,6 @@ public class Main {
         // Read more here: http://wiki.eclipse.org/Jetty/Reference/Jetty_Classloading
         root.setParentLoaderPriority(true);
 
-        final String corsAllowedOrigins = 
-            System.getenv("ABD_HTTP_ALLOWED_ORIGINS");
-        
-        if(corsAllowedOrigins != null){
-            FilterHolder corsFilter = new FilterHolder(CrossOriginFilter.class);
-            corsFilter.setInitParameter(ALLOWED_ORIGINS_PARAM, corsAllowedOrigins);
-            corsFilter.setInitParameter(ALLOWED_HEADERS_PARAM, ALLOWED_HEADERS);
-            corsFilter.setInitParameter(ALLOWED_METHODS_PARAM, ALLOWED_METHODS);
-            root.addFilter(corsFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
-        }
-        
         final String webappDirLocation = "src/main/webapp/";
         root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(webappDirLocation);
