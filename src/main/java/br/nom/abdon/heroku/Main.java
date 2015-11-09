@@ -4,6 +4,8 @@ import br.nom.abdon.util.CrossOriginFilter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import org.eclipse.jetty.server.Server;
@@ -21,6 +23,8 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public class Main {
 
+    private static final Logger log = Logger.getLogger(Main.class.getName());
+    
     private static final String ALLOWED_HEADERS = 
         "X-Requested-With,Content-Type,Accept,Origin,Accept-Encoding,Accept-Language,Connection,Host,X-Abd-auth_token";
     private static final String ALLOWED_METHODS = "GET,POST,PUT,HEAD,OPTIONS,DELETE";
@@ -66,7 +70,17 @@ public class Main {
 
         final ErrorHandler errHand = new ErrorHandler(){
             @Override
-            protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
+            protected void handleErrorPage(
+                    HttpServletRequest request, 
+                    Writer writer, 
+                    int code, 
+                    String message) throws IOException {
+                
+                log.log(
+                    Level.INFO,
+                    "http error {0} - {1}",
+                    new Object[]{code, message});
+                
                 if(message != null){
                     writer.write(message);
                 }

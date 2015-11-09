@@ -55,7 +55,7 @@ public class LoginRS {
         return authToken;
     }
     
-    class AuthToken {
+    public class AuthToken {
         public final String token;
 
         public AuthToken(final String token) {
