@@ -43,7 +43,7 @@ public class LoginRS {
         final AuthToken authToken;
 
         try {
-            String strToken = Auth.getInstance().login(password);
+            final String strToken = Auth.getInstance().login(password);
             authToken = new AuthToken(strToken);
             
         } catch (GeneralSecurityException ex){

@@ -16,10 +16,8 @@
  */
 package br.nom.abdon.rest.paramconverters;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
-import java.util.function.Function;
 import javax.ws.rs.ext.ParamConverter;
 
 /**
@@ -30,7 +28,7 @@ public abstract class AbstractTemporalParamConveter<T extends Temporal>
         implements ParamConverter<T>{
 
     @Override
-    public T fromString(String strTemporal) {
+    public T fromString(final String strTemporal) {
        if(strTemporal == null)
             throw new IllegalArgumentException(strTemporal);
             

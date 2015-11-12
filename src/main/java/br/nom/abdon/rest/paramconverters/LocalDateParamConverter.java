@@ -28,7 +28,7 @@ public class LocalDateParamConverter extends AbstractTemporalParamConveter<Local
         instance = new LocalDateParamConverter();
 
     @Override
-    protected LocalDate parse(String strTemporal) {
+    protected LocalDate parse(final String strTemporal) {
         return LocalDate.parse(strTemporal);
     }
 }
