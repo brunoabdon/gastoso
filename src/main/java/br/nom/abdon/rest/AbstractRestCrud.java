@@ -204,7 +204,7 @@ public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{
     }
 
     protected Response buildResponse(
-            final Request request, final List<E> entidades){
+            final Request request, final List<?> entidades){
         
         final EntityTag tag = 
             new EntityTag(Integer.toString(entidades.hashCode()));
