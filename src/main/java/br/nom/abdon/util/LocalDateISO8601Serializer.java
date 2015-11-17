@@ -14,6 +14,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class LocalDateISO8601Serializer extends LocalDateSerializer{
     
+    public static final LocalDateISO8601Serializer INSTANCE = 
+        new LocalDateISO8601Serializer();
+    
     public LocalDateISO8601Serializer(){
         super(DateTimeFormatter.ISO_LOCAL_DATE);
     }
