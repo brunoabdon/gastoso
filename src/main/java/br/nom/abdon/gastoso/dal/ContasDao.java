@@ -38,7 +38,6 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
         super(Conta.class);
     }
     
-    
     @Override
     protected void validar(EntityManager em, Conta conta) throws DalException {
         final String nome = conta.getNome();

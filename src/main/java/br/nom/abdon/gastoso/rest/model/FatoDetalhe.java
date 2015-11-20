@@ -20,7 +20,6 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.NamedQuery;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**

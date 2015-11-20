@@ -6,7 +6,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.NamedQuery;
 import javax.persistence.NamedQueries;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -20,7 +19,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     query = "SELECT c FROM Conta c ORDER BY c.nome"),
  @NamedQuery(
     name = "Conta.temLancamento",
-    query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.conta = :conta"), 
+    query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.conta = :conta"),
  @NamedQuery(
     name = "Conta.nomeEmUso",
     query = "SELECT COUNT(c.id) > 0 FROM Conta c WHERE c.nome = :nome")
