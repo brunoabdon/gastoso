@@ -81,6 +81,21 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
                 .getResultList();
     }
     
+    public long valorTotal(
+            final EntityManager em, 
+            final Conta conta, 
+            final LocalDate dataFinal){
+        
+        final Long result = 
+            em.createNamedQuery("Lancamento.totalDaContaEm", Long.class)
+            .setParameter("conta", conta)
+            .setParameter("dataFinal", dataFinal)
+            .getResultList()
+            .get(0);
+        
+        return result == null ? 0 : result;
+    }
+    
     public List<Lancamento> listar(
             final EntityManager em, 
             final Conta conta, 
