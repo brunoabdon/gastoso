@@ -16,15 +16,19 @@
  */
 package br.nom.abdon.gastoso.rest;
 
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
+import br.nom.abdon.gastoso.dal.ContasDao;
 import br.nom.abdon.gastoso.dal.FatosDao;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
+import br.nom.abdon.gastoso.rest.model.ContaDetalhe;
 import br.nom.abdon.gastoso.rest.model.FatoDetalhe;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -50,17 +54,19 @@ public class MaisRs {
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
-    private final FatosDao dao;
+    private final ContasDao contasDao;
+    private final FatosDao fatosDao;
     private final LancamentosDao lancamentosDao;
 
     public MaisRs() {
-        this.dao = new FatosDao();
+        this.contasDao = new ContasDao();
+        this.fatosDao = new FatosDao();
         this.lancamentosDao = new LancamentosDao();
     }
     
     @GET
     @Path("fatosDetalhados")
-    public Response lista(
+    public Response listaFatos(
         final @Context Request request,
         final @QueryParam("mes") YearMonth mes,
         @QueryParam("dataMin") LocalDate dataMinima,
@@ -89,13 +95,16 @@ public class MaisRs {
                             lancamentosDao.listar(entityManager, fato));
         
         try {
-            fatos = dao.listar(entityManager, dataMinima, dataMaxima);
+            fatos = fatosDao.listar(entityManager, dataMinima, dataMaxima);
             
-            final List<FatoDetalhe> fatosDetalhados = new ArrayList<>(fatos.size());
+            final List<FatoDetalhe> fatosDetalhados = 
+                fatos.stream().map(detalhaFato).collect(Collectors.toList());
             
-            fatos.stream().map(detalhaFato).forEach(fatosDetalhados::add);
-            
-            final br.nom.abdon.gastoso.rest.model.Fatos fs = new br.nom.abdon.gastoso.rest.model.Fatos(dataMinima,dataMaxima,fatosDetalhados);
+            final br.nom.abdon.gastoso.rest.model.Fatos fs = 
+                new br.nom.abdon.gastoso.rest.model.Fatos(
+                    dataMinima, 
+                    dataMaxima,
+                    fatosDetalhados);
 
             final EntityTag tag = new EntityTag(Integer.toString(fs.hashCode()));
             builder = request.evaluatePreconditions(tag);
@@ -111,6 +120,47 @@ public class MaisRs {
         }
         
         return builder.build();
-    }    
+    }
     
+    
+    @GET
+    @Path("contasDetalhadas")
+    public Response listaContas(final @Context Request request){
+
+        Response.ResponseBuilder builder;
+        
+        final LocalDate hoje = LocalDate.now();
+
+        final EntityManager em = emf.createEntityManager();
+        
+        final Function<Conta, ContaDetalhe> detalhaConta = 
+            conta -> new ContaDetalhe(
+                            conta, 
+                            lancamentosDao.valorTotal(em, conta, hoje));
+
+        try {
+            
+            final List<ContaDetalhe> contasDetalhadas = 
+                contasDao
+                    .listar(em)
+                    .stream()
+                    .map(detalhaConta)
+                    .collect(Collectors.toList());
+
+            final EntityTag tag = 
+                new EntityTag(Integer.toString(contasDetalhadas.hashCode()));
+            builder = request.evaluatePreconditions(tag);
+            if(builder==null){
+		//preconditions are not met and the cache is invalid
+		//need to send new value with reponse code 200 (OK)
+		builder = Response.ok(contasDetalhadas);
+		builder.tag(tag);
+            }
+            
+        } finally {
+            em.close();
+        }
+        
+        return builder.build();
+    }
 }

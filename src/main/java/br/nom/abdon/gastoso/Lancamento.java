@@ -34,7 +34,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     @NamedQuery(
         name = "Lancamento.existeDuplicata",
         query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.fato = :fato AND l.conta = :conta"
+    ),
+    @NamedQuery(
+        name = "Lancamento.totalDaContaEm",
+        query = "SELECT SUM(l.valor) FROM Lancamento l WHERE l.conta = :conta AND l.fato.dia <= :dataFinal"
     )
+    
 })
 @JsonSerialize(using = LancamentoJsonSerializer.class)
 public class Lancamento extends EntidadeBaseInt {
