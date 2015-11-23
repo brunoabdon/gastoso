@@ -36,7 +36,6 @@ public class LoginRS {
     private static final Logger log = Logger.getLogger(LoginRS.class.getName());
     
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public AuthToken login(final String password){
         
