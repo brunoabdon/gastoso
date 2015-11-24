@@ -73,7 +73,4 @@ public class Conta extends EntidadeBaseInt {
             .append(getNome())
             .toHashCode();
     }    
- 
-    
-    
 }
