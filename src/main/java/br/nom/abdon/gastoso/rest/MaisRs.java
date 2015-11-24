@@ -25,9 +25,13 @@ import br.nom.abdon.gastoso.rest.model.ContaDetalhe;
 import br.nom.abdon.gastoso.rest.model.Extrato;
 import br.nom.abdon.gastoso.rest.model.FatoDetalhe;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
+import java.time.temporal.TemporalAmount;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -50,6 +54,8 @@ import javax.ws.rs.core.Response;
 @Path("")
 public class MaisRs {
 
+    private static final LocalDate BIG_BANG = LocalDate.of(1979, Month.APRIL, 26);
+    
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
@@ -69,23 +75,18 @@ public class MaisRs {
         final @Context Request request,
         final @QueryParam("conta") Conta conta,
         final @QueryParam("mes") YearMonth mes,
-        @QueryParam("dataMin") LocalDate dataMinima,
         @QueryParam("dataMax") LocalDate dataMaxima){
     
         final List<Fato> fatos;
         Response.ResponseBuilder builder;
         
         if((mes == null && dataMaxima == null)
-            || (mes != null && (dataMaxima != null || dataMinima != null))
             || conta == null){
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
         
         if(mes != null){
-            dataMinima = mes.atDay(1);
             dataMaxima  = mes.atEndOfMonth();
-        } else if(dataMinima == null) {
-            dataMinima = dataMaxima.minusMonths(1);
         }
             
         final EntityManager entityManager = emf.createEntityManager();
@@ -94,14 +95,34 @@ public class MaisRs {
             fato -> new FatoDetalhe(
                             fato, lancamentosDao.listar(entityManager, fato));
         try {
-            fatos = fatosDao.listar(entityManager, conta, dataMinima, dataMaxima);
+            fatos = fatosDao.listar(entityManager, conta, dataMaxima, 30);
             
             final List<FatoDetalhe> fatosDetalhados = 
                 fatos.stream().map(detalhaFato).collect(Collectors.toList());
 
-            final long saldoInicial  = 
-                lancamentosDao.valorTotal(entityManager, conta, dataMinima);
+            Collections.reverse(fatosDetalhados);
             
+            final LocalDate dataMinima;
+            final long saldoInicial;
+            if(fatosDetalhados.isEmpty()){
+                dataMinima = BIG_BANG;
+                saldoInicial = 0;
+            } else {
+                dataMinima = 
+                    fatosDetalhados
+                    .get(0)
+                    .getFato()
+                    .getDia()
+                    .minusDays(1);
+                
+                saldoInicial = 
+                    lancamentosDao
+                        .valorTotal(
+                            entityManager, 
+                            conta, 
+                            dataMinima);
+            }
+
             final Extrato extrato = 
                 new Extrato(
                     conta,

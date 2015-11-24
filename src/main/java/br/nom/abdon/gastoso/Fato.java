@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     ),
     @NamedQuery(
         name ="Fato.porContaPeriodo",
-        query = "SELECT l.fato from Lancamento l where l.conta = :conta and l.fato.dia BETWEEN :dataMinima AND :dataMaxima ORDER BY l.fato.dia, l.fato.id"
+        query = "SELECT l.fato from Lancamento l where l.conta = :conta and l.fato.dia <= :dataMaxima ORDER BY l.fato.dia desc, l.fato.id desc"
     )
 })
 public class Fato extends EntidadeBaseInt {

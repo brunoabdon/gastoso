@@ -76,13 +76,13 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
     public List<Fato> listar(
         final EntityManager em, 
         final Conta conta, 
-        final LocalDate dataMinima, 
-        final LocalDate dataMaxima){
+        final LocalDate dataMaxima,
+        final int quantidadeMaxima){
         
         return em.createNamedQuery("Fato.porContaPeriodo",Fato.class)
                 .setParameter("conta", conta)
-                .setParameter("dataMinima", dataMinima)
                 .setParameter("dataMaxima", dataMaxima)
+                .setMaxResults(quantidadeMaxima)
                 .getResultList();
     }
 
