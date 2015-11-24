@@ -18,6 +18,7 @@ package br.nom.abdon.gastoso.dal;
 
 import br.nom.abdon.dal.AbstractDao;
 import br.nom.abdon.dal.DalException;
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import java.time.LocalDate;
 import java.util.List;
@@ -71,4 +72,19 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
                 .setParameter("dataMaxima", dataMaxima)
                 .getResultList();
     }
+ 
+    public List<Fato> listar(
+        final EntityManager em, 
+        final Conta conta, 
+        final LocalDate dataMinima, 
+        final LocalDate dataMaxima){
+        
+        return em.createNamedQuery("Fato.porContaPeriodo",Fato.class)
+                .setParameter("conta", conta)
+                .setParameter("dataMinima", dataMinima)
+                .setParameter("dataMaxima", dataMaxima)
+                .getResultList();
+    }
+
+    
 }

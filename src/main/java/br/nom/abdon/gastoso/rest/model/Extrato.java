@@ -16,7 +16,7 @@
  */
 package br.nom.abdon.gastoso.rest.model;
 
-import br.nom.abdon.gastoso.Lancamento;
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.rest.serial.FatosJsonSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
@@ -29,14 +29,30 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author Bruno Abdon
  */
 @JsonSerialize(using = FatosJsonSerializer.class)
-public class Fatos  {
+public class Extrato  {
 
+    private Conta conta;
+    private long saldoInicial;
+    
     private LocalDate dataInicial;
     private LocalDate dataFinal;
     
     private List<FatoDetalhe> fatos;
 
-    public Fatos(
+    public Extrato(
+            final Conta conta,
+            final long saldoInicial,
+            final LocalDate dataInicial, 
+            final LocalDate dataFinal, 
+            final List<FatoDetalhe> fatos) {
+        
+        this(dataInicial,dataFinal,fatos);
+        this.conta = conta;
+        this.saldoInicial = saldoInicial;
+    }
+    
+    
+    public Extrato(
             final LocalDate dataInicial, 
             final LocalDate dataFinal, 
             final List<FatoDetalhe> fatos) {
@@ -46,6 +62,22 @@ public class Fatos  {
         this.fatos = fatos;
     }
 
+    public Conta getConta() {
+        return conta;
+    }
+
+    public void setConta(Conta conta) {
+        this.conta = conta;
+    }
+
+    public long getSaldoInicial() {
+        return saldoInicial;
+    }
+
+    public void setSaldoInicial(long saldoInicial) {
+        this.saldoInicial = saldoInicial;
+    }
+    
     public LocalDate getDataInicial() {
         return dataInicial;
     }
@@ -75,19 +107,23 @@ public class Fatos  {
         return new HashCodeBuilder(17, 11)
             .append(getDataInicial())
             .append(getDataFinal())
+            .append(getSaldoInicial())
+            .append(getConta())
             .append(getFatos())
             .toHashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        boolean equal = obj != null && (obj instanceof Fatos);
+        boolean equal = obj != null && (obj instanceof Extrato);
         if(equal){
-            final Fatos fatos = (Fatos) obj;
+            final Extrato that = (Extrato) obj;
             equal = 
-                    Objects.equals(this.getDataInicial(), fatos.getDataInicial())
-                    && Objects.equals(this.getDataFinal(), fatos.getDataFinal())
-                    && Objects.equals(this.getFatos(), fatos.getFatos());
+                Objects.equals(this.getDataInicial(), that.getDataInicial())
+                && Objects.equals(this.getDataFinal(), that.getDataFinal())
+                && Objects.equals(this.getSaldoInicial(), that.getSaldoInicial())
+                && Objects.equals(this.getConta(), that.getConta())
+                && Objects.equals(this.getFatos(), that.getFatos());
         }
         return equal;
     }

@@ -16,10 +16,11 @@
  */
 package br.nom.abdon.gastoso.rest.serial;
 
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.rest.model.FatoDetalhe;
-import br.nom.abdon.gastoso.rest.model.Fatos;
+import br.nom.abdon.gastoso.rest.model.Extrato;
 import br.nom.abdon.util.LocalDateISO8601Serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,22 +33,33 @@ import java.util.List;
  *
  * @author Bruno Abdon
  */
-public class FatosJsonSerializer extends JsonSerializer<Fatos>{
+public class FatosJsonSerializer extends JsonSerializer<Extrato>{
 
     @Override
-    public void serialize(Fatos fatos, JsonGenerator jgen, SerializerProvider serpro) throws IOException, JsonProcessingException {
+    public void serialize(
+            final Extrato fatos, 
+            final JsonGenerator jgen, 
+            final SerializerProvider serpro) 
+                throws IOException, JsonProcessingException {
         
         final LocalDateISO8601Serializer dateSerializer = 
             LocalDateISO8601Serializer.INSTANCE;
-        
+
         jgen.writeStartObject();
 
+        final Conta conta = fatos.getConta();
+        final boolean unicaConta = conta != null;
+        
+        if(unicaConta){
+            jgen.writeNumberField("contaId", conta.getId());
+            jgen.writeNumberField("saldoIncial", fatos.getSaldoInicial());
+        }
+        
         jgen.writeFieldName("inicio");
         dateSerializer.serialize(fatos.getDataInicial(), jgen, serpro);
         
         jgen.writeFieldName("fim");
         dateSerializer.serialize(fatos.getDataFinal(), jgen, serpro);
-
         
         jgen.writeArrayFieldStart("fatos");
         for (FatoDetalhe f: fatos.getFatos()) {
@@ -62,13 +74,13 @@ public class FatosJsonSerializer extends JsonSerializer<Fatos>{
 
             final List<Lancamento> lancamentos = f.getLancamentos();
             if(lancamentos.size() == 1){
-                writeLancamento(jgen, lancamentos.get(0));
+                writeLancamento(jgen, lancamentos.get(0),!unicaConta);
             } else {
                 jgen.writeArrayFieldStart("lancamentos");
 
                 for (Lancamento l : lancamentos) {
                     jgen.writeStartObject();
-                    writeLancamento(jgen, l);
+                    writeLancamento(jgen, l, true);
                     jgen.writeEndObject();
                 }
                 jgen.writeEndArray();
@@ -80,9 +92,15 @@ public class FatosJsonSerializer extends JsonSerializer<Fatos>{
         jgen.writeEndObject();
     }
 
-    private void writeLancamento(JsonGenerator jgen, Lancamento lancamento) throws IOException {
-        jgen.writeNumberField("contaId", lancamento.getConta().getId());
+    private void writeLancamento(
+            final JsonGenerator jgen, 
+            final Lancamento lancamento,
+            final boolean incluirConta) throws IOException {
+        if(incluirConta){
+            jgen.writeNumberField("contaId", lancamento.getConta().getId());
+        }
+
         jgen.writeNumberField("valor", lancamento.getValor());
+
     }
-    
 }

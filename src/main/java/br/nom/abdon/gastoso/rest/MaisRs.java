@@ -22,10 +22,10 @@ import br.nom.abdon.gastoso.dal.ContasDao;
 import br.nom.abdon.gastoso.dal.FatosDao;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
 import br.nom.abdon.gastoso.rest.model.ContaDetalhe;
+import br.nom.abdon.gastoso.rest.model.Extrato;
 import br.nom.abdon.gastoso.rest.model.FatoDetalhe;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,7 +44,6 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 /**
- *
  * @author Bruno Abdon
  */
 @Produces(MediaType.APPLICATION_JSON)
@@ -62,6 +61,71 @@ public class MaisRs {
         this.contasDao = new ContasDao();
         this.fatosDao = new FatosDao();
         this.lancamentosDao = new LancamentosDao();
+    }
+
+    @GET
+    @Path("extrato")
+    public Response extratoConta(
+        final @Context Request request,
+        final @QueryParam("conta") Conta conta,
+        final @QueryParam("mes") YearMonth mes,
+        @QueryParam("dataMin") LocalDate dataMinima,
+        @QueryParam("dataMax") LocalDate dataMaxima){
+    
+        final List<Fato> fatos;
+        Response.ResponseBuilder builder;
+        
+        if((mes == null && dataMaxima == null)
+            || (mes != null && (dataMaxima != null || dataMinima != null))
+            || conta == null){
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        
+        if(mes != null){
+            dataMinima = mes.atDay(1);
+            dataMaxima  = mes.atEndOfMonth();
+        } else if(dataMinima == null) {
+            dataMinima = dataMaxima.minusMonths(1);
+        }
+            
+        final EntityManager entityManager = emf.createEntityManager();
+
+        final Function<Fato, FatoDetalhe> detalhaFato = 
+            fato -> new FatoDetalhe(
+                            fato, lancamentosDao.listar(entityManager, fato));
+        try {
+            fatos = fatosDao.listar(entityManager, conta, dataMinima, dataMaxima);
+            
+            final List<FatoDetalhe> fatosDetalhados = 
+                fatos.stream().map(detalhaFato).collect(Collectors.toList());
+
+            final long saldoInicial  = 
+                lancamentosDao.valorTotal(entityManager, conta, dataMinima);
+            
+            final Extrato extrato = 
+                new Extrato(
+                    conta,
+                    saldoInicial,
+                    dataMinima, 
+                    dataMaxima,
+                    fatosDetalhados);
+
+            final EntityTag tag = 
+                new EntityTag(Integer.toString(extrato.hashCode()));
+            
+            builder = request.evaluatePreconditions(tag);
+            if(builder==null){
+		//preconditions are not met and the cache is invalid
+		//need to send new value with reponse code 200 (OK)
+		builder = Response.ok(extrato);
+		builder.tag(tag);
+            }
+            
+        } finally {
+            entityManager.close();
+        }
+        
+        return builder.build();
     }
     
     @GET
@@ -100,8 +164,8 @@ public class MaisRs {
             final List<FatoDetalhe> fatosDetalhados = 
                 fatos.stream().map(detalhaFato).collect(Collectors.toList());
             
-            final br.nom.abdon.gastoso.rest.model.Fatos fs = 
-                new br.nom.abdon.gastoso.rest.model.Fatos(
+            final br.nom.abdon.gastoso.rest.model.Extrato fs = 
+                new br.nom.abdon.gastoso.rest.model.Extrato(
                     dataMinima, 
                     dataMaxima,
                     fatosDetalhados);
@@ -121,8 +185,7 @@ public class MaisRs {
         
         return builder.build();
     }
-    
-    
+
     @GET
     @Path("contasDetalhadas")
     public Response listaContas(final @Context Request request){
@@ -156,11 +219,10 @@ public class MaisRs {
 		builder = Response.ok(contasDetalhadas);
 		builder.tag(tag);
             }
-            
         } finally {
             em.close();
         }
-        
+ 
         return builder.build();
     }
 }
