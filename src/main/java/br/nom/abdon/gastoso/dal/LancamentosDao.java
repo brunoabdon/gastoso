@@ -95,6 +95,20 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         
         return result == null ? 0 : result;
     }
+
+    public long valorTotalAte(
+            final EntityManager em, 
+            final Lancamento lancamento){
+        
+        final Long result = 
+            em.createNamedQuery("Lancamento.saldoAnterior", Long.class)
+            .setParameter("lancamento", lancamento)
+            .getResultList()
+            .get(0);
+        
+        return result == null ? 0 : result;
+    }
+    
     
     public List<Lancamento> listar(
             final EntityManager em, 

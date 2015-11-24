@@ -16,10 +16,12 @@
  */
 package br.nom.abdon.gastoso.rest.model;
 
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -50,6 +52,16 @@ public class FatoDetalhe {
 
     public void setLancamentos(List<Lancamento> lancamentos) {
         this.lancamentos = lancamentos;
+    }
+    
+    public Lancamento getLancamento(final Conta conta){
+        final int contaId = conta.getId();
+        return 
+            lancamentos
+            .parallelStream()
+            .filter(l -> l.getConta().getId() == contaId)
+            .findAny()
+            .orElse(null);
     }
     
     @Override

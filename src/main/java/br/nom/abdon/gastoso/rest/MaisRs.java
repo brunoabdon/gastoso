@@ -108,19 +108,19 @@ public class MaisRs {
                 dataMinima = BIG_BANG;
                 saldoInicial = 0;
             } else {
+                final FatoDetalhe fatoDetalhadoMaisAntigo = 
+                    fatosDetalhados.get(0);
+
                 dataMinima = 
-                    fatosDetalhados
-                    .get(0)
+                    fatoDetalhadoMaisAntigo
                     .getFato()
-                    .getDia()
-                    .minusDays(1);
+                    .getDia();
                 
                 saldoInicial = 
                     lancamentosDao
-                        .valorTotal(
-                            entityManager, 
-                            conta, 
-                            dataMinima);
+                    .valorTotalAte(
+                        entityManager, 
+                        fatoDetalhadoMaisAntigo.getLancamento(conta));
             }
 
             final Extrato extrato = 
