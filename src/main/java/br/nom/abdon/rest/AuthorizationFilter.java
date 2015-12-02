@@ -41,12 +41,12 @@ public class AuthorizationFilter implements ContainerRequestFilter{
  
         final String path = requestCtx.getUriInfo().getPath();
         log.log(Level.FINEST, "Filtering request path: {0}", path);
- 
+        
         // IMPORTANT!!! First, Acknowledge any pre-flight test from browsers for 
         // this case before validating the headers (CORS stuff)
         if ( requestCtx.getRequest().getMethod().equals( "OPTIONS" ) ) {
             requestCtx.abortWith(Response.status(Response.Status.OK).build());
-        } else if (!path.startsWith("login")) {
+        } else if (!path.equals("login")) {
             final String authToken = 
                 requestCtx.getHeaderString( "X-Abd-auth_token" );
  
