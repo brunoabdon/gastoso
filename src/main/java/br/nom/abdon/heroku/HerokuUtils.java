@@ -36,5 +36,4 @@ public class HerokuUtils {
         properties.put("hibernate.show_sql", showSql);
         return properties;
     }
-    
 }
