@@ -279,20 +279,22 @@ public class CrossOriginFilter implements Filter {
 
     private boolean isMethodAllowed(HttpServletRequest request)
     {
-        final String accessControlRequestMethod = request.getHeader(ACCESS_CONTROL_REQUEST_METHOD_HEADER);
+        final String accessControlRequestMethod = 
+            request.getHeader(ACCESS_CONTROL_REQUEST_METHOD_HEADER);
         log.log(Level.FINEST,
             "{0} is {1}", 
             new Object[]{
                 ACCESS_CONTROL_REQUEST_METHOD_HEADER, 
                 accessControlRequestMethod});
-        boolean result = false;
-        if (accessControlRequestMethod != null)
-            result = allowedMethods.contains(accessControlRequestMethod);
-        log.log(Level.FINEST,"Method {0} is {1} among allowed methods {2}", 
-        new Object[]{
-            accessControlRequestMethod, 
-            (result ? "" : " not"),
-            allowedMethods});
+        final boolean result = 
+                accessControlRequestMethod != null
+                && allowedMethods.contains(accessControlRequestMethod);
+        log.log(Level.FINEST,
+                "Method {0} is {1} among allowed methods {2}", 
+                new Object[]{
+                    accessControlRequestMethod, 
+                    (result ? "" : " not"),
+                    allowedMethods});
         return result;
     }
 
@@ -311,16 +313,12 @@ public class CrossOriginFilter implements Filter {
             && 
             Arrays.asList(accessControlRequestHeaders.split(","))
             .parallelStream()
+            .map(String::trim)
             .allMatch(
                 providedHeader ->  
                     allowedHeaders
                     .parallelStream()
-                    .anyMatch(
-                        allowedHeader ->
-                            providedHeader
-                            .trim()
-                            .equalsIgnoreCase(allowedHeader)
-            ));
+                    .anyMatch(providedHeader::equalsIgnoreCase));
     }
 
     @Override
