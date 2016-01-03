@@ -46,7 +46,7 @@ import javax.ws.rs.core.Response;
 /**
  * @param <E>
  * @param <Key>
-
+ *
  * @author Bruno Abdon
  */
 public abstract class AbstractRestCrud <E extends Entidade<Key>,Key>{

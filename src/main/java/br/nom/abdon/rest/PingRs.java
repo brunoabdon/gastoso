@@ -25,10 +25,9 @@ import javax.ws.rs.Path;
  */
 @Path("ping")
 public class PingRs {
-    
+
     @HEAD
     public void ping(){
         
     }
-    
 }
