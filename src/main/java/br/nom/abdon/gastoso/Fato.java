@@ -3,7 +3,7 @@ package br.nom.abdon.gastoso;
 import br.nom.abdon.modelo.EntidadeBaseInt;
 import br.nom.abdon.util.LocalDateISO8601Deserializer;
 import br.nom.abdon.util.LocalDateISO8601Serializer;
-import br.nom.abdon.util.LocalDateTimePersistenceConverter;
+import br.nom.abdon.dal.util.LocalDateTimePersistenceConverter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
