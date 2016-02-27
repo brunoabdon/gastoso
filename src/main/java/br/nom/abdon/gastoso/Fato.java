@@ -3,7 +3,7 @@ package br.nom.abdon.gastoso;
 import br.nom.abdon.modelo.EntidadeBaseInt;
 import br.nom.abdon.util.LocalDateISO8601Deserializer;
 import br.nom.abdon.util.LocalDateISO8601Serializer;
-import br.nom.abdon.dal.util.LocalDateTimePersistenceConverter;
+import br.nom.abdon.dal.util.LocalDatePersistenceConverter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ public class Fato extends EntidadeBaseInt {
     @Column(nullable = false)
     @JsonSerialize(using = LocalDateISO8601Serializer.class)
     @JsonDeserialize(using = LocalDateISO8601Deserializer.class)
-    @Convert(converter = LocalDateTimePersistenceConverter.class)
+    @Convert(converter = LocalDatePersistenceConverter.class)
     private LocalDate dia;
     
     @Column(length = DESC_MAX_LEN, nullable = false, unique = false)
