@@ -5,8 +5,12 @@ import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
@@ -65,10 +69,16 @@ public class Main {
                 writer.close();
             }
         };
-        
+
         root.setErrorHandler(errHand);
+
+        GzipHandler gzip = new GzipHandler();
+        gzip.setIncludedMimeTypes("application/json");
+        gzip.setMinGzipSize(1024);
+        gzip.setCompressionLevel(9);
+        gzip.setHandler(root);        
         
-        server.setHandler(root);
+        server.setHandler(gzip);
         
         server.start();
         server.join();
