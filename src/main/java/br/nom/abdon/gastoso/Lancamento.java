@@ -1,6 +1,6 @@
 package br.nom.abdon.gastoso;
 
-import br.nom.abdon.gastoso.core.util.LancamentoJsonSerializer;
+import br.nom.abdon.gastoso.util.LancamentoJsonSerializer;
 import br.nom.abdon.modelo.EntidadeBaseInt;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Objects;
