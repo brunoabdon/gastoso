@@ -1,0 +1,122 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.brunoabdon</groupId>
+    <artifactId>gastoso-core</artifactId>
+
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>gastoso-core</name>
+    <description>Gastoso project's Core model classes.</description>
+    <url>https://github.com/brunoabdon/abd-commons-util</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License, Version 3</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+        </license>
+    </licenses>  
+
+    <developers>
+        <developer>
+            <name>Bruno</name>
+            <organization>Abdonia</organization>
+            <organizationUrl>https://github.com/abdonia</organizationUrl>
+        </developer>
+    </developers>    
+  
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype</id>
+            <name>Sonatype Snapshot Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+               <groupId>org.sonatype.plugins</groupId>
+               <artifactId>nexus-staging-maven-plugin</artifactId>
+               <version>1.6.6</version>
+               <extensions>true</extensions>
+               <configuration>
+                 <serverId>sonatype</serverId>
+                 <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                 <autoReleaseAfterClose>true</autoReleaseAfterClose>
+               </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+             </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+          <groupId>com.github.brunoabdon</groupId>
+          <artifactId>abd-commons-dal</artifactId>
+          <version>1.2</version>
+        </dependency>
+        <dependency>
+          <groupId>com.github.brunoabdon</groupId>
+          <artifactId>abd-commons-util</artifactId>
+          <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate.javax.persistence</groupId>
+          <artifactId>hibernate-jpa-2.1-api</artifactId>
+          <version>1.0.0.Final</version>
+        </dependency>
+    </dependencies>
+
+    <scm>
+    	<url>https://github.com/brunoabdon/abd-commons-util.git</url>
+        <connection>scm:git:git://github.com/brunoabdon/abd-commons-util.git</connection>
+        <developerConnection>scm:git:git@github.com:brunoabdon/abd-commons-util.git</developerConnection>
+    </scm>  
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+</project>
