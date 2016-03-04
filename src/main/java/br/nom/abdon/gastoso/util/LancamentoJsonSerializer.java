@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.core.util;
+package br.nom.abdon.gastoso.util;
 
 import br.nom.abdon.gastoso.Lancamento;
 import com.fasterxml.jackson.core.JsonGenerator;
