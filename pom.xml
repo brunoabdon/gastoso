@@ -109,9 +109,9 @@
     </dependencies>
 
     <scm>
-    	<url>https://github.com/brunoabdon/abd-commons-util.git</url>
-        <connection>scm:git:git://github.com/brunoabdon/abd-commons-util.git</connection>
-        <developerConnection>scm:git:git@github.com:brunoabdon/abd-commons-util.git</developerConnection>
+    	<url>https://github.com/brunoabdon/gastoso-core.git</url>
+        <connection>scm:git:git://github.com/brunoabdon/gastoso-core.git</connection>
+        <developerConnection>scm:git:git@github.com:brunoabdon/gastoso-core.git</developerConnection>
     </scm>  
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
