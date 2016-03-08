@@ -69,7 +69,7 @@ public class Main {
         
         parser.setBuildParseTree(true);
 
-        ParserRuleContext tree = parser.r();
+        ParserRuleContext tree = parser.command();
         
         
         
