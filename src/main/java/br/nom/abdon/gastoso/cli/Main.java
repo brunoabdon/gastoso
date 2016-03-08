@@ -53,12 +53,6 @@ public class Main {
                 t.getText()
             )
         );
-        
-//        final List<? extends Token> tokensList = hl.getAllTokens();
-//        System.out.println(tokensList.size() + " tokens");
-//        tokensList.stream().forEach((token) -> {
-//            System.out.printf("<%s>\n",token.getText());
-//        });
 
         hl.reset();
 
