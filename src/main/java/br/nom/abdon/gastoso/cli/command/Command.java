@@ -14,17 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.cli;
+package br.nom.abdon.gastoso.cli.command;
 
-import br.nom.abdon.gastoso.cli.command.Periodo;
+import java.io.OutputStream;
 
 /**
  *
  * @author Bruno Abdon
  */
-public class GastosoShellSession {
-    
-    //sessao / contexto
-    private Periodo periodo;
+public abstract class Command {
+
+    public abstract void execute(OutputStream outputStream);
     
 }

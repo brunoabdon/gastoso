@@ -14,17 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.cli;
+package br.nom.abdon.gastoso.cli.command;
 
-import br.nom.abdon.gastoso.cli.command.Periodo;
+import java.io.OutputStream;
 
-/**
- *
- * @author Bruno Abdon
- */
-public class GastosoShellSession {
+public class Fatos extends Command{
+
     
-    //sessao / contexto
-    private Periodo periodo;
+    final Periodo periodo = null;
+    
+    
+    @Override
+    public void execute(OutputStream outputStream) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

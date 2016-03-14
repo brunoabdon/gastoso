@@ -3,20 +3,25 @@ grammar GastosoCli;
 command: WS? lineCommand WS? EOF;
 
 lineCommand: 
-    'periodo' (WS periodo)?
-    |'fato' WS fatoArgs
-    |'fatos'
-    |'conta' WS contaArgs
-    |'contas' (WS contasArgs)?
-    |'rm' WS rmArgs
-    |('gasto'|'ganho') WS gastoGanhoArgs
-    |'transf' WS transfArgs
-;
+    periodo | fato | fatos | conta | contas | rm | gasto | ganho | transf;
+    
+
+periodo : 'periodo' (WS periodoDef)?;
+fato    : 'fato'    WS fatoArgs;
+fatos   : 'fatos';
+conta   : 'conta'   WS contaArgs;
+contas  : 'contas'  (WS contasArgs)?;
+rm      : 'rm'      WS rmArgs;
+gasto   : 'gasto'   WS gastoGanhoArgs;
+ganho   : 'ganho'   WS gastoGanhoArgs;
+transf  : 'transf'  WS transfArgs;
+
 
 fatoArgs: 
-    id
-    | subId (WS valor)?
-    | (dia WS)? textArg;
+    id                     #fatoId
+    | subId (WS valor)?    #fatoSubId
+    | (dia WS)? textArg    #mkFato
+;
 
 contaArgs: id (WS textArg)?;
 
@@ -30,37 +35,118 @@ gastoGanhoArgs: (dia WS)? textArg WS id WS valor;
 
 transfArgs: (dia WS)? textArg WS id WS id WS valor;
 
-
-dia: 'hoje' | 'ontem' | 'amanha' | 'depois de amanha' | 'ante-ontem'
-    |diaDaSemana (WS ('que vem'|'passado'|'passada'))?
-    |'de hoje a oito' | 'de hoje a quinze'
+dia: diaSimples
+     |diaDaSemana
+     |diaDaSemanaPorReferencia
 ;
 
-diaDaSemana : 'domingo' | 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta' | 'sabado';
+diaSimples:
+    HOJE 
+    | ONTEM
+    | AMANHA
+    | DEPOIS_DE_AMANHA
+    | ANTE_ONTEM
+    | DE_HOJE_A_OITO
+    | DE_HOJE_A_QUINZE
+;
 
-mes: 'janeiro' | 'fevereiro' | 'marco' | 'abril' | 'maio' | 'junho' | 'julho' | 'agosto' | 'setembro' | 'outubro' | 'novembro' | 'dezembro';
+diaDaSemana : DOM | SEG | TER | QUA | QUI | SEX | SAB;
 
-ano : INT; 
+diaDaSemanaPorReferencia : diaDaSemana WS varianteMasc;
 
-periodo:
-  periodoSimples
-  |'de' WS periodoSimples WS ('a' | 'ate') WS periodoSimples;
+mes: mesSimples | mesPorReferencia;
 
-periodoSimples : 
+mesSimples: JAN | FEV | MAR | ABR | MAI | JUN | JUL | AGO | SET | OUT | NOV | DEZ;
+
+mesPorReferencia: mesSimples WS varianteMasc;
+
+ano: anoSimples | anoPorReferencia;
+
+anoSimples : INT; 
+
+anoPorReferencia: anoSimples WS varianteMasc;
+
+varianteMasc: QUE_VEM | PASSADO;
+varianteFem: QUE_VEM | PASSADA;
+
+periodoDef: periodoSimples | peridoComplexo;
+
+peridoComplexo: 'de' WS periodoSimples WS ATE WS periodoSimples;
+
+periodoSimples :
     dia 
-    | mes (WS ('que vem'|'passado'|'passada'))?
+    | periodoSemana
+    | mes
     | ano 
-    | diaDaSemana (WS ('que vem'|'passado'|'passada'))
-    | ('semana'|'mes'|'ano'|'semestre'|'trimestre'|'bimestre') WS ('que vem'|'passado'|'passada')
-    | 'essa semana' | 'esse ' ('mes'|'ano'|'semestre'|'trimestre'|'bimestre') ;
+    | periodoReferenciado
+;
+
+periodoSemana: essaSemana | outraSemana;
+periodoReferenciado: essePeriodo | outroPeriodo;
+
+essaSemana: ESSA WS SEMANA;
+outraSemana: SEMANA WS varianteFem;
+
+essePeriodo: ESSE WS nomeDePeriodo;
+outroPeriodo : nomeDePeriodo WS varianteMasc;
+
+nomeDePeriodo: MES | ANO | SEMESTRE;
 
 textArg : WORD | TEXT;
 
-valor: '-'? INT CENTAVOS?;
-id:INT;
+valor: MENOS? INT CENTAVOS?;
+id :INT;
 subId: id '/' id;
 
 //lex rules
+
+
+HOJE: 'hoje';
+ONTEM: 'ontem';
+AMANHA: 'amanha';
+DEPOIS_DE_AMANHA: 'depois de amanha';
+ANTE_ONTEM: 'ante-ontem';
+DE_HOJE_A_OITO: 'de hoje a oito';
+DE_HOJE_A_QUINZE: 'de hoje a quinze';
+
+JAN: 'janeiro' | 'Janeiro' | 'JANEIRO' | 'jan' | 'JAN'; //qnd tiver paciencia, fazer pro outros...
+FEV: 'fevereiro';
+MAR: 'marco';
+ABR: 'abril';
+MAI: 'maio';
+JUN: 'junho';
+JUL: 'julho';
+AGO: 'agosto';
+SET: 'setembro';
+OUT: 'outubro';
+NOV: 'novembro';
+DEZ: 'dezembro';
+
+DOM: 'Domingo' | 'domingo' | 'dom';
+SEG: 'Segunda' | 'segunda' | 'seg';
+TER: 'Terca' | 'terca' | 'ter';
+QUA: 'Quarta' | 'quarta' | 'qua';
+QUI: 'Quinta' | 'quinta' | 'qui';
+SEX: 'Sexta' | 'sexta' | 'sex';
+SAB: 'Sabado' | 'sabado' | 'sab';
+
+ANO: 'ano';
+MES: 'mes';
+SEMANA: 'semana';
+SEMESTRE: 'semestre';
+TRIMESTRE: 'trimestre';
+BIMESTRE: 'bimestre';
+
+ESSE: 'esse';
+ESSA: 'essa';
+
+QUE_VEM: 'que vem';
+PASSADA: 'passada';
+PASSADO: 'passado';
+
+ATE: 'a' | 'ate';
+
+
 
 fragment ALPHA: [a-zA-Z];
 fragment DIGIT: '0'..'9';
@@ -68,8 +154,9 @@ fragment ASPAS: '\'' | '"';
 
 INT: DIGIT+;
 CENTAVOS: ',' DIGIT DIGIT;
-
+MENOS: '-';
 WORD: ALPHA (ALPHA|DIGIT)*;
+
 
 TEXT: ASPAS (WS | . )+ ASPAS;
 
