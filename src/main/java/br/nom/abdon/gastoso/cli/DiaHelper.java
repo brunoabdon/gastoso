@@ -180,6 +180,4 @@ public class DiaHelper {
             System.out.println();
         }
     }
-
-    
 }
