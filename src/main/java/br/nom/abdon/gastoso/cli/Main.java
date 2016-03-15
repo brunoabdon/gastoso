@@ -1,14 +1,16 @@
 package br.nom.abdon.gastoso.cli;
 
 import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliListener;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
+
 import java.io.Console;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Vocabulary;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 /**
  *
@@ -18,56 +20,51 @@ public class Main {
     
     public static void main(String[] args) {        
         
-        Console console = System.console();
+        GastosoCommandExecutor cLICommand = new GastosoCommandExecutor();
         
+        Console console = System.console();
+
         String line;
         while((line = console.readLine("parser> ")) != null){
-            parse(line);
+            
+            if("exit".equals(line)){
+                System.out.println("Bye bye");
+                System.exit(0);
+            }
+            
+            final CommandContext commandCtx = parse(line);
+
+            if(commandCtx == null){
+                System.out.println("Não entendi");
+            } else {
+                cLICommand.processCommand(commandCtx);
+            }
         }
-        
-        
-//        parse("fatos");
-//        parse("contas");
-//        parse("contas brasil");
-//        parse("conta 1");
-//        parse("fato 1");
-//        parse("fato 1/2");
-//        parse("rm conta 434");
-        
     }
     
-    private static void parse(String msg){
+    private static CommandContext parse(String msg){
+        
+        CommandContext commandCtx;
+        
         CharStream cs = new ANTLRInputStream(msg);
         
         GastosoCliLexer hl = new GastosoCliLexer(cs);
         
-        final Vocabulary vocabulary = hl.getVocabulary();
-        
-//        hl.getAllTokens().stream().forEach(
-//            t -> System.out.printf(
-//                "<%2d> [%s]: %s \n",
-//                t.getType(),
-//                vocabulary.getDisplayName(t.getType()),
-//                t.getText()
-//            )
-//        );
-//
-//        hl.reset();
-
         CommonTokenStream tokens = new CommonTokenStream(hl);
 
         GastosoCliParser parser = new GastosoCliParser(tokens);
         
-
-        parser.addParseListener(new GastosoCLIListener());
+        parser.setErrorHandler(new BailErrorStrategy());
+        parser.removeErrorListeners();
         
-        parser.setBuildParseTree(true);
-
+        //parser.setBuildParseTree(true);
+        try {
+            commandCtx = parser.command();
+            
+        } catch (ParseCancellationException e){
+            commandCtx = null;
+        }
         
-        ParserRuleContext tree = parser.command();
-        
-//        System.out.println(msg  + " -> " + tree.toStringTree());
-    
+        return commandCtx;
     }
-    
 }

@@ -28,8 +28,8 @@ contaArgs: id (WS textArg)?;
 contasArgs: textArg;
 
 rmArgs: 
-    'conta' WS id
-    |'fato' WS (id | subId);
+    ('fato'|'conta') WS id
+    |'lancamento' WS subId;
 
 gastoGanhoArgs: (dia WS)? textArg WS id WS valor;
 

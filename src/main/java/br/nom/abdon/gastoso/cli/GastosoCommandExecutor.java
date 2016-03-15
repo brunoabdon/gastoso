@@ -16,100 +16,152 @@
  */
 package br.nom.abdon.gastoso.cli;
 
-import br.nom.abdon.gastoso.cli.parser.GastosoCliBaseListener;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import br.nom.abdon.gastoso.cli.DiaHelper.Variante;
-import br.nom.abdon.gastoso.cli.command.Periodo;
 import java.time.Month;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
+
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoPorReferenciaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoSimplesContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContaArgsContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContasArgsContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContasContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaDaSemanaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaDaSemanaPorReferenciaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaSimplesContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoArgsContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoIdContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoSubIdContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatosContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.LineCommandContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesPorReferenciaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesSimplesContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MkFatoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.NomeDePeriodoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutraSemanaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutroPeriodoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeridoComplexoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoDefContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoReferenciadoContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoSemanaContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoSimplesContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmArgsContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.VarianteFemContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.VarianteMascContext;
+import br.nom.abdon.gastoso.cli.util.DiaHelper;
 
 /**
  *
  * @author Bruno Abdon
  */
-public class GastosoCLIListener extends GastosoCliBaseListener{
+public class GastosoCommandExecutor {
 
+    public static enum Variante {PASSADO, QUE_VEM};
+    
     private static final TemporalAdjuster COMECO_DO_MES_ADJSTR = 
         TemporalAdjusters.firstDayOfMonth();
 
     private static final TemporalAdjuster COMECO_DO_ANO_ADJSTR = 
         TemporalAdjusters.firstDayOfYear();
-
     
 
-    @Override
-    public void exitCommand(GastosoCliParser.CommandContext commandCtx) {
-        final GastosoCliParser.LineCommandContext lineCommandCtx = 
-            commandCtx.lineCommand();
+    public void processCommand(CommandContext commandCtx) {
         
-        final GastosoCliParser.FatosContext fatosCtx = lineCommandCtx.fatos();
+        if(commandCtx.exception == null){
+
+            final LineCommandContext lineCommandCtx = 
+                commandCtx.lineCommand();
+            
+            commandLineCommand(lineCommandCtx);
+    
+        }
+    }
+    private void commandLineCommand(
+        final LineCommandContext  lineCommandCtx){
+
+        final FatosContext fatosCtx = lineCommandCtx.fatos();
         if(fatosCtx != null){
             commandFatos(fatosCtx);
             return;
 
-        }  
+            }  
         
         
-        final GastosoCliParser.FatoContext fatoCtx = lineCommandCtx.fato();
+        final FatoContext fatoCtx = lineCommandCtx.fato();
         if(fatoCtx != null){
             commandFato(fatoCtx);
             return;
         } 
         
-        final GastosoCliParser.PeriodoContext periodoCtx = 
+        final PeriodoContext periodoCtx = 
             lineCommandCtx.periodo();
         if(periodoCtx != null){
             commandPeriodo(periodoCtx);
             return;
         }
         
-        final GastosoCliParser.ContasContext contasCtx = 
+        final ContasContext contasCtx = 
             lineCommandCtx.contas();
         if(contasCtx != null){
             commandContas(contasCtx);
             return;
         }
                 
-        final GastosoCliParser.ContaContext contaCtx = lineCommandCtx.conta();
+        final ContaContext contaCtx = lineCommandCtx.conta();
         if(contaCtx != null){
             commandConta(contaCtx);
+            return;
+        }
+        
+        final RmContext rmContext = lineCommandCtx.rm();
+        if(rmContext != null){
+            commandRm(rmContext);
             return;
         }
                 
     }
     
     
-    private void commandFato(GastosoCliParser.FatoContext ctx) {
+    private void commandFato(FatoContext ctx) {
         
-        final GastosoCliParser.FatoArgsContext fatoArgsCtx = ctx.fatoArgs();
+        final FatoArgsContext fatoArgsCtx = ctx.fatoArgs();
         
-        if(fatoArgsCtx instanceof GastosoCliParser.FatoIdContext){
+        if(fatoArgsCtx instanceof FatoIdContext){
 
-            final GastosoCliParser.FatoIdContext fatoIdCtx = 
-                (GastosoCliParser.FatoIdContext) fatoArgsCtx;
+            final FatoIdContext fatoIdCtx = 
+                (FatoIdContext) fatoArgsCtx;
             
             final int fatoId = extractId(fatoIdCtx.id());
             System.out.printf("Exibir fato %d\n",fatoId);
         
-        } else if (fatoArgsCtx instanceof GastosoCliParser.FatoSubIdContext){
+        } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
-            final GastosoCliParser.FatoSubIdContext fatoSubIdCtx = 
-                (GastosoCliParser.FatoSubIdContext) fatoArgsCtx;
+            final FatoSubIdContext fatoSubIdCtx = 
+                (FatoSubIdContext) fatoArgsCtx;
             
-            final GastosoCliParser.SubIdContext subIdCtx = 
+            final SubIdContext subIdCtx = 
                 fatoSubIdCtx.subId();
             
             final int fatoId = Integer.valueOf(subIdCtx.id(0).getText());
             
             final int contaId = Integer.valueOf(subIdCtx.id(1).getText());
             
-            final GastosoCliParser.ValorContext valorCtx = fatoSubIdCtx.valor();
+            final ValorContext valorCtx = fatoSubIdCtx.valor();
             
             if(valorCtx == null){
                 System.out.printf(
@@ -134,29 +186,29 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
                         contaId,
                         valor);
             }
-        } else if(fatoArgsCtx instanceof GastosoCliParser.MkFatoContext){
-            final GastosoCliParser.MkFatoContext mkFatoCtx = 
-                (GastosoCliParser.MkFatoContext) fatoArgsCtx;
+        } else if(fatoArgsCtx instanceof MkFatoContext){
+            final MkFatoContext mkFatoCtx = 
+                (MkFatoContext) fatoArgsCtx;
             
             final String descricao = mkFatoCtx.textArg().getText();
             
-            final GastosoCliParser.DiaContext diaCtx = mkFatoCtx.dia();
+            final DiaContext diaCtx = mkFatoCtx.dia();
             final LocalDate dia = extractDia(diaCtx);
             
             System.out.println(
                 "Criar fato '" 
                 + descricao 
                 + "' no dia " 
-                + dia.format(DateTimeFormatter.ISO_DATE));
+                + dia.format(java.time.format.DateTimeFormatter.ISO_DATE));
         }
     }
     
-    private void commandFatos(GastosoCliParser.FatosContext ctx) {
+    private void commandFatos(FatosContext ctx) {
         System.out.println("Listar fatos do periodo setado");
     }
 
-    private void commandContas(GastosoCliParser.ContasContext contasCtx) {
-        final GastosoCliParser.ContasArgsContext contaArgsCtx = 
+    private void commandContas(ContasContext contasCtx) {
+        final ContasArgsContext contaArgsCtx = 
             contasCtx.contasArgs();
         
         if(contaArgsCtx != null){
@@ -167,11 +219,11 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
         }
     }
 
-    private void commandConta(GastosoCliParser.ContaContext contaCtx) {
-        final GastosoCliParser.ContaArgsContext contaArgsCtx = contaCtx.contaArgs();
+    private void commandConta(ContaContext contaCtx) {
+        final ContaArgsContext contaArgsCtx = contaCtx.contaArgs();
         if(contaArgsCtx != null){
             final int id = extractId(contaArgsCtx.id());
-            final GastosoCliParser.TextArgContext textArgCtx = 
+            final TextArgContext textArgCtx = 
                 contaArgsCtx.textArg();
             
             if(textArgCtx != null){
@@ -186,13 +238,37 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
         }
     }
 
-    private void commandRm(final GastosoCliParser.RmContext rmContext){
-        final GastosoCliParser.RmArgsContext rmArgsCtx = rmContext.rmArgs();
-//        rmArgsCtx.
+    private void commandRm(final RmContext rmContext){
+        final RmArgsContext rmArgsCtx = rmContext.rmArgs();
+        
+        if(rmArgsCtx.getChild(0).getText().charAt(0) == 'l'){ //lancamento
+            //rm lancamento
+            final SubIdContext 
+                subIdContext = rmArgsCtx.subId();
+            
+            int idFato = extractId(subIdContext.id(0));
+            int idConta = extractId(subIdContext.id(1));
+            
+            System.out.printf(
+                "remover lancamento da conta %4d no fato %4d\n",
+                idConta,
+                idFato
+            );
+            
+        } else {
+
+            final int id = extractId(rmArgsCtx.id());
+
+            if(rmArgsCtx.getChild(0).getText().charAt(0) == 'c'){ //conta
+                System.out.printf("remover conta %4d\n",id);
+            } else {
+                System.out.printf("remover fato %4d\n",id);
+            }
+        }
     }
     
-    private void commandPeriodo(GastosoCliParser.PeriodoContext ctx){
-        final GastosoCliParser.PeriodoDefContext periodoDefCtx = 
+    private void commandPeriodo(PeriodoContext ctx){
+        final PeriodoDefContext periodoDefCtx = 
             ctx.periodoDef();
         
         final Periodo periodo;
@@ -200,7 +276,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
         if(periodoDefCtx == null){
             System.out.println("Dizer qual o periodo setado");
         } else {
-            final GastosoCliParser.PeriodoSimplesContext periodoSimplesCtx = 
+            final PeriodoSimplesContext periodoSimplesCtx = 
                 periodoDefCtx.periodoSimples();
             periodo = periodoSimplesCtx != null
                 ? extractPeriodo(periodoSimplesCtx)
@@ -216,7 +292,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
     
 
-    private LocalDate extractDia(GastosoCliParser.DiaContext diaCtx) {
+    private LocalDate extractDia(DiaContext diaCtx) {
         final LocalDate dia;
     
         if(diaCtx == null){
@@ -224,20 +300,20 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
             
         } else {
         
-            final GastosoCliParser.DiaSimplesContext diaSimplesCtx = 
+            final DiaSimplesContext diaSimplesCtx = 
                 diaCtx.diaSimples();
         
             if(diaSimplesCtx != null){
                 dia = extractDia(diaSimplesCtx);
             } else {
                 
-                final GastosoCliParser.DiaDaSemanaContext diaDaSemanaCtx = 
+                final DiaDaSemanaContext diaDaSemanaCtx = 
                     diaCtx.diaDaSemana();
 
                 if(diaDaSemanaCtx != null){
                     dia = extractDia(diaDaSemanaCtx);
                 } else {
-                    final GastosoCliParser.DiaDaSemanaPorReferenciaContext 
+                    final DiaDaSemanaPorReferenciaContext 
                         diaDaSemanaRefCtx = diaCtx.diaDaSemanaPorReferencia();
 
                         dia = extractDia(diaDaSemanaRefCtx);
@@ -248,7 +324,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
         return dia;
     }
 
-    private LocalDate extractDia(GastosoCliParser.DiaSimplesContext diaSimplesCtx) {
+    private LocalDate extractDia(DiaSimplesContext diaSimplesCtx) {
 
         final LocalDate hoje = LocalDate.now();
         
@@ -268,7 +344,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private LocalDate extractDia(
-            final GastosoCliParser.DiaDaSemanaContext diaDaSemanaCtx) {
+            final DiaDaSemanaContext diaDaSemanaCtx) {
 
         return 
             LocalDate.now().with(
@@ -278,7 +354,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private DayOfWeek extractDiaDaSemana(
-            final  GastosoCliParser.DiaDaSemanaContext diaDaSemanaCtx) {
+            final  DiaDaSemanaContext diaDaSemanaCtx) {
         
         return pick(DayOfWeek.values(), 
                 diaDaSemanaCtx.SEG(),
@@ -291,7 +367,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private LocalDate extractDia(
-        GastosoCliParser.DiaDaSemanaPorReferenciaContext diaDaSemanaRefCtx) {
+        DiaDaSemanaPorReferenciaContext diaDaSemanaRefCtx) {
 
         final DayOfWeek diaDaSemana = 
             extractDiaDaSemana(diaDaSemanaRefCtx.diaDaSemana());
@@ -307,7 +383,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private Variante extractVariante(
-            GastosoCliParser.VarianteMascContext varianteMascCtx) {
+            VarianteMascContext varianteMascCtx) {
         
         return varianteMascCtx.PASSADO() != null
                 ? Variante.PASSADO 
@@ -315,7 +391,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private Variante extractVariante(
-            GastosoCliParser.VarianteFemContext varianteFemCtx) {
+            VarianteFemContext varianteFemCtx) {
 
         return varianteFemCtx.PASSADA() != null
                 ? Variante.PASSADO 
@@ -323,7 +399,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }    
 
     private Periodo extractPeriodo(
-            final GastosoCliParser.PeridoComplexoContext peridoComplexo) {
+            final PeridoComplexoContext peridoComplexo) {
         final LocalDate inicio = 
             extractPeriodo(peridoComplexo.periodoSimples(0)).getDataMinima();
 
@@ -334,25 +410,25 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private Periodo extractPeriodo(
-            final GastosoCliParser.PeriodoSimplesContext periodoSimplesCtx) {
+            final PeriodoSimplesContext periodoSimplesCtx) {
         
         final Periodo periodo;
         
-        final GastosoCliParser.AnoContext anoCtx = periodoSimplesCtx.ano();
+        final AnoContext anoCtx = periodoSimplesCtx.ano();
         if(anoCtx != null){
             periodo = extractPeriodo(anoCtx);
         } else {
-            final GastosoCliParser.DiaContext diaCtx = periodoSimplesCtx.dia();
+            final DiaContext diaCtx = periodoSimplesCtx.dia();
             if(diaCtx != null){
                 periodo = extractPeriodo(diaCtx);
             } else {
-                final GastosoCliParser.MesContext mesCtx = 
+                final MesContext mesCtx = 
                     periodoSimplesCtx.mes();
                 
                 if(mesCtx != null){
                     periodo = extractPeriodo(mesCtx);
                 } else {
-                    final GastosoCliParser.PeriodoReferenciadoContext 
+                    final PeriodoReferenciadoContext 
                             periodoReferenciadoCtx = 
                                 periodoSimplesCtx.periodoReferenciado();
                     if(periodoReferenciadoCtx != null){
@@ -367,17 +443,17 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
         return periodo;
     }
 
-    private Periodo extractPeriodo(final GastosoCliParser.DiaContext diaCtx) {
+    private Periodo extractPeriodo(final DiaContext diaCtx) {
         final LocalDate dia = extractDia(diaCtx);
         return new Periodo(dia, dia);
     }
 
-    private Periodo extractPeriodo(GastosoCliParser.AnoContext anoCtx) {
+    private Periodo extractPeriodo(AnoContext anoCtx) {
         
-        final GastosoCliParser.AnoPorReferenciaContext anoRefCtx = 
+        final AnoPorReferenciaContext anoRefCtx = 
             anoCtx.anoPorReferencia();
         
-        final GastosoCliParser.AnoSimplesContext anoSimplesContext;
+        final AnoSimplesContext anoSimplesContext;
         final Variante variante;
         
         if(anoRefCtx != null){
@@ -401,11 +477,11 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
             new Periodo(inicio, inicio.with(TemporalAdjusters.lastDayOfYear()));
     }
 
-    private Periodo extractPeriodo(GastosoCliParser.MesContext mesCtx) {
-        final GastosoCliParser.MesPorReferenciaContext mesRefCtx = 
+    private Periodo extractPeriodo(MesContext mesCtx) {
+        final MesPorReferenciaContext mesRefCtx = 
             mesCtx.mesPorReferencia();
         
-        final GastosoCliParser.MesSimplesContext mesSimplesCtx;
+        final MesSimplesContext mesSimplesCtx;
         final Variante variante;
         
         if(mesRefCtx != null){
@@ -433,13 +509,13 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private Periodo extractPeriodo(
-            final GastosoCliParser.PeriodoReferenciadoContext 
+            final PeriodoReferenciadoContext 
                     periodoReferenciadoCtx) {
 
-        final GastosoCliParser.OutroPeriodoContext outroPeriodoCtx = 
+        final OutroPeriodoContext outroPeriodoCtx = 
             periodoReferenciadoCtx.outroPeriodo();
         
-        final GastosoCliParser.NomeDePeriodoContext nomeDePeriodoCtx;
+        final NomeDePeriodoContext nomeDePeriodoCtx;
         final Variante variante;
 
         if(outroPeriodoCtx != null){
@@ -455,7 +531,7 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private Periodo extractPeriodo(
-            final GastosoCliParser.NomeDePeriodoContext nomeDePeriodoCtx,
+            final NomeDePeriodoContext nomeDePeriodoCtx,
             final Variante variante) {
         
         final LocalDate inicio;
@@ -501,9 +577,9 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
     }
 
     private Periodo extractPeriodo(
-        final GastosoCliParser.PeriodoSemanaContext periodoSemanaCtx) {
+        final PeriodoSemanaContext periodoSemanaCtx) {
         
-        final GastosoCliParser.OutraSemanaContext outraSemanaCtx = 
+        final OutraSemanaContext outraSemanaCtx = 
             periodoSemanaCtx.outraSemana();
         
         final LocalDate inicio = LocalDate.now().with(
@@ -522,12 +598,12 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
                 inicio.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
     }
 
-    private int extractId(final GastosoCliParser.IdContext idContext){
+    private int extractId(final IdContext idContext){
         return Integer.valueOf(idContext.getText());
     }
     
     private Month extractMes(
-            final GastosoCliParser.MesSimplesContext mesSimplesCtx) {
+            final MesSimplesContext mesSimplesCtx) {
         return pick(
             Month.values(),
             mesSimplesCtx.JAN(),
@@ -551,6 +627,4 @@ public class GastosoCLIListener extends GastosoCliBaseListener{
         }
         return values[i];
     }
-
-    
 }

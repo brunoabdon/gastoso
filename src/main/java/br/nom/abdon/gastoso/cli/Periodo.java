@@ -16,15 +16,35 @@
  */
 package br.nom.abdon.gastoso.cli;
 
-import br.nom.abdon.gastoso.cli.command.Periodo;
+import java.time.LocalDate;
 
 /**
  *
  * @author Bruno Abdon
  */
-public class GastosoShellSession {
-    
-    //sessao / contexto
-    private Periodo periodo;
-    
+public class Periodo {
+
+    private LocalDate dataMinima;
+    private LocalDate dataMaxima;
+
+    public Periodo(final LocalDate dataMinima, final LocalDate dataMaxima) {
+        this.dataMinima = dataMinima;
+        this.dataMaxima = dataMaxima;
+    }
+
+    public LocalDate getDataMinima() {
+        return dataMinima;
+    }
+
+    public void setDataMinima(final LocalDate dataMinima) {
+        this.dataMinima = dataMinima;
+    }
+
+    public LocalDate getDataMaxima() {
+        return dataMaxima;
+    }
+
+    public void setDataMaxima(final LocalDate dataMaxima) {
+        this.dataMaxima = dataMaxima;
+    }
 }
