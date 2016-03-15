@@ -109,26 +109,26 @@ ANTE_ONTEM: 'ante-ontem';
 DE_HOJE_A_OITO: 'de hoje a oito';
 DE_HOJE_A_QUINZE: 'de hoje a quinze';
 
-JAN: 'janeiro' | 'Janeiro' | 'JANEIRO' | 'jan' | 'JAN'; //qnd tiver paciencia, fazer pro outros...
-FEV: 'fevereiro';
-MAR: 'marco';
-ABR: 'abril';
-MAI: 'maio';
-JUN: 'junho';
-JUL: 'julho';
-AGO: 'agosto';
-SET: 'setembro';
-OUT: 'outubro';
-NOV: 'novembro';
-DEZ: 'dezembro';
+JAN: 'janeiro'   | 'Janeiro'   | 'JANEIRO'   | 'jan' | 'JAN';
+FEV: 'fevereiro' | 'Fevereiro' | 'FEVEREIRO' | 'fev' | 'FEV';
+MAR: 'marco'     | 'Marco'     | 'MARCO'     | 'mar' | 'MAR' | 'Março' | 'MARÇO' ;
+ABR: 'abril'     | 'Abril'     | 'ABRIL'     | 'abr' | 'ABR';
+MAI: 'maio'      | 'Maio'      | 'MAIO'      | 'mai' | 'MAI';
+JUN: 'junho'     | 'Junho'     | 'JUNHO'     | 'jun' | 'JUN';
+JUL: 'julho'     | 'Julho'     | 'JULHO'     | 'jul' | 'JUL';
+AGO: 'agosto'    | 'Agosto'    | 'AGOSTO'    | 'ago' | 'AGO';
+SET: 'setembro'  | 'Setembro'  | 'SETEMBRO'  | 'set' | 'SET';
+OUT: 'outubro'   | 'Outubro'   | 'OUTUBRO'   | 'out' | 'OUT';
+NOV: 'novembro'  | 'Novembro'  | 'NOVEMBRO'  | 'nov' | 'NOV';
+DEZ: 'dezembro'  | 'Dezembro'  | 'DEZEMBRO'  | 'dez' | 'DEZ';
 
-DOM: 'Domingo' | 'domingo' | 'dom';
-SEG: 'Segunda' | 'segunda' | 'seg';
-TER: 'Terca' | 'terca' | 'ter';
-QUA: 'Quarta' | 'quarta' | 'qua';
-QUI: 'Quinta' | 'quinta' | 'qui';
-SEX: 'Sexta' | 'sexta' | 'sex';
-SAB: 'Sabado' | 'sabado' | 'sab';
+DOM: 'Domingo' | 'domingo' | 'dom' | 'DOM'  | 'DOMINGO';
+SEG: 'Segunda' | 'segunda' | 'seg' | 'SEG'  | 'SEGUNDA';
+TER: 'Terca'   | 'terca'   | 'ter' | 'TER'  | 'TERCA'   | 'Terça'  | 'terça' | 'TERÇA' ;
+QUA: 'Quarta'  | 'quarta'  | 'qua' | 'QUA'  | 'QUARTA';
+QUI: 'Quinta'  | 'quinta'  | 'qui' | 'QUI'  | 'QUINTA';
+SEX: 'Sexta'   | 'sexta'   | 'sex' | 'SEX'  | 'SEXTA';
+SAB: 'Sabado'  | 'sabado'  | 'sab' | 'SAB'  | 'SABADO'  | 'Sábado' | 'sábado' |'SÁBADO';
 
 ANO: 'ano';
 MES: 'mes';
@@ -146,8 +146,6 @@ PASSADO: 'passado';
 
 ATE: 'a' | 'ate';
 
-
-
 fragment ALPHA: [a-zA-Z];
 fragment DIGIT: '0'..'9';
 fragment ASPAS: '\'' | '"';
@@ -156,7 +154,6 @@ INT: DIGIT+;
 CENTAVOS: ',' DIGIT DIGIT;
 MENOS: '-';
 WORD: ALPHA (ALPHA|DIGIT)*;
-
 
 TEXT: ASPAS (WS | . )+ ASPAS;
 
