@@ -212,22 +212,35 @@ public class GastosoCommandExecutor {
             contasCtx.contasArgs();
         
         if(contaArgsCtx != null){
-            String filtro = contaArgsCtx.textArg().getText();
+            
+            final String filtro = extractText(contaArgsCtx.textArg());
+            
             System.out.println("Listar contas, filtrando por \""+ filtro +"\"");
         } else {
             System.out.println("Listar todas as contas");
         }
     }
 
+    private String extractText(final TextArgContext textArg) {
+        String text;
+        final TerminalNode textNode = textArg.TEXT();
+        if(textNode != null){
+            text = textNode.getText();
+            text = text.substring(1,text.length()-1);
+        } else {
+            text = textArg.WORD().getText();
+        }
+        return text;
+    }
+
     private void commandConta(ContaContext contaCtx) {
         final ContaArgsContext contaArgsCtx = contaCtx.contaArgs();
         if(contaArgsCtx != null){
             final int id = extractId(contaArgsCtx.id());
-            final TextArgContext textArgCtx = 
-                contaArgsCtx.textArg();
+            final TextArgContext textArgCtx = contaArgsCtx.textArg();
             
             if(textArgCtx != null){
-                String nomeConta = textArgCtx.getText();
+                final String nomeConta = extractText(textArgCtx);
                 System.out.printf(
                     "Setar o nome da conta de id %3d pra \"%s\"\n",
                     id,
