@@ -17,8 +17,11 @@
 package br.nom.abdon.gastoso.cli;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -55,14 +58,17 @@ import br.nom.abdon.gastoso.system.GastosoSystem;
  */
 public class GastosoCharacterCommand {
 
-    private final Writer writer;
+    private final PrintWriter writer;
     private final GastosoSystem gastosoSystem;
-
+    private Periodo periodo;
+    
     public GastosoCharacterCommand(
             final GastosoSystem gastosoSystem, 
             final Writer writer) {
+
         this.gastosoSystem = gastosoSystem;
-        this.writer = writer;
+        this.writer = new PrintWriter(writer);
+        this.periodo = essaSemana();
     }
     
     public boolean command(final String commandLine) throws IOException{
@@ -282,22 +288,36 @@ public class GastosoCharacterCommand {
     }
     
     private void commandPeriodo(PeriodoContext ctx){
-        final PeriodoDefContext periodoDefCtx = 
-            ctx.periodoDef();
+        final PeriodoDefContext periodoDefCtx = ctx.periodoDef();
         
-        final Periodo periodo;
-        
-        if(periodoDefCtx == null){
-            System.out.println("Dizer qual o periodo setado");
-        } else {
-            periodo = CtxReader.extract(periodoDefCtx);
-            
-            System.out.println(
-                "setando periodo para entre " 
-                    + periodo.getDataMinima()
-                    + " e "
-                    + periodo.getDataMaxima());
+        if(periodoDefCtx != null){
+            this.periodo = CtxReader.extract(periodoDefCtx);
         }
+        printPeriodo();
     }
 
+    private void printPeriodo() {
+        writer.printf(
+            "De %s a %s\n",
+            this.periodo
+            .getDataMinima()
+            .format(java.time.format.DateTimeFormatter.ISO_DATE),
+
+            this.periodo
+            .getDataMaxima()
+            .format(java.time.format.DateTimeFormatter.ISO_DATE)
+        );
+    }
+    
+    private Periodo essaSemana() {
+        final LocalDate domingoPassado =
+                LocalDate.now()
+                        .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        
+        final LocalDate proximoSabado =
+                domingoPassado.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+        
+        return new Periodo(domingoPassado, proximoSabado);
+    }
+    
 }
