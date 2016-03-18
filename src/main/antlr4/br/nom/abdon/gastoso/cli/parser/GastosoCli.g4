@@ -23,7 +23,10 @@ fatoArgs:
     | (dia WS)? textArg    #mkFato
 ;
 
-contaArgs: id (WS textArg)?;
+contaArgs: 
+    id (WS textArg)?
+    |textArg
+;
 
 contasArgs: textArg;
 

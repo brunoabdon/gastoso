@@ -223,20 +223,32 @@ public class GastosoCharacterCommand {
     }
 
     private void commandConta(ContaContext contaCtx) {
+        
         final ContaArgsContext contaArgsCtx = contaCtx.contaArgs();
-        if(contaArgsCtx != null){
-            final int id = CtxReader.extractId(contaArgsCtx.id());
-            final TextArgContext textArgCtx = contaArgsCtx.textArg();
-            
-            if(textArgCtx != null){
-                final String nomeConta = CtxReader.extractText(textArgCtx);
+        final GastosoCliParser.IdContext idContext = contaArgsCtx.id();
+        final TextArgContext textArgCtx = contaArgsCtx.textArg();
+
+        final Integer id = 
+            idContext != null
+                ? CtxReader.extractId(idContext)
+                : null;
+        
+        final String nome = 
+            textArgCtx != null
+                ? CtxReader.extractText(textArgCtx)
+                : null;
+
+        if(id != null){
+            if(nome != null){ // id e nome nao nulos
                 System.out.printf(
                     "Setar o nome da conta de id %3d pra \"%s\"\n",
                     id,
-                    nomeConta);
-            } else {
+                    nome);
+            } else { //nome nulo e id nao nulo
                 System.out.printf("Exibir conta de id %3d\n",id);
             }
+        } else { //id nulo (e nome tem que ter sido nao nulo. gramatica garante)
+            System.out.printf("Criar conta  \"%s\"\n",nome);
         }
     }
 
