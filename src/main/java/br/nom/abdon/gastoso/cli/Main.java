@@ -1,16 +1,15 @@
 package br.nom.abdon.gastoso.cli;
 
-import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
 
-import java.io.Console;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
+import jline.TerminalFactory;
+import jline.console.ConsoleReader;
+
+import br.nom.abdon.gastoso.restclient.GastosoRestClient;
+import br.nom.abdon.gastoso.system.GastosoSystem;
+import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 
 /**
  *
@@ -19,52 +18,74 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 public class Main {
     
     public static void main(String[] args) {        
-        
-        GastosoCommandExecutor cLICommand = new GastosoCommandExecutor();
-        
-        Console console = System.console();
 
-        String line;
-        while((line = console.readLine("parser> ")) != null){
-            
-            if("exit".equals(line)){
-                System.out.println("Bye bye");
-                System.exit(0);
+        ConsoleReader console = null;
+        
+        try {
+        
+            console = new ConsoleReader();
+    
+            final GastosoSystem gastosoSystem = inicializaSistema(console);
+
+            final GastosoCharacterCommand gastosoCharacterCommand = 
+                new GastosoCharacterCommand(gastosoSystem, console.getOutput());
+
+            String line;
+            while((line = console.readLine()) != null
+                    && !"exit".equals(line)){
+                
+                gastosoCharacterCommand.command(line);
             }
             
-            final CommandContext commandCtx = parse(line);
-
-            if(commandCtx == null){
-                System.out.println("Não entendi");
-            } else {
-                cLICommand.processCommand(commandCtx);
-            }
+            console.println("Bye bye");
+            
+        } catch (IOException ex) {
+            System.err.printf("Deu ruim!\n%s\n", ex.getLocalizedMessage());
+        } finally {
+            if(console != null) console.shutdown();
+            try {
+                TerminalFactory.get().restore();
+            } catch (Exception e) {
+                System.err.printf("Estranho.... \n%s\n", e.getMessage());
+            }            
         }
     }
-    
-    private static CommandContext parse(String msg){
-        
-        CommandContext commandCtx;
-        
-        CharStream cs = new ANTLRInputStream(msg);
-        
-        GastosoCliLexer hl = new GastosoCliLexer(cs);
-        
-        CommonTokenStream tokens = new CommonTokenStream(hl);
 
-        GastosoCliParser parser = new GastosoCliParser(tokens);
+    private static GastosoSystem inicializaSistema(final ConsoleReader console) 
+        throws GastosoSystemRTException, IOException {
+
+        //inicializacao vai setar servidor web, provavelmente atraves de
+        //parametros no args ou por variaveis de ambiente...
+        final GastosoSystem gastosoSystem = new GastosoRestClient();
         
-        parser.setErrorHandler(new BailErrorStrategy());
-        parser.removeErrorListeners();
-        
-        //parser.setBuildParseTree(true);
-        try {
-            commandCtx = parser.command();
-            
-        } catch (ParseCancellationException e){
-            commandCtx = null;
+        final PrintWriter writer = new PrintWriter(console.getOutput());
+
+        boolean conseguiu = false;
+        int tentativasSobrando = 3;
+        while(!conseguiu && tentativasSobrando > 0){
+            console.setEchoCharacter('*');
+            String password = console.readLine("Senha:");
+            conseguiu = gastosoSystem.login("", String.valueOf(password));
+            if(conseguiu){
+                console.setEchoCharacter(null);
+                console.setPrompt("gastoso>");
+                printWellcome(writer);
+            } else if(--tentativasSobrando > 0){
+                writer.println("Foi mal. Tá errada.");
+            } else {
+                writer.println("Não rolou não.");
+                System.exit(1);
+            }
         }
         
-        return commandCtx;
+        return gastosoSystem;
+    }
+    
+    private static void printWellcome(PrintWriter writer) {
+        writer.println(
+                "   ____           _\n  / ___| __ _ ___| |_ ___  ___  ___\n"
+                + " | |  _ / _` / __| __/ _ \\/ __|/ _ \\\n"
+                + " | |_| | (_| \\__ \\ || (_) \\__ \\ (_) |\n"
+                + "  \\____|\\__,_|___/\\__\\___/|___/\\___/\n");
     }
 }

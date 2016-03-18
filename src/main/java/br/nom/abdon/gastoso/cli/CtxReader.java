@@ -27,41 +27,24 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoPorReferenciaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoSimplesContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContaArgsContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContasArgsContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContasContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaDaSemanaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaDaSemanaPorReferenciaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaSimplesContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoArgsContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoIdContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatoSubIdContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.FatosContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.LineCommandContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesPorReferenciaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesSimplesContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MkFatoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.NomeDePeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutraSemanaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutroPeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeridoComplexoContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoDefContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoReferenciadoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoSemanaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoSimplesContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmArgsContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.VarianteFemContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.VarianteMascContext;
 import br.nom.abdon.gastoso.cli.util.DiaHelper;
 
@@ -69,9 +52,8 @@ import br.nom.abdon.gastoso.cli.util.DiaHelper;
  *
  * @author Bruno Abdon
  */
-public class GastosoCommandExecutor {
-
-    public static enum Variante {PASSADO, QUE_VEM};
+class CtxReader {
+     static enum Variante {PASSADO, QUE_VEM};
     
     private static final TemporalAdjuster COMECO_DO_MES_ADJSTR = 
         TemporalAdjusters.firstDayOfMonth();
@@ -79,149 +61,7 @@ public class GastosoCommandExecutor {
     private static final TemporalAdjuster COMECO_DO_ANO_ADJSTR = 
         TemporalAdjusters.firstDayOfYear();
     
-
-    public void processCommand(CommandContext commandCtx) {
-        
-        if(commandCtx.exception == null){
-
-            final LineCommandContext lineCommandCtx = 
-                commandCtx.lineCommand();
-            
-            commandLineCommand(lineCommandCtx);
-    
-        }
-    }
-    private void commandLineCommand(
-        final LineCommandContext  lineCommandCtx){
-
-        final FatosContext fatosCtx = lineCommandCtx.fatos();
-        if(fatosCtx != null){
-            commandFatos(fatosCtx);
-            return;
-
-            }  
-        
-        
-        final FatoContext fatoCtx = lineCommandCtx.fato();
-        if(fatoCtx != null){
-            commandFato(fatoCtx);
-            return;
-        } 
-        
-        final PeriodoContext periodoCtx = 
-            lineCommandCtx.periodo();
-        if(periodoCtx != null){
-            commandPeriodo(periodoCtx);
-            return;
-        }
-        
-        final ContasContext contasCtx = 
-            lineCommandCtx.contas();
-        if(contasCtx != null){
-            commandContas(contasCtx);
-            return;
-        }
-                
-        final ContaContext contaCtx = lineCommandCtx.conta();
-        if(contaCtx != null){
-            commandConta(contaCtx);
-            return;
-        }
-        
-        final RmContext rmContext = lineCommandCtx.rm();
-        if(rmContext != null){
-            commandRm(rmContext);
-            return;
-        }
-                
-    }
-    
-    
-    private void commandFato(FatoContext ctx) {
-        
-        final FatoArgsContext fatoArgsCtx = ctx.fatoArgs();
-        
-        if(fatoArgsCtx instanceof FatoIdContext){
-
-            final FatoIdContext fatoIdCtx = 
-                (FatoIdContext) fatoArgsCtx;
-            
-            final int fatoId = extractId(fatoIdCtx.id());
-            System.out.printf("Exibir fato %d\n",fatoId);
-        
-        } else if (fatoArgsCtx instanceof FatoSubIdContext){
-
-            final FatoSubIdContext fatoSubIdCtx = 
-                (FatoSubIdContext) fatoArgsCtx;
-            
-            final SubIdContext subIdCtx = 
-                fatoSubIdCtx.subId();
-            
-            final int fatoId = Integer.valueOf(subIdCtx.id(0).getText());
-            
-            final int contaId = Integer.valueOf(subIdCtx.id(1).getText());
-            
-            final ValorContext valorCtx = fatoSubIdCtx.valor();
-            
-            if(valorCtx == null){
-                System.out.printf(
-                    "Exibir o valor do lancamento do fato = %d e conta %d\n",
-                        fatoId,
-                        contaId);
-            } else {
-                
-                int valor = (Integer.parseInt(valorCtx.INT().getText()) * 100);
-                
-                final TerminalNode centavosTerm = valorCtx.CENTAVOS();
-                if(centavosTerm != null){
-                    valor += 
-                        Integer.parseInt(centavosTerm.getText().substring(1));
-                }
-
-                if(valorCtx.MENOS() != null) valor *= -1;
-                
-                System.out.printf(
-                    "Setar valor do lancamento do fato = %d e conta %d pra %d\n",
-                        fatoId,
-                        contaId,
-                        valor);
-            }
-        } else if(fatoArgsCtx instanceof MkFatoContext){
-            final MkFatoContext mkFatoCtx = 
-                (MkFatoContext) fatoArgsCtx;
-            
-            final String descricao = mkFatoCtx.textArg().getText();
-            
-            final DiaContext diaCtx = mkFatoCtx.dia();
-            final LocalDate dia = extractDia(diaCtx);
-            
-            System.out.println(
-                "Criar fato '" 
-                + descricao 
-                + "' no dia " 
-                + dia.format(java.time.format.DateTimeFormatter.ISO_DATE));
-        }
-    }
-    
-    private void commandFatos(FatosContext ctx) {
-        System.out.println("Listar fatos do periodo setado");
-    }
-
-    private void commandContas(ContasContext contasCtx) {
-        final ContasArgsContext contaArgsCtx = 
-            contasCtx.contasArgs();
-        
-        if(contaArgsCtx != null){
-            
-            final String filtro = extractText(contaArgsCtx.textArg());
-            
-            System.out.println("Listar contas, filtrando por \""+ filtro +"\"");
-        } else {
-            System.out.println("Listar todas as contas");
-        }
-    }
-
-    private String extractText(final TextArgContext textArg) {
+    public static String extractText(final TextArgContext textArg) {
         String text;
         final TerminalNode textNode = textArg.TEXT();
         if(textNode != null){
@@ -232,80 +72,8 @@ public class GastosoCommandExecutor {
         }
         return text;
     }
-
-    private void commandConta(ContaContext contaCtx) {
-        final ContaArgsContext contaArgsCtx = contaCtx.contaArgs();
-        if(contaArgsCtx != null){
-            final int id = extractId(contaArgsCtx.id());
-            final TextArgContext textArgCtx = contaArgsCtx.textArg();
-            
-            if(textArgCtx != null){
-                final String nomeConta = extractText(textArgCtx);
-                System.out.printf(
-                    "Setar o nome da conta de id %3d pra \"%s\"\n",
-                    id,
-                    nomeConta);
-            } else {
-                System.out.printf("Exibir conta de id %3d\n",id);
-            }
-        }
-    }
-
-    private void commandRm(final RmContext rmContext){
-        final RmArgsContext rmArgsCtx = rmContext.rmArgs();
-        
-        if(rmArgsCtx.getChild(0).getText().charAt(0) == 'l'){ //lancamento
-            //rm lancamento
-            final SubIdContext 
-                subIdContext = rmArgsCtx.subId();
-            
-            int idFato = extractId(subIdContext.id(0));
-            int idConta = extractId(subIdContext.id(1));
-            
-            System.out.printf(
-                "remover lancamento da conta %4d no fato %4d\n",
-                idConta,
-                idFato
-            );
-            
-        } else {
-
-            final int id = extractId(rmArgsCtx.id());
-
-            if(rmArgsCtx.getChild(0).getText().charAt(0) == 'c'){ //conta
-                System.out.printf("remover conta %4d\n",id);
-            } else {
-                System.out.printf("remover fato %4d\n",id);
-            }
-        }
-    }
     
-    private void commandPeriodo(PeriodoContext ctx){
-        final PeriodoDefContext periodoDefCtx = 
-            ctx.periodoDef();
-        
-        final Periodo periodo;
-        
-        if(periodoDefCtx == null){
-            System.out.println("Dizer qual o periodo setado");
-        } else {
-            final PeriodoSimplesContext periodoSimplesCtx = 
-                periodoDefCtx.periodoSimples();
-            periodo = periodoSimplesCtx != null
-                ? extractPeriodo(periodoSimplesCtx)
-                : extractPeriodo(periodoDefCtx.peridoComplexo());
-            
-            System.out.println(
-                "setando periodo para entre " 
-                    + periodo.getDataMinima()
-                    + " e "
-                    + periodo.getDataMaxima());
-            
-        }
-    }
-    
-
-    private LocalDate extractDia(DiaContext diaCtx) {
+    public static LocalDate extractDia(DiaContext diaCtx) {
         final LocalDate dia;
     
         if(diaCtx == null){
@@ -337,7 +105,21 @@ public class GastosoCommandExecutor {
         return dia;
     }
 
-    private LocalDate extractDia(DiaSimplesContext diaSimplesCtx) {
+    public static int extract(final ValorContext valorCtx)  {
+        int valor = (Integer.parseInt(valorCtx.INT().getText()) * 100);
+        
+        final TerminalNode centavosTerm = valorCtx.CENTAVOS();
+        
+        if(centavosTerm != null){
+            valor += Integer.parseInt(centavosTerm.getText().substring(1));
+        }
+        
+        if(valorCtx.MENOS() != null) valor *= -1;
+        
+        return valor;
+    }
+    
+    private static LocalDate extractDia(DiaSimplesContext diaSimplesCtx) {
 
         final LocalDate hoje = LocalDate.now();
         
@@ -356,7 +138,7 @@ public class GastosoCommandExecutor {
                                 : hoje.plusDays(14);
     }
 
-    private LocalDate extractDia(
+    private static LocalDate extractDia(
             final DiaDaSemanaContext diaDaSemanaCtx) {
 
         return 
@@ -366,7 +148,7 @@ public class GastosoCommandExecutor {
         
     }
 
-    private DayOfWeek extractDiaDaSemana(
+    private static DayOfWeek extractDiaDaSemana(
             final  DiaDaSemanaContext diaDaSemanaCtx) {
         
         return pick(DayOfWeek.values(), 
@@ -379,7 +161,7 @@ public class GastosoCommandExecutor {
                 diaDaSemanaCtx.DOM());
     }
 
-    private LocalDate extractDia(
+    private static LocalDate extractDia(
         DiaDaSemanaPorReferenciaContext diaDaSemanaRefCtx) {
 
         final DayOfWeek diaDaSemana = 
@@ -395,7 +177,7 @@ public class GastosoCommandExecutor {
                     : TemporalAdjusters.previous(diaDaSemana));       
     }
 
-    private Variante extractVariante(
+    private static Variante extractVariante(
             VarianteMascContext varianteMascCtx) {
         
         return varianteMascCtx.PASSADO() != null
@@ -403,15 +185,17 @@ public class GastosoCommandExecutor {
                 : Variante.QUE_VEM;
     }
 
-    private Variante extractVariante(
-            VarianteFemContext varianteFemCtx) {
-
-        return varianteFemCtx.PASSADA() != null
-                ? Variante.PASSADO 
-                : Variante.QUE_VEM;
-    }    
-
-    private Periodo extractPeriodo(
+    public static Periodo extract(final PeriodoDefContext periodoDefCtx) {
+        
+        final PeriodoSimplesContext periodoSimplesCtx =
+                periodoDefCtx.periodoSimples();
+        
+        return periodoSimplesCtx != null
+                ? CtxReader.extractPeriodo(periodoSimplesCtx)
+                : CtxReader.extractPeriodo(periodoDefCtx.peridoComplexo());
+    }
+    
+    private static Periodo extractPeriodo(
             final PeridoComplexoContext peridoComplexo) {
         final LocalDate inicio = 
             extractPeriodo(peridoComplexo.periodoSimples(0)).getDataMinima();
@@ -422,7 +206,7 @@ public class GastosoCommandExecutor {
         return new Periodo(inicio, fim);
     }
 
-    private Periodo extractPeriodo(
+    private static Periodo extractPeriodo(
             final PeriodoSimplesContext periodoSimplesCtx) {
         
         final Periodo periodo;
@@ -456,12 +240,12 @@ public class GastosoCommandExecutor {
         return periodo;
     }
 
-    private Periodo extractPeriodo(final DiaContext diaCtx) {
+    private static Periodo extractPeriodo(final DiaContext diaCtx) {
         final LocalDate dia = extractDia(diaCtx);
         return new Periodo(dia, dia);
     }
 
-    private Periodo extractPeriodo(AnoContext anoCtx) {
+    private static Periodo extractPeriodo(AnoContext anoCtx) {
         
         final AnoPorReferenciaContext anoRefCtx = 
             anoCtx.anoPorReferencia();
@@ -490,7 +274,7 @@ public class GastosoCommandExecutor {
             new Periodo(inicio, inicio.with(TemporalAdjusters.lastDayOfYear()));
     }
 
-    private Periodo extractPeriodo(MesContext mesCtx) {
+    private static Periodo extractPeriodo(MesContext mesCtx) {
         final MesPorReferenciaContext mesRefCtx = 
             mesCtx.mesPorReferencia();
         
@@ -521,7 +305,7 @@ public class GastosoCommandExecutor {
         
     }
 
-    private Periodo extractPeriodo(
+    private static Periodo extractPeriodo(
             final PeriodoReferenciadoContext 
                     periodoReferenciadoCtx) {
 
@@ -543,7 +327,7 @@ public class GastosoCommandExecutor {
         return extractPeriodo(nomeDePeriodoCtx,variante);
     }
 
-    private Periodo extractPeriodo(
+    private static Periodo extractPeriodo(
             final NomeDePeriodoContext nomeDePeriodoCtx,
             final Variante variante) {
         
@@ -589,7 +373,7 @@ public class GastosoCommandExecutor {
         return new Periodo(inicio, fim);
     }
 
-    private Periodo extractPeriodo(
+    private static Periodo extractPeriodo(
         final PeriodoSemanaContext periodoSemanaCtx) {
         
         final OutraSemanaContext outraSemanaCtx = 
@@ -611,11 +395,11 @@ public class GastosoCommandExecutor {
                 inicio.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
     }
 
-    private int extractId(final IdContext idContext){
+    public static int extractId(final IdContext idContext){
         return Integer.valueOf(idContext.getText());
     }
     
-    private Month extractMes(
+    private static Month extractMes(
             final MesSimplesContext mesSimplesCtx) {
         return pick(
             Month.values(),
@@ -633,11 +417,11 @@ public class GastosoCommandExecutor {
             mesSimplesCtx.DEZ());
     }
     
-    private <E> E pick (E[] values, Object... es){
+    private static <E> E pick (E[] values, Object... es){
         int i ;
         for (i = 0; i < es.length; i++) {
             if(es[i] != null) break;
         }
         return values[i];
-    }
+    }    
 }

@@ -19,6 +19,7 @@ package br.nom.abdon.gastoso.system;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
+
 import java.util.List;
 
 /**
@@ -26,6 +27,8 @@ import java.util.List;
  * @author Bruno Abdon
  */
 public interface GastosoSystem {
+    
+    public boolean login(final String user, String password) throws GastosoSystemRTException;
     
     public List<Fato> getFatos(FiltroFatos filtro) throws GastosoSystemRTException;
     

@@ -22,7 +22,7 @@ import java.time.LocalDate;
  *
  * @author Bruno Abdon
  */
-public class Periodo {
+class Periodo {
 
     private LocalDate dataMinima;
     private LocalDate dataMaxima;
