@@ -43,5 +43,4 @@ public class LancamentoJsonSerializer extends JsonSerializer<Lancamento>{
         jgen.writeNumberField("valor", lancamento.getValor());
         jgen.writeEndObject();
     }
-    
 }
