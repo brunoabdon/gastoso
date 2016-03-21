@@ -16,7 +16,18 @@
  */
 package br.nom.abdon.gastoso.restclient;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
@@ -35,9 +46,63 @@ import br.nom.abdon.gastoso.system.NotFoundException;
  */
 public class GastosoRestClient implements GastosoSystem{
 
+    private final URI serverUri;
+    private AuthToken authToken;
+
+    public GastosoRestClient(final String serverUri) throws URISyntaxException {
+        this(new URI(serverUri));
+    }
+
+    public GastosoRestClient(final URI serverUri) {
+        this.serverUri = serverUri;
+    }
+
     @Override
-    public boolean login(String user, String password) throws GastosoSystemRTException {
-        return Math.random() > 0.2;
+    public boolean login(final String user, String password)
+        throws GastosoSystemRTException {
+
+        final boolean success;
+
+        try {
+            final SSLContext ssl = SSLContext.getDefault();
+            final Client client =
+                ClientBuilder
+                    .newBuilder()
+                    .sslContext(ssl)
+                    .build();
+
+            final URI loginUri =
+                UriBuilder
+                    .fromUri(serverUri)
+                    .path("login")
+                    .build();
+
+            final Response response =
+                client
+                .target(loginUri)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.text(password));
+
+            if(success =
+                    response.getStatus() == Response.Status.OK.getStatusCode()){
+                this.authToken = response.readEntity(AuthToken.class);
+            }
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new GastosoSystemRTException(e);
+        }
+        return success;
+    }
+
+    @Override
+    public boolean logout()
+            throws GastosoSystemRTException, IllegalStateException {
+
+        if(authToken == null) throw new IllegalStateException();
+
+        this.authToken = null;
+
+        return true;
     }
 
     @Override

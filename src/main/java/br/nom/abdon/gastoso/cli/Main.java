@@ -3,6 +3,8 @@ package br.nom.abdon.gastoso.cli;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
@@ -20,11 +22,11 @@ public class Main {
     public static void main(String[] args) {        
 
         ConsoleReader console = null;
-        
+
         try {
-        
+
             console = new ConsoleReader();
-    
+
             final GastosoSystem gastosoSystem = inicializaSistema(console);
 
             final GastosoCharacterCommand gastosoCharacterCommand = 
@@ -33,12 +35,14 @@ public class Main {
             String line;
             while((line = console.readLine()) != null
                     && !"exit".equals(line)){
-                
+
                 gastosoCharacterCommand.command(line);
             }
-            
+
+            gastosoSystem.logout();
+
             console.println("Bye bye");
-            
+
         } catch (IOException ex) {
             System.err.printf("Deu ruim!\n%s\n", ex.getLocalizedMessage());
         } finally {
@@ -54,33 +58,41 @@ public class Main {
     private static GastosoSystem inicializaSistema(final ConsoleReader console) 
         throws GastosoSystemRTException, IOException {
 
-        //inicializacao vai setar servidor web, provavelmente atraves de
-        //parametros no args ou por variaveis de ambiente...
-        final GastosoSystem gastosoSystem = new GastosoRestClient();
-        
-        final PrintWriter writer = new PrintWriter(console.getOutput());
+        final GastosoSystem gastosoSystem;
 
-        boolean conseguiu = false;
-        int tentativasSobrando = 3;
-        while(!conseguiu && tentativasSobrando > 0){
-            console.setEchoCharacter('*');
-            String password = console.readLine("Senha:");
-            conseguiu = gastosoSystem.login("", String.valueOf(password));
-            if(conseguiu){
-                console.setEchoCharacter(null);
-                console.setPrompt("gastoso>");
-                printWellcome(writer);
-            } else if(--tentativasSobrando > 0){
-                writer.println("Foi mal. Tá errada.");
-            } else {
-                writer.println("Não rolou não.");
-                System.exit(1);
+        try {
+            //inicializacao vai setar servidor web, provavelmente atraves de
+            //parametros no args ou por variaveis de ambiente...
+            URI uri = new URI("http://localhost:5000/");
+
+            gastosoSystem = new GastosoRestClient(uri);
+
+            final PrintWriter writer = new PrintWriter(console.getOutput());
+
+            boolean conseguiu = false;
+            int tentativasSobrando = 3;
+            while(!conseguiu && tentativasSobrando > 0){
+                console.setEchoCharacter('*');
+                String password = console.readLine("Senha:");
+                conseguiu = gastosoSystem.login("", String.valueOf(password));
+                if(conseguiu){
+                    console.setEchoCharacter(null);
+                    console.setPrompt("gastoso>");
+                    printWellcome(writer);
+                } else if(--tentativasSobrando > 0){
+                    writer.println("Foi mal. Tá errada.");
+                } else {
+                    writer.println("Não rolou não.");
+                    System.exit(1);
+                }
             }
+        } catch (URISyntaxException e) {
+            throw new GastosoSystemRTException(e);
         }
-        
+
         return gastosoSystem;
     }
-    
+
     private static void printWellcome(PrintWriter writer) {
         writer.println(
             "   ____           _\n  / ___| __ _ ___| |_ ___  ___  ___\n"
