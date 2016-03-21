@@ -21,5 +21,9 @@ package br.nom.abdon.gastoso.system;
  * @author Bruno Abdon
  */
 public class GastosoSystemRTException extends RuntimeException {
+
+    public GastosoSystemRTException(Throwable cause) {
+        super(cause);
+    }
     
 }
