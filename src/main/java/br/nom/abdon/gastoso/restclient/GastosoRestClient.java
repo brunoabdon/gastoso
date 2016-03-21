@@ -18,8 +18,6 @@ package br.nom.abdon.gastoso.restclient;
 
 import java.util.List;
 
-import org.omg.CORBA.MARSHAL;
-
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
