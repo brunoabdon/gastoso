@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.github.brunoabdon</groupId>
             <artifactId>gastoso-core</artifactId>
-            <version>1.0</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
