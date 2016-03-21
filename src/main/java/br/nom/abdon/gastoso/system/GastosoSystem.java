@@ -29,6 +29,8 @@ import java.util.List;
 public interface GastosoSystem {
     
     public boolean login(final String user, String password) throws GastosoSystemRTException;
+
+    public boolean logout() throws GastosoSystemRTException, IllegalAccessError;
     
     public List<Fato> getFatos(FiltroFatos filtro) throws GastosoSystemRTException;
     
