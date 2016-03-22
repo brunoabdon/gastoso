@@ -18,7 +18,7 @@ transf  : 'transf'  WS transfArgs;
 
 
 fatoArgs: 
-    id                     #fatoId
+    id (WS (dia|textArg))? #fatoId
     | subId (WS valor)?    #fatoSubId
     | (dia WS)? textArg    #mkFato
 ;

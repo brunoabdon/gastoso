@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -30,6 +31,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.Fato;
+import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
@@ -51,6 +54,7 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
+import br.nom.abdon.gastoso.system.FiltroLancamento;
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
@@ -161,7 +165,7 @@ public class GastosoCharacterCommand {
         }
     }
 
-    private void commandFato(FatoContext ctx) {
+    private void commandFato(FatoContext ctx) throws GastosoSystemRTException, GastosoSystemException {
 
         final FatoArgsContext fatoArgsCtx = ctx.fatoArgs();
 
@@ -171,7 +175,33 @@ public class GastosoCharacterCommand {
                 (FatoIdContext) fatoArgsCtx;
 
             final int fatoId = CtxReader.extractId(fatoIdCtx.id());
-            System.out.printf("Exibir fato %d\n",fatoId);
+            
+            final Fato fato = gastosoSystem.getFato(fatoId);
+            
+            final GastosoCliParser.DiaContext diaCtx = fatoIdCtx.dia();
+            final TextArgContext textArgCtx = fatoIdCtx.textArg();
+            
+            final boolean updateDia = diaCtx != null;
+            final boolean updateDescricao = textArgCtx != null;
+            
+            if(updateDia || updateDescricao){
+                
+                if(updateDia) fato.setDia(CtxReader.extractDia(diaCtx));
+                
+                if(updateDescricao) 
+                    fato.setDescricao(CtxReader.extractText(textArgCtx));
+                
+                gastosoSystem.update(fato);
+            }
+            writer.println(
+                fato.getId()
+                + " - "
+                + fato
+                    .getDia()
+                    .format(java.time.format.DateTimeFormatter.ISO_DATE)
+                + " - " 
+                + fato.getDescricao());
+
 
         } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
@@ -206,11 +236,21 @@ public class GastosoCharacterCommand {
 
             final LocalDate dia = CtxReader.extractDia(mkFatoCtx.dia());
 
-            System.out.println(
-                "Criar fato '" 
-                + descricao 
-                + "' no dia " 
-                + dia.format(java.time.format.DateTimeFormatter.ISO_DATE));
+            final Fato fato = gastosoSystem.create(new Fato(dia, descricao));
+            
+            final List<Lancamento> lancamentos = 
+                gastosoSystem
+                .getLancamentos(
+                    new FiltroLancamento()
+                    .fromFato(fato.getId()));
+            
+            writer.println(
+                "Fato criado: " 
+                + fato.getId()
+                + " - "
+                + fato.getDia().format(java.time.format.DateTimeFormatter.ISO_DATE)
+                + " - " 
+                + fato.getDescricao());
         }
     }
 
@@ -249,22 +289,28 @@ public class GastosoCharacterCommand {
                 ? CtxReader.extractText(textArgCtx)
                 : null;
 
-        if(id != null){
-            if(nome != null){ // id e nome nao nulos
-                Conta conta = new Conta(id,nome);
-                gastosoSystem.update(conta);
-                writer.println("Nome da conta alterado.");
-            } else { //nome nulo e id nao nulo
-                System.out.printf("Exibir conta de id %3d\n",id);
-            }
-        } else { //id nulo (e nome tem que ter sido nao nulo. gramatica garante)
-            Conta conta = new Conta(nome);
-            conta = gastosoSystem.create(conta);
-            writer.println("Conta criada: " + conta.getId() + " - " + conta.getNome());
+        final boolean ehCriacao = id == null;
+        final boolean ehUpdate = !ehCriacao && nome != null;
+        
+        final Conta conta = 
+            ehCriacao
+                ? gastosoSystem.create(new Conta(nome))
+                : gastosoSystem.getConta(id);
+
+        if(ehUpdate){ // id e nome nao nulos
+            conta.setNome(nome);
+            gastosoSystem.update(conta);
         }
+            
+        if(ehCriacao || ehUpdate){
+            writer.print("Conta " + (ehUpdate?"atualizada":"criada")+ ": " );
+        }
+
+        writer.println(conta.getId() + " - " + conta.getNome());
     }
 
-    private void commandRm(final RmContext rmContext){
+    private void commandRm(final RmContext rmContext) 
+            throws GastosoSystemRTException, GastosoSystemException{
         final RmArgsContext rmArgsCtx = rmContext.rmArgs();
 
         if(rmArgsCtx.getChild(0).getText().charAt(0) == 'l'){ //lancamento
@@ -285,9 +331,11 @@ public class GastosoCharacterCommand {
            final int id = CtxReader.extractId(rmArgsCtx.id());
 
             if(rmArgsCtx.getChild(0).getText().charAt(0) == 'c'){ //conta
-                System.out.printf("remover conta %4d\n",id);
+                gastosoSystem.deleteConta(id);
+                writer.println("Conta deletada");
             } else {
-                System.out.printf("remover fato %4d\n",id);
+                gastosoSystem.deleteFato(id);
+                writer.println("Fato deletado");
             }
         }
     }

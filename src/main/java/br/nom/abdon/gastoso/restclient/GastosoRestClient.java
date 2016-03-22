@@ -19,6 +19,7 @@ package br.nom.abdon.gastoso.restclient;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
@@ -41,6 +42,7 @@ import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 import br.nom.abdon.gastoso.system.NotFoundException;
+import br.nom.abdon.modelo.Entidade;
 
 /**
  *
@@ -52,8 +54,10 @@ public class GastosoRestClient implements GastosoSystem{
     private WebTarget contaWebTarget, 
                         fatoWebTarget, 
                         contasWebTarget, 
-                        fatosWebTarget;
-
+                        fatosWebTarget,
+                        lancamentosWebTarget,
+                        lancamentoWebTarget;
+;
     private boolean logado;
 
 
@@ -79,7 +83,7 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public boolean login(final String user, String password)
+    public boolean login(final String user, final String password)
         throws GastosoSystemRTException {
 
         final Response response =
@@ -100,13 +104,15 @@ public class GastosoRestClient implements GastosoSystem{
                         .getHeaders()
                         .add("X-Abd-auth_token", authToken);
                 }
-                    ;
+            ;
 
             this.rootWebTarget.register(authFilter);
             this.contasWebTarget = this.rootWebTarget.path("contas");
             this.fatosWebTarget = this.rootWebTarget.path("fatos");
             this.contaWebTarget = this.contasWebTarget.path("{id}");
             this.fatoWebTarget = this.fatosWebTarget.path("{id}");
+            this.lancamentosWebTarget = this.rootWebTarget.path("lancamentos");
+            this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
 
         }
 
@@ -130,8 +136,9 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public Fato getFato(int id) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Fato getFato(int id)
+            throws GastosoSystemRTException, GastosoSystemException {
+        return get(fatoWebTarget,Fato.class,id);
     }
 
     @Override
@@ -140,56 +147,73 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public Conta getConta(int id) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Conta getConta(int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        return get(contaWebTarget,Conta.class,id);
+    }
+    
+    private <E extends Entidade<Integer>> E get(
+        final WebTarget baseWebTarget, 
+        final Class<E> klass,
+        final int id) 
+            throws GastosoSystemException{
+        return invokeResource(
+                resourceBuilder(baseWebTarget,id).buildGet(),klass);
     }
 
     @Override
-    public List<Lancamento> getLancamentos(FiltroLancamento fitro) throws GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void update(Fato fato) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void update(Conta conta) throws GastosoSystemException, GastosoSystemRTException {
-
-        final Response response = this.contaWebTarget
-                .resolveTemplate("id", conta.getId())
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.json(conta))
-                .invoke();
-
-        final Response.StatusType statusInfo = response.getStatusInfo();
-
-        if(statusInfo.getStatusCode() == 
-                Response.Status.NOT_FOUND.getStatusCode()){
-            throw new NotFoundException();
+    public List<Lancamento> getLancamentos(FiltroLancamento filtro) throws GastosoSystemRTException {
+        Integer fatoId = filtro.getFatoId();
+        Integer contaId = filtro.getContaId();
+        
+        WebTarget webTarget;
+        
+        if(fatoId != null){
+            webTarget = lancamentosWebTarget.queryParam("fato", fatoId);
+        } else if(contaId != null){
+            webTarget = 
+                lancamentosWebTarget.queryParam("conta", fatoId)
+                .queryParam("dataMin", filtro.getDataMinima())
+                .queryParam("dataMax", filtro.getDataMaxima());
+            
+        } else {
+            throw new GastosoSystemRTException("Deu ruim");
         }
         
-        if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
-            throw new GastosoSystemException(response.readEntity(String.class));
-        }
+//        List<Lancamento> lancamentos = 
+//            webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
+        ;
+        
+        return Collections.emptyList();
     }
 
+    @Override
+    public void update(Fato fato) throws GastosoSystemException {
+        update(fatoWebTarget, fato, Fato.class);
+    }
+
+    @Override
+    public void update(Conta conta) throws GastosoSystemException {
+        update(contaWebTarget, conta, Conta.class);
+    }
+    
     @Override
     public void update(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void deleteFato(int id) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void deleteFato(int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        this.delete(fatoWebTarget, id);
     }
 
     @Override
-    public void deleteConta(int id) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void deleteConta(int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        this.delete(contaWebTarget, id);
     }
-
+    
     @Override
     public void deleteLancamento(int id) throws NotFoundException, GastosoSystemRTException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -197,31 +221,109 @@ public class GastosoRestClient implements GastosoSystem{
 
     @Override
     public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return create(fatosWebTarget,fato,Fato.class);
     }
 
     @Override
     public Conta create(final Conta conta) 
-        throws GastosoSystemRTException, GastosoSystemException {
-
-        final Invocation buildPost = 
-                this.contasWebTarget
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.json(conta));
-
-        final Response response = buildPost.invoke();
-
-        if(response.getStatusInfo().getFamily() != 
-            Response.Status.Family.SUCCESSFUL){
-            throw new GastosoSystemException(response.readEntity(String.class));
-        }
-
-        return response.readEntity(Conta.class);
-
+            throws GastosoSystemRTException, GastosoSystemException {
+        return create(contasWebTarget,conta,Conta.class);
     }
-
+    
     @Override
     public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private <E extends Entidade<Integer>> E update(
+            final WebTarget baseWebTarget, 
+            final E entity,
+            final Class<E> klass) 
+                throws GastosoSystemException, GastosoSystemRTException {
+        
+        final Invocation.Builder resourceBuilder = 
+                resourceBuilder(baseWebTarget,entity.getId());
+        
+        return invokePost(resourceBuilder, klass, entity);
+    }
+
+    private <E extends Entidade<Integer>> E create(
+            final WebTarget baseWebTarget, 
+            final E entity,
+            final Class<E> klass)
+        throws GastosoSystemRTException, GastosoSystemException {
+
+        return 
+            invokePost(
+                baseWebTarget
+                .request(MediaType.APPLICATION_JSON_TYPE),klass,entity
+            );
+    }
+
+    private void delete(final WebTarget baseWebTarget, int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        
+        final Response response = 
+            invokeAndCheck(resourceBuilder(baseWebTarget,id).buildDelete());
+
+        this.dealWith(response);
+    }
+
+    private Invocation.Builder resourceBuilder(
+            final WebTarget baseWebTarget,
+            final int id){
+        
+        return 
+            baseWebTarget
+            .resolveTemplate("id", id)
+            .request(MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    private <E extends Entidade<Integer>> E invokePost(
+            final Invocation.Builder resourceBuilder,            
+            final Class<E> klass,
+            final E entity) 
+                throws GastosoSystemException{
+        
+        return invokeResource(
+                    resourceBuilder.buildPost(Entity.json(entity)),klass);
+    }
+
+    private <E extends Entidade<Integer>> E invokeResource(
+        final Invocation invocation,
+        final Class<E> klass) 
+            throws GastosoSystemException{
+        
+        final Response response = invokeAndCheck(invocation);
+        
+        return response.readEntity(klass);
+    }
+    
+    private Response invokeAndCheck(final Invocation invocation) 
+                throws GastosoSystemException{
+    
+        final Response response = invocation.invoke();
+        dealWith(response);
+        return response;
+    }
+
+    private void successfullResponse(final Response response) throws GastosoSystemException {
+        if(response.getStatusInfo().getFamily() !=
+                Response.Status.Family.SUCCESSFUL){
+            throw new GastosoSystemException(response.readEntity(String.class));
+        }
+    }
+    
+    private void dealWith(final Response response) 
+            throws GastosoSystemException, NotFoundException { 
+        
+        final Response.StatusType statusInfo = response.getStatusInfo();
+        
+        if(statusInfo.getStatusCode() ==
+                Response.Status.NOT_FOUND.getStatusCode()){
+            throw new NotFoundException();
+        }
+        
+        successfullResponse(response);
     }
 }
