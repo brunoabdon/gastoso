@@ -27,36 +27,67 @@ import java.util.List;
  * @author Bruno Abdon
  */
 public interface GastosoSystem {
-    
-    public boolean login(final String user, String password) throws GastosoSystemRTException;
+
+    public boolean login(final String user, String password)
+        throws GastosoSystemRTException;
 
     public boolean logout() throws GastosoSystemRTException, IllegalAccessError;
-    
-    public List<Fato> getFatos(FiltroFatos filtro) throws GastosoSystemRTException, GastosoSystemException;
-    
-    public Fato getFato(int id) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
-    
-    public List<Conta> getContas(FiltroContas filtro) throws GastosoSystemRTException, GastosoSystemException;
-    
-    public Conta getConta(int id) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
-    
-    public List<Lancamento> getLancamentos(FiltroLancamento fitro) throws GastosoSystemRTException, GastosoSystemException;
-            
-    public void update(Fato fato) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
-    
-    public void update(Conta conta) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
-    
-    public void update(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
 
-    public void delete(Fato fato) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
-    
-    public void delete(Conta conta)throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
-    
-    public void delete(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException, GastosoSystemException;
+    public List<Fato> getFatos(FiltroFatos filtro)
+        throws GastosoSystemRTException, GastosoSystemException;
 
-    public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException;
-    
-    public Conta create(Conta conta) throws GastosoSystemRTException, GastosoSystemException;
-    
-    public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException;
+    public Fato getFato(int id)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public List<Conta> getContas(FiltroContas filtro)
+        throws GastosoSystemRTException, GastosoSystemException;
+
+    public Conta getConta(int id)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public List<Lancamento> getLancamentos(FiltroLancamento fitro)
+        throws GastosoSystemRTException, GastosoSystemException;
+
+    public void update(Fato fato)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public void update(Conta conta)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public void update(Lancamento lancamento)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public void delete(Fato fato)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public void delete(Conta conta)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public void delete(Lancamento lancamento)
+        throws NotFoundException,
+                GastosoSystemRTException,
+                GastosoSystemException;
+
+    public Fato create(Fato fato)
+        throws GastosoSystemRTException, GastosoSystemException;
+
+    public Conta create(Conta conta)
+        throws GastosoSystemRTException, GastosoSystemException;
+
+    public Lancamento create(Lancamento lancamento)
+        throws GastosoSystemRTException, GastosoSystemException;
 }
