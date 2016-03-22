@@ -181,17 +181,17 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public void delete(Fato fato) throws NotFoundException, GastosoSystemRTException {
+    public void deleteFato(int id) throws NotFoundException, GastosoSystemRTException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(Conta conta) throws NotFoundException, GastosoSystemRTException {
+    public void deleteConta(int id) throws NotFoundException, GastosoSystemRTException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void delete(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException {
+    public void deleteLancamento(int id) throws NotFoundException, GastosoSystemRTException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
