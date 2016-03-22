@@ -75,5 +75,4 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
     public List<Conta> listar(final EntityManager em) {
         return em.createNamedQuery("Conta.all", Conta.class).getResultList();
     }
-    
 }
