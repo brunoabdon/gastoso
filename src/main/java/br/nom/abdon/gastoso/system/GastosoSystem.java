@@ -67,17 +67,17 @@ public interface GastosoSystem {
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void delete(Fato fato)
+    public void deleteFato(int id)
         throws NotFoundException,
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void delete(Conta conta)
+    public void deleteConta(int id)
         throws NotFoundException,
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void delete(Lancamento lancamento)
+    public void deleteLancamento(int id)
         throws NotFoundException,
                 GastosoSystemRTException,
                 GastosoSystemException;
