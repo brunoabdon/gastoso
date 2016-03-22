@@ -29,6 +29,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
@@ -51,6 +52,8 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
 import br.nom.abdon.gastoso.system.GastosoSystem;
+import br.nom.abdon.gastoso.system.GastosoSystemException;
+import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 
 /**
  *
@@ -254,7 +257,15 @@ public class GastosoCharacterCommand {
                 System.out.printf("Exibir conta de id %3d\n",id);
             }
         } else { //id nulo (e nome tem que ter sido nao nulo. gramatica garante)
-            System.out.printf("Criar conta  \"%s\"\n",nome);
+            Conta conta = new Conta(nome);
+            try {
+                conta = gastosoSystem.create(conta);
+                writer.println("Conta criada: " + conta.getId() + " - " + conta.getNome());
+            } catch (GastosoSystemRTException ex) {
+                writer.println("Erro: " + ex.getMessage());
+            } catch (GastosoSystemException ex) {
+                writer.println("Problema: " + ex.getMessage());
+            }
         }
     }
 

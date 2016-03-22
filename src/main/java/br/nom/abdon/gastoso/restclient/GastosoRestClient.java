@@ -25,9 +25,10 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
@@ -46,15 +47,29 @@ import br.nom.abdon.gastoso.system.NotFoundException;
  */
 public class GastosoRestClient implements GastosoSystem{
 
-    private final URI serverUri;
     private AuthToken authToken;
+
+    final WebTarget webTarget;
 
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
     }
 
     public GastosoRestClient(final URI serverUri) {
-        this.serverUri = serverUri;
+        
+        try {
+            final SSLContext sslContext = SSLContext.getDefault();
+            final Client client =
+                ClientBuilder
+                    .newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+
+            this.webTarget = client.target(serverUri);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new GastosoSystemRTException(e);
+        }
     }
 
     @Override
@@ -63,34 +78,18 @@ public class GastosoRestClient implements GastosoSystem{
 
         final boolean success;
 
-        try {
-            final SSLContext ssl = SSLContext.getDefault();
-            final Client client =
-                ClientBuilder
-                    .newBuilder()
-                    .sslContext(ssl)
-                    .build();
+        final Response response =
+            this.webTarget.path("login")
+            .request(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.text(password));
 
-            final URI loginUri =
-                UriBuilder
-                    .fromUri(serverUri)
-                    .path("login")
-                    .build();
+        if(success =
+            response.getStatusInfo().getFamily() == 
+            Response.Status.Family.SUCCESSFUL){
 
-            final Response response =
-                client
-                .target(loginUri)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.text(password));
-
-            if(success =
-                    response.getStatus() == Response.Status.OK.getStatusCode()){
-                this.authToken = response.readEntity(AuthToken.class);
-            }
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new GastosoSystemRTException(e);
+            this.authToken = response.readEntity(AuthToken.class);
         }
+
         return success;
     }
 
@@ -161,18 +160,33 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public void create(Fato fato) throws GastosoSystemRTException, GastosoSystemException {
+    public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void create(Conta conta) throws GastosoSystemRTException, GastosoSystemException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Conta create(final Conta conta) 
+        throws GastosoSystemRTException, GastosoSystemException {
+
+        final Invocation buildPost = this.webTarget
+                .path("contas")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .header("X-Abd-auth_token", this.authToken.token)
+                .buildPost(Entity.json(conta));
+
+        final Response response = buildPost.invoke();
+
+        if(response.getStatusInfo().getFamily() != 
+            Response.Status.Family.SUCCESSFUL){
+            throw new GastosoSystemException(response.readEntity(String.class));
+        }
+
+        return response.readEntity(Conta.class);
+
     }
 
     @Override
-    public void create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException {
+    public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
 }
