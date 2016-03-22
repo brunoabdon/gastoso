@@ -22,8 +22,11 @@ package br.nom.abdon.gastoso.system;
  */
 public class GastosoSystemRTException extends RuntimeException {
 
-    public GastosoSystemRTException(Throwable cause) {
+    public GastosoSystemRTException(final Throwable cause) {
         super(cause);
     }
-    
+
+    public GastosoSystemRTException(final String message) {
+        super(message);
+    }
 }
