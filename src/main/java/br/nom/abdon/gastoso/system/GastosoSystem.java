@@ -54,9 +54,9 @@ public interface GastosoSystem {
     
     public void delete(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException;
 
-    public void create(Fato fato) throws GastosoSystemRTException, GastosoSystemException;
+    public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException;
     
-    public void create(Conta conta) throws GastosoSystemRTException, GastosoSystemException;
+    public Conta create(Conta conta) throws GastosoSystemRTException, GastosoSystemException;
     
-    public void create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException;
+    public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException;
 }
