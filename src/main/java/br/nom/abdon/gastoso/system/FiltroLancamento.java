@@ -16,10 +16,70 @@
  */
 package br.nom.abdon.gastoso.system;
 
+import java.time.LocalDate;
+
 /**
  *
  * @author Bruno Abdon
  */
 public class FiltroLancamento {
+    private Integer fatoId, contaId;
+    
+    private LocalDate dataMinima, dataMaxima;
+
+    public FiltroLancamento fromFato(int fatoId){
+        this.fatoId = fatoId;
+        return this;
+    }
+    
+    public FiltroLancamento fromConta(int contaId){
+        this.contaId = contaId;
+        return this;
+    }
+
+    public FiltroLancamento withDataMinima(LocalDate dataMinima){
+        this.dataMinima = dataMinima;
+        return this;
+    }
+
+    public FiltroLancamento withDataMaxima(LocalDate dataMaxima){
+        this.dataMaxima = dataMaxima;
+        return this;
+    }
+
+    
+    public Integer getContaId() {
+        return contaId;
+    }
+
+    public void setContaId(Integer contaId) {
+        this.contaId = contaId;
+    }
+    
+    public Integer getFatoId() {
+        return fatoId;
+    }
+
+    public void setFatoId(Integer fatoId) {
+        this.fatoId = fatoId;
+    }
+    
+        public LocalDate getDataMinima() {
+        return dataMinima;
+    }
+
+    public void setDataMinima(LocalDate dataMinima) {
+        this.dataMinima = dataMinima;
+    }
+
+    public LocalDate getDataMaxima() {
+        return dataMaxima;
+    }
+
+    public void setDataMaxima(LocalDate dataMaxima) {
+        this.dataMaxima = dataMaxima;
+    }
+
+
     
 }
