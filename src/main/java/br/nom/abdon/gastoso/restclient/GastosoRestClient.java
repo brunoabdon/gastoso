@@ -24,6 +24,7 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -47,16 +48,21 @@ import br.nom.abdon.gastoso.system.NotFoundException;
  */
 public class GastosoRestClient implements GastosoSystem{
 
-    private AuthToken authToken;
+    private final WebTarget rootWebTarget;
+    private WebTarget contaWebTarget, 
+                        fatoWebTarget, 
+                        contasWebTarget, 
+                        fatosWebTarget;
 
-    final WebTarget webTarget;
+    private boolean logado;
+
 
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
     }
 
     public GastosoRestClient(final URI serverUri) {
-        
+
         try {
             final SSLContext sslContext = SSLContext.getDefault();
             final Client client =
@@ -65,7 +71,7 @@ public class GastosoRestClient implements GastosoSystem{
                     .sslContext(sslContext)
                     .build();
 
-            this.webTarget = client.target(serverUri);
+            this.rootWebTarget = client.target(serverUri);
 
         } catch (NoSuchAlgorithmException e) {
             throw new GastosoSystemRTException(e);
@@ -76,30 +82,44 @@ public class GastosoRestClient implements GastosoSystem{
     public boolean login(final String user, String password)
         throws GastosoSystemRTException {
 
-        final boolean success;
-
         final Response response =
-            this.webTarget.path("login")
+            this.rootWebTarget.path("login")
             .request(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.text(password));
 
-        if(success =
+        if(this.logado =
             response.getStatusInfo().getFamily() == 
             Response.Status.Family.SUCCESSFUL){
 
-            this.authToken = response.readEntity(AuthToken.class);
+            final String authToken = response.readEntity(AuthToken.class).token;
+            
+            final ClientRequestFilter authFilter = 
+                (reqContx) -> {
+                    if(this.logado)
+                    reqContx
+                        .getHeaders()
+                        .add("X-Abd-auth_token", authToken);
+                }
+                    ;
+
+            this.rootWebTarget.register(authFilter);
+            this.contasWebTarget = this.rootWebTarget.path("contas");
+            this.fatosWebTarget = this.rootWebTarget.path("fatos");
+            this.contaWebTarget = this.contasWebTarget.path("{id}");
+            this.fatoWebTarget = this.fatosWebTarget.path("{id}");
+
         }
 
-        return success;
+        return this.logado;
     }
 
     @Override
     public boolean logout()
             throws GastosoSystemRTException, IllegalStateException {
 
-        if(authToken == null) throw new IllegalStateException();
+        if(!this.logado) throw new IllegalStateException();
 
-        this.authToken = null;
+        this.logado = false;
 
         return true;
     }
@@ -135,8 +155,24 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public void update(Conta conta) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void update(Conta conta) throws GastosoSystemException, GastosoSystemRTException {
+
+        final Response response = this.contaWebTarget
+                .resolveTemplate("id", conta.getId())
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .buildPost(Entity.json(conta))
+                .invoke();
+
+        final Response.StatusType statusInfo = response.getStatusInfo();
+
+        if(statusInfo.getStatusCode() == 
+                Response.Status.NOT_FOUND.getStatusCode()){
+            throw new NotFoundException();
+        }
+        
+        if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
+            throw new GastosoSystemException(response.readEntity(String.class));
+        }
     }
 
     @Override
@@ -168,10 +204,9 @@ public class GastosoRestClient implements GastosoSystem{
     public Conta create(final Conta conta) 
         throws GastosoSystemRTException, GastosoSystemException {
 
-        final Invocation buildPost = this.webTarget
-                .path("contas")
+        final Invocation buildPost = 
+                this.contasWebTarget
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .header("X-Abd-auth_token", this.authToken.token)
                 .buildPost(Entity.json(conta));
 
         final Response response = buildPost.invoke();

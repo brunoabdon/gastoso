@@ -54,6 +54,7 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
+import br.nom.abdon.gastoso.system.NotFoundException;
 
 /**
  *
@@ -64,7 +65,7 @@ public class GastosoCharacterCommand {
     private final PrintWriter writer;
     private final GastosoSystem gastosoSystem;
     private Periodo periodo;
-    
+
     public GastosoCharacterCommand(
             final GastosoSystem gastosoSystem, 
             final Writer writer) {
@@ -73,116 +74,116 @@ public class GastosoCharacterCommand {
         this.writer = new PrintWriter(writer);
         this.periodo = essaSemana();
     }
-    
-    public boolean command(final String commandLine) throws IOException{
-        
-        boolean ok;
-        
-        final CommandContext commandCtx;
-        
-        final CharStream cs = new ANTLRInputStream(commandLine);
-        
-        final GastosoCliLexer hl = new GastosoCliLexer(cs);
-        
-        final CommonTokenStream tokens = new CommonTokenStream(hl);
 
-        final GastosoCliParser parser = new GastosoCliParser(tokens);
+    public boolean command(final String commandLine) throws IOException{
+
+        boolean ok;
+
+        final CommandContext commandCtx;
+
+        final CharStream cs = new ANTLRInputStream(commandLine);
+
+        final GastosoCliLexer hl = new GastosoCliLexer(cs);
+
+        final CommonTokenStream tokens = new CommonTokenStream(hl);
         
+        final GastosoCliParser parser = new GastosoCliParser(tokens);
+
         parser.setErrorHandler(new BailErrorStrategy());
         parser.removeErrorListeners();
-        
+
         try {
             commandCtx = parser.command();
             processCommand(commandCtx);
             ok = true;
-            
+
         } catch (final ParseCancellationException e){
             writer.append("Não entendi.\n");
             ok = false;
         }
-        
+
         return ok;
     }
-    
+
     private void processCommand(CommandContext commandCtx){
-        
+
         if(commandCtx.exception == null){
 
             final LineCommandContext lineCommandCtx = 
                 commandCtx.lineCommand();
-            
-            commandLineCommand(lineCommandCtx);
-    
+
+            try {
+                commandLineCommand(lineCommandCtx);
+            } catch (GastosoSystemException | GastosoSystemRTException ex) {
+                dealWith(ex);
+            }
         }
     }
-    private void commandLineCommand(
-        final LineCommandContext  lineCommandCtx){
+    private void commandLineCommand(final LineCommandContext lineCommandCtx) 
+            throws GastosoSystemRTException, GastosoSystemException{
 
         final FatosContext fatosCtx = lineCommandCtx.fatos();
         if(fatosCtx != null){
             commandFatos(fatosCtx);
             return;
-        }  
-        
+        }
+
         final FatoContext fatoCtx = lineCommandCtx.fato();
         if(fatoCtx != null){
             commandFato(fatoCtx);
             return;
         } 
-        
+
         final PeriodoContext periodoCtx = 
             lineCommandCtx.periodo();
         if(periodoCtx != null){
             commandPeriodo(periodoCtx);
             return;
         }
-        
+
         final ContasContext contasCtx = 
             lineCommandCtx.contas();
         if(contasCtx != null){
             commandContas(contasCtx);
             return;
         }
-                
+
         final ContaContext contaCtx = lineCommandCtx.conta();
         if(contaCtx != null){
             commandConta(contaCtx);
             return;
         }
-        
+
         final RmContext rmContext = lineCommandCtx.rm();
         if(rmContext != null){
             commandRm(rmContext);
             return;
         }
-                
     }
-    
-    
+
     private void commandFato(FatoContext ctx) {
-        
+
         final FatoArgsContext fatoArgsCtx = ctx.fatoArgs();
-        
+
         if(fatoArgsCtx instanceof FatoIdContext){
 
             final FatoIdContext fatoIdCtx = 
                 (FatoIdContext) fatoArgsCtx;
-            
+
             final int fatoId = CtxReader.extractId(fatoIdCtx.id());
             System.out.printf("Exibir fato %d\n",fatoId);
-        
+
         } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
             final FatoSubIdContext fatoSubIdCtx = (FatoSubIdContext) fatoArgsCtx;
-            
+
             final SubIdContext subIdCtx = fatoSubIdCtx.subId();
-            
+
             int idFato = CtxReader.extractId(subIdCtx.id(0));
             int idConta = CtxReader.extractId(subIdCtx.id(1));
 
-            
             final ValorContext valorCtx = fatoSubIdCtx.valor();
-            
+
             if(valorCtx == null){
                 System.out.printf(
                     "Exibir o valor do lancamento do fato = %d e conta %d\n",
@@ -190,7 +191,7 @@ public class GastosoCharacterCommand {
                         idConta);
             } else {
                 int valor = CtxReader.extract(valorCtx);
-                
+
                 System.out.printf(
                     "Setar valor do lancamento do fato = %d e conta %d pra %d\n",
                         idFato,
@@ -198,13 +199,13 @@ public class GastosoCharacterCommand {
                         valor);
             }
         } else if(fatoArgsCtx instanceof MkFatoContext){
-            
-            final MkFatoContext mkFatoCtx =  (MkFatoContext) fatoArgsCtx;
-            
+
+            final MkFatoContext mkFatoCtx = (MkFatoContext) fatoArgsCtx;
+
             final String descricao = CtxReader.extractText(mkFatoCtx.textArg());
-            
+
             final LocalDate dia = CtxReader.extractDia(mkFatoCtx.dia());
-            
+
             System.out.println(
                 "Criar fato '" 
                 + descricao 
@@ -220,19 +221,20 @@ public class GastosoCharacterCommand {
     private void commandContas(ContasContext contasCtx) {
         final ContasArgsContext contaArgsCtx = 
             contasCtx.contasArgs();
-        
+
         if(contaArgsCtx != null){
-            
+
             final String filtro = CtxReader.extractText(contaArgsCtx.textArg());
-            
+
             System.out.println("Listar contas, filtrando por \""+ filtro +"\"");
         } else {
             System.out.println("Listar todas as contas");
         }
     }
 
-    private void commandConta(ContaContext contaCtx) {
-        
+    private void commandConta(ContaContext contaCtx) 
+            throws GastosoSystemRTException, GastosoSystemException {
+
         final ContaArgsContext contaArgsCtx = contaCtx.contaArgs();
         final GastosoCliParser.IdContext idContext = contaArgsCtx.id();
         final TextArgContext textArgCtx = contaArgsCtx.textArg();
@@ -241,7 +243,7 @@ public class GastosoCharacterCommand {
             idContext != null
                 ? CtxReader.extractId(idContext)
                 : null;
-        
+
         final String nome = 
             textArgCtx != null
                 ? CtxReader.extractText(textArgCtx)
@@ -249,46 +251,38 @@ public class GastosoCharacterCommand {
 
         if(id != null){
             if(nome != null){ // id e nome nao nulos
-                System.out.printf(
-                    "Setar o nome da conta de id %3d pra \"%s\"\n",
-                    id,
-                    nome);
+                Conta conta = new Conta(id,nome);
+                gastosoSystem.update(conta);
+                writer.println("Nome da conta alterado.");
             } else { //nome nulo e id nao nulo
                 System.out.printf("Exibir conta de id %3d\n",id);
             }
         } else { //id nulo (e nome tem que ter sido nao nulo. gramatica garante)
             Conta conta = new Conta(nome);
-            try {
-                conta = gastosoSystem.create(conta);
-                writer.println("Conta criada: " + conta.getId() + " - " + conta.getNome());
-            } catch (GastosoSystemRTException ex) {
-                writer.println("Erro: " + ex.getMessage());
-            } catch (GastosoSystemException ex) {
-                writer.println("Problema: " + ex.getMessage());
-            }
+            conta = gastosoSystem.create(conta);
+            writer.println("Conta criada: " + conta.getId() + " - " + conta.getNome());
         }
     }
 
     private void commandRm(final RmContext rmContext){
         final RmArgsContext rmArgsCtx = rmContext.rmArgs();
-        
+
         if(rmArgsCtx.getChild(0).getText().charAt(0) == 'l'){ //lancamento
             //rm lancamento
             final SubIdContext 
                 subIdContext = rmArgsCtx.subId();
-            
+
             int idFato = CtxReader.extractId(subIdContext.id(0));
             int idConta = CtxReader.extractId(subIdContext.id(1));
-            
+
             System.out.printf(
                 "remover lancamento da conta %4d no fato %4d\n",
                 idConta,
                 idFato
             );
-            
-        } else {
 
-            final int id = CtxReader.extractId(rmArgsCtx.id());
+        } else {
+           final int id = CtxReader.extractId(rmArgsCtx.id());
 
             if(rmArgsCtx.getChild(0).getText().charAt(0) == 'c'){ //conta
                 System.out.printf("remover conta %4d\n",id);
@@ -297,10 +291,10 @@ public class GastosoCharacterCommand {
             }
         }
     }
-    
+
     private void commandPeriodo(PeriodoContext ctx){
         final PeriodoDefContext periodoDefCtx = ctx.periodoDef();
-        
+
         if(periodoDefCtx != null){
             this.periodo = CtxReader.extract(periodoDefCtx);
         }
@@ -319,16 +313,31 @@ public class GastosoCharacterCommand {
             .format(java.time.format.DateTimeFormatter.ISO_DATE)
         );
     }
-    
+
     private Periodo essaSemana() {
         final LocalDate domingoPassado =
                 LocalDate.now()
                         .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
-        
+
         final LocalDate proximoSabado =
                 domingoPassado.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
-        
+
         return new Periodo(domingoPassado, proximoSabado);
     }
-    
+
+    private void dealWith(Throwable ex){
+        if(ex instanceof NotFoundException){
+            writer.println("Erro: Isso não existe");
+        } else {
+            writer.print(
+                (ex instanceof GastosoSystemException)
+                ? "Erro" 
+                : (ex instanceof GastosoSystemRTException)
+                    ? "Problema"
+                    : "Bronca"
+            );
+
+            writer.println(": " + ex.getMessage());
+        }
+    }
 }

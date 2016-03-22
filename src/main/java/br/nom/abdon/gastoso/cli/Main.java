@@ -5,12 +5,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 
 import br.nom.abdon.gastoso.restclient.GastosoRestClient;
 import br.nom.abdon.gastoso.system.GastosoSystem;
+import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 
 /**
@@ -45,6 +48,8 @@ public class Main {
 
         } catch (IOException ex) {
             System.err.printf("Deu ruim!\n%s\n", ex.getLocalizedMessage());
+        } catch (GastosoSystemRTException ex) {
+            System.err.println("Erro grave: " + ex.getMessage());
         } finally {
             if(console != null) console.shutdown();
             try {
@@ -63,7 +68,7 @@ public class Main {
         try {
             //inicializacao vai setar servidor web, provavelmente atraves de
             //parametros no args ou por variaveis de ambiente...
-            URI uri = new URI("http://localhost:5000/");
+            final URI uri = new URI("http://localhost:5000/");
 
             gastosoSystem = new GastosoRestClient(uri);
 
