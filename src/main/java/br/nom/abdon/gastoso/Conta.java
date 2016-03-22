@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class Conta extends EntidadeBaseInt {
     
     public static final int NOME_MAX_LEN = 50;
-    
+
     @Column(length = NOME_MAX_LEN, nullable = false, unique = true)
     private String nome;
 
@@ -37,7 +37,12 @@ public class Conta extends EntidadeBaseInt {
     public Conta(String nome) {
         this.nome = nome;
     }
-    
+
+    public Conta(Integer id, String nome) {
+        this(nome);
+        super.setId(id);
+    }
+
     public String getNome() {
         return nome;
     }
@@ -72,5 +77,5 @@ public class Conta extends EntidadeBaseInt {
             .append(getId())
             .append(getNome())
             .toHashCode();
-    }    
+    }
 }
