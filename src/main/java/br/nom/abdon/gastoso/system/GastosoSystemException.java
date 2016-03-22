@@ -21,5 +21,12 @@ package br.nom.abdon.gastoso.system;
  * @author Bruno Abdon
  */
 public class GastosoSystemException extends Exception {
+
+    public GastosoSystemException(){
+        super();
+    }
     
+    public GastosoSystemException(final String message) {
+        super(message);
+    }
 }
