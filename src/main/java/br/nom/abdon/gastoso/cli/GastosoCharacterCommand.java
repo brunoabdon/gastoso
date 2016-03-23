@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
@@ -202,6 +203,23 @@ public class GastosoCharacterCommand {
                 + " - " 
                 + fato.getDescricao());
 
+                /*
+                final List<Lancamento> lancamentos = 
+                    gastosoSystem
+                    .getLancamentos(
+                        new FiltroLancamento()
+                        .fromFato(fato.getId()));
+
+                lancamentos.forEach(
+                l -> {
+                        writer.printf("\t[%4d] - [%4d] - %s %d",
+                            l.getId(),
+                            l.getConta().getId(),
+                            l.getConta().getNome(),
+                            l.getValor());
+                    }
+                );
+            */
 
         } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
@@ -238,19 +256,11 @@ public class GastosoCharacterCommand {
 
             final Fato fato = gastosoSystem.create(new Fato(dia, descricao));
             
-            final List<Lancamento> lancamentos = 
-                gastosoSystem
-                .getLancamentos(
-                    new FiltroLancamento()
-                    .fromFato(fato.getId()));
-            
             writer.println(
-                "Fato criado: " 
+                "Fato criado: [" 
                 + fato.getId()
-                + " - "
-                + fato.getDia().format(java.time.format.DateTimeFormatter.ISO_DATE)
-                + " - " 
-                + fato.getDescricao());
+                + "] " + fato.getDia().format(ISO_DATE)
+                + " - " + fato.getDescricao());
         }
     }
 

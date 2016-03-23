@@ -29,6 +29,7 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -175,16 +176,14 @@ public class GastosoRestClient implements GastosoSystem{
                 lancamentosWebTarget.queryParam("conta", fatoId)
                 .queryParam("dataMin", filtro.getDataMinima())
                 .queryParam("dataMax", filtro.getDataMaxima());
-            
         } else {
             throw new GastosoSystemRTException("Deu ruim");
         }
         
-//        List<Lancamento> lancamentos = 
-//            webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
-        ;
-        
-        return Collections.emptyList();
+        return 
+            webTarget
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<List<Lancamento>>(){});
     }
 
     @Override
