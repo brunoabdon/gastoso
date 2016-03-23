@@ -364,11 +364,13 @@ public class GastosoCharacterCommand {
 
     private Periodo essaSemana() {
         final LocalDate domingoPassado =
-                LocalDate.now()
-                        .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+                LocalDate
+                    .now()
+                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
 
         final LocalDate proximoSabado =
-                domingoPassado.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+                domingoPassado
+                .with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
 
         return new Periodo(domingoPassado, proximoSabado);
     }
