@@ -16,12 +16,16 @@
  */
 package br.nom.abdon.gastoso.dal;
 
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
+import org.apache.commons.lang3.StringUtils;
+
 import br.nom.abdon.dal.AbstractDao;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Conta;
-import java.util.List;
-import javax.persistence.EntityManager;
-import org.apache.commons.lang3.StringUtils;
+
 
 /**
  *
