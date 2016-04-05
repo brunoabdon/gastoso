@@ -4,9 +4,11 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.dal.FatosDao;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
 import br.nom.abdon.rest.AbstractRestCrud;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -45,6 +48,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
     @GET
     public Response listar(
         final @Context Request request,
+        final @Context HttpHeaders httpHeaders,
         final @QueryParam("mes") YearMonth mes,
         @QueryParam("dataMin") LocalDate dataMinima,
         @QueryParam("dataMax") LocalDate dataMaxima){
@@ -71,6 +75,6 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
             entityManager.close();
         }
         
-        return buildResponse(request, fatos);
+        return buildResponse(request, httpHeaders, fatos);
     }
 }
