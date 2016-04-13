@@ -17,6 +17,10 @@
 package br.nom.abdon.gastoso.system;
 
 import java.time.LocalDate;
+import java.util.LinkedList;
+import java.util.List;
+
+import br.nom.abdon.gastoso.Fato;
 
 /**
  *
@@ -28,6 +32,10 @@ public class FiltroFatos {
     private LocalDate dataMinima, dataMaxima;
     private Integer inicio, fim, quantos;
     private Integer id;
+    
+    private Fato fato;
+
+    private List<ORDEM> ordem;
 
     public Integer getId() {
         return id;
@@ -36,8 +44,6 @@ public class FiltroFatos {
     public void setId(Integer id) {
         this.id = id;
     }
-
-    private ORDEM ordem;
 
     public LocalDate getDataMinima() {
         return dataMinima;
@@ -79,11 +85,22 @@ public class FiltroFatos {
         this.quantos = quantos;
     }
 
-    public ORDEM getOrdem() {
-        return ordem;
+    public FiltroFatos addOrdem(ORDEM ordem){
+        if(ordem == null) this.ordem = new LinkedList<>();
+        this.ordem.add(ordem);
+        return this;
     }
 
-    public void setOrdem(ORDEM ordem) {
-        this.ordem = ordem;
-    }    
+    public List<ORDEM> getOrdem() {
+        return ordem;
+    }
+    
+    public Fato getFato() {
+        return fato;
+    }
+
+    public void setFato(Fato fato) {
+        this.fato = fato;
+    }
+
 }

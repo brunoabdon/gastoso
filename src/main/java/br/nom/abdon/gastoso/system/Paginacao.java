@@ -16,45 +16,29 @@
  */
 package br.nom.abdon.gastoso.system;
 
-import br.nom.abdon.gastoso.Conta;
-
 /**
  *
  * @author Bruno Abdon
  */
-public class FiltroContas {
+public class Paginacao {
+    
+    private Integer primeiro = 0, quantidadeMaxima;
 
-    public static enum ORDEM {ID, NOME};
-    
-    private Integer id;
-    
-    private Conta conta;
-    
-    private ORDEM ordem;
-
-    public Integer getId() {
-        return id;
+    public Integer getPrimeiro() {
+        return primeiro;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setPrimeiro(Integer primeiro) {
+        this.primeiro = primeiro;
     }
 
-    public ORDEM getOrdem() {
-        return ordem;
+    public Integer getQuantidadeMaxima() {
+        return quantidadeMaxima;
     }
 
-    public void setOrdem(ORDEM ordem) {
-        this.ordem = ordem;
+    public void setQuantidadeMaxima(Integer quantidadeMaxima) {
+        this.quantidadeMaxima = quantidadeMaxima;
     }
     
     
-    public Conta getConta() {
-        return conta;
-    }
-
-    public void setConta(Conta conta) {
-        this.conta = conta;
-    }
-
 }
