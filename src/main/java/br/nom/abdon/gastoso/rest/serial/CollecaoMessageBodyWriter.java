@@ -16,7 +16,6 @@
  */
 package br.nom.abdon.gastoso.rest.serial;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -25,39 +24,38 @@ import java.util.Collection;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.Providers;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import pl.touk.throwing.ThrowingConsumer;
 
-import br.nom.abdon.modelo.Entidade;
+import static br.nom.abdon.gastoso.rest.serial.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
+import static br.nom.abdon.gastoso.rest.serial.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 
 /**
  *
  * @author Bruno Abdon
  */
-@Provider
 @Produces({
+    MediaTypes.APPLICATION_GASTOSO_SIMPLES,
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
-    MediaTypes.APPLICATION_GASTOSO_SIMPLES
+    MediaTypes.APPLICATION_GASTOSO_FULL
 })
-public class CollectionEntidadesMessageBodyWriter 
-        implements MessageBodyWriter<Collection<? extends Entidade>>{
-
-    private static final String ENTIDADE_CLASS_NAME = Entidade.class.getName();
+public abstract class CollecaoMessageBodyWriter<X> 
+        implements MessageBodyWriter<Collection<X>>{
 
     //resusable, thread-safe. move somewhere.
     private static final JsonFactory JSON_FACT = new JsonFactory(); 
-    
-    private static final Annotation[] NO_ANNOTATION = new Annotation[]{};
 
-    @Context
-    private Providers providers;
+    private final String className;
+    
+    protected CollecaoMessageBodyWriter(Class<X> klass){
+        this.className = klass.getName();
+    }
     
     @Override
     public boolean isWriteable(
@@ -68,12 +66,12 @@ public class CollectionEntidadesMessageBodyWriter
 
         return 
             Collection.class.isAssignableFrom(type) 
-            && genericType.getTypeName().contains(ENTIDADE_CLASS_NAME);
+            && genericType.getTypeName().contains(className);
     }
 
     @Override
     public void writeTo(
-        final Collection<? extends Entidade> colecao, 
+        final Collection<X> colecao, 
         final Class<?> type, 
         final Type genericType, 
         final Annotation[] annotations, 
@@ -85,35 +83,43 @@ public class CollectionEntidadesMessageBodyWriter
         final JsonGenerator gen = JSON_FACT.createGenerator(entityStream);
         
         gen.writeStartArray();
-        
-        if(colecao.size() > 0){
-            final Class<? extends Entidade> klass =
-                colecao.iterator().next().getClass();
-            
-            final EntidadeMessageBodyWriter entityBodyWriter = 
-                (EntidadeMessageBodyWriter)
-                providers
-                .getMessageBodyWriter(
-                    klass, 
-                    klass, 
-                    NO_ANNOTATION, 
-                    mediaType);
 
-            for(Entidade entidade : colecao) {
-                entityBodyWriter.marshall(gen, entidade, mediaType);
-            }
+        if(!colecao.isEmpty()){
+            Marshaller.TIPO tipo = 
+                mediaType.isCompatible(APPLICATION_GASTOSO_SIMPLES_TYPE)
+                ? Marshaller.TIPO.BARE
+                : mediaType.isCompatible(APPLICATION_GASTOSO_NORMAL_TYPE)
+                    ? Marshaller.TIPO.NORM
+                    : Marshaller.TIPO.FULL;
+            
+            foreach(colecao, getMarshaller(gen,tipo));
         }
 
         gen.writeEndArray();
+
         gen.flush();
     }
+    
+    protected abstract ThrowingConsumer<X,IOException> getMarshaller(
+        final JsonGenerator gen, 
+        final Marshaller.TIPO tipo);
 
     @Override
     public long getSize(
-            final Collection<? extends Entidade> t, Class<?> type, 
+            final Collection<X> t, Class<?> type, 
             final Type genericType, 
             final Annotation[] annotations, 
             final MediaType mediaType) {
         return -1;
+    }
+    
+   //utility function.. move to abd-utils someday...
+    private void foreach(
+        final Collection<X> colection, 
+        final ThrowingConsumer<X,IOException> consumer) throws IOException{
+        
+        for(X x : colection) {
+            consumer.accept(x);
+        }
     }
 }

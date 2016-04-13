@@ -20,6 +20,9 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
+import br.nom.abdon.gastoso.system.FiltroContas;
+import br.nom.abdon.gastoso.system.FiltroFatos;
+import br.nom.abdon.gastoso.system.FiltroLancamentos;
 import br.nom.abdon.rest.AbstractRestCrud;
 
 
@@ -61,7 +64,12 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
 
         try {
             if(fato != null){
-                lancamentos = dao.listar(entityManager, fato);
+                final FiltroFatos filtroFatos = new FiltroFatos();
+                filtroFatos.setFato(fato);
+                FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
+                filtroLancamentos.setFiltroFatos(filtroFatos);
+
+                lancamentos = dao.listar(entityManager, filtroLancamentos);
             } else if (conta != null
                         &&
                             (mes != null 
@@ -73,11 +81,18 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
                     dataMaxima = mes.atEndOfMonth();
                 }
                     
-                lancamentos = dao.listar(
-                            entityManager, 
-                            conta, 
-                            dataMinima, 
-                            dataMaxima);
+                FiltroContas filtroContas = new FiltroContas();
+                filtroContas.setConta(conta);
+
+                FiltroFatos filtroFatos = new FiltroFatos();
+                filtroFatos.setDataMinima(dataMinima);
+                filtroFatos.setDataMaxima(dataMaxima);
+                
+                FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
+                filtroLancamentos.setFiltroContas(filtroContas);
+                filtroLancamentos.setFiltroFatos(filtroFatos);
+                
+                lancamentos = dao.listar(entityManager, filtroLancamentos);
             } else {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }

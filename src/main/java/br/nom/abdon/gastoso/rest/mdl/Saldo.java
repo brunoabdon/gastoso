@@ -14,14 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest.serial;
+package br.nom.abdon.gastoso.rest.mdl;
 
-import java.io.IOException;
-
-import javax.ws.rs.ext.Provider;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import pl.touk.throwing.ThrowingConsumer;
+import java.time.LocalDate;
 
 import br.nom.abdon.gastoso.Conta;
 
@@ -29,16 +24,39 @@ import br.nom.abdon.gastoso.Conta;
  *
  * @author Bruno Abdon
  */
-@Provider
-public class ContasMessageBodyWriter extends CollecaoMessageBodyWriter<Conta>{
+public class Saldo {
 
-    public ContasMessageBodyWriter() {
-        super(Conta.class);
+    private Conta conta;
+    private LocalDate dia;
+    private int valor;
+
+    public Saldo(final LocalDate dia, final Conta conta, final int valor) {
+        this.dia = dia;
+        this.conta = conta;
+        this.valor = valor;
     }
 
-    @Override
-    protected ThrowingConsumer<Conta, IOException> getMarshaller(
-            final JsonGenerator gen, final Marshaller.TIPO tipo) {
-        return c -> Marshaller.marshall(gen, c, tipo);
+    public LocalDate getDia() {
+        return dia;
+    }
+
+    public void setDia(LocalDate dia) {
+        this.dia = dia;
+    }
+
+    public Conta getConta() {
+        return conta;
+    }
+
+    public void setConta(Conta conta) {
+        this.conta = conta;
+    }
+
+    public int getValor() {
+        return valor;
+    }
+
+    public void setValor(int valor) {
+        this.valor = valor;
     }
 }

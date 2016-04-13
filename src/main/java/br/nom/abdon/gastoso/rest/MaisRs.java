@@ -24,15 +24,15 @@ import br.nom.abdon.gastoso.dal.LancamentosDao;
 import br.nom.abdon.gastoso.rest.model.ContaDetalhe;
 import br.nom.abdon.gastoso.rest.model.Extrato;
 import br.nom.abdon.gastoso.rest.model.FatoDetalhe;
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
-import java.time.temporal.TemporalAmount;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -46,6 +46,9 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+
+import br.nom.abdon.gastoso.system.FiltroFatos;
+import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
 /**
  * @author Bruno Abdon
@@ -93,7 +96,8 @@ public class MaisRs {
 
         final Function<Fato, FatoDetalhe> detalhaFato = 
             fato -> new FatoDetalhe(
-                            fato, lancamentosDao.listar(entityManager, fato));
+                            fato, lancamentosDao
+                                    .listar(entityManager, makeFiltro(fato)));
         try {
             fatos = fatosDao.listar(entityManager, conta, dataMaxima, 30);
             
@@ -177,7 +181,7 @@ public class MaisRs {
         final Function<Fato, FatoDetalhe> detalhaFato = 
             fato -> new FatoDetalhe(
                             fato, 
-                            lancamentosDao.listar(entityManager, fato));
+                            lancamentosDao.listar(entityManager, makeFiltro(fato)));
         
         try {
             fatos = fatosDao.listar(entityManager, dataMinima, dataMaxima);
@@ -246,4 +250,14 @@ public class MaisRs {
  
         return builder.build();
     }
+    
+    private FiltroLancamentos makeFiltro(final Fato fato){
+        final FiltroFatos filtroFatos = new FiltroFatos();
+        filtroFatos.setFato(fato);
+        final FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
+        filtroLancamentos.setFiltroFatos(filtroFatos);
+        return filtroLancamentos;
+        
+    }
+    
 }

@@ -16,6 +16,8 @@
  */
 package br.nom.abdon.gastoso.rest.serial;
 
+import java.util.Arrays;
+
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -30,8 +32,8 @@ public class MediaTypes {
     public static final MediaType APPLICATION_GASTOSO_NORMAL_TYPE =
         new MediaType("application", "vnd.gastoso.v1.normal+json");
 
-    public static final MediaType APPLICATION_GASTOSO_DACONTA_TYPE =
-        new MediaType("application", "vnd.gastoso.v1.daconta+json");
+    public static final MediaType APPLICATION_GASTOSO_FULL_TYPE =
+        new MediaType("application", "vnd.gastoso.v1.full+json");
 
     public static final String APPLICATION_GASTOSO_SIMPLES =
         "application/vnd.gastoso.v1.simples+json";
@@ -39,7 +41,17 @@ public class MediaTypes {
     public static final String APPLICATION_GASTOSO_NORMAL =
         "application/vnd.gastoso.v1.normal+json";
 
-    public static final String APPLICATION_GASTOSO_DACONTA =
-        "application/vnd.gastoso.v1.daconta+json";
+    public static final String APPLICATION_GASTOSO_FULL =
+        "application/vnd.gastoso.v1.full+json";
+
+
+    public static final boolean acceptMediaTypes(
+            final MediaType mediaTypeToAccept, 
+            final MediaType ... acceptableMediaTypes){
+        
+        return Arrays
+                .stream(acceptableMediaTypes)
+                .allMatch(mediaTypeToAccept::isCompatible);
+    }
     
 }

@@ -41,7 +41,7 @@ import br.nom.abdon.gastoso.Conta;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
-public class ContaMessageBodyWriter implements EntidadeMessageBodyWriter<Conta>{
+public class ContaMessageBodyWriter extends AbsMessageBodyWriter<Conta>{
 
     //resusable, thread-safe. move somewhere.
     private static final JsonFactory JSON_FACT = new JsonFactory(); 
@@ -53,14 +53,12 @@ public class ContaMessageBodyWriter implements EntidadeMessageBodyWriter<Conta>{
             final Annotation[] annotations, 
             final MediaType mediaType) {
 
-        System.out.printf("sei ler %s/%s como %s?",type,genericType,mediaType);
-
         return 
-            type == Conta.class
-            && (mediaType
-                .isCompatible(MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE)
-                || mediaType
-                    .isCompatible(MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE));
+            Conta.class.isAssignableFrom(type)
+            && MediaTypes.acceptMediaTypes(
+                mediaType,
+                MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE,
+                MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE);
     }
 
     @Override
@@ -75,33 +73,9 @@ public class ContaMessageBodyWriter implements EntidadeMessageBodyWriter<Conta>{
             throws IOException, WebApplicationException {
 
         final JsonGenerator gen = JSON_FACT.createGenerator(entityStream);
-        
-        marshall(gen, conta, mediaType);
-        
+
+        Marshaller.marshall(gen, conta, Marshaller.TIPO.NORM);
+
         gen.flush();
     }
-
-    @Override
-    public void marshall(
-            final JsonGenerator gen, 
-            final Conta conta, 
-            final MediaType mediaType) throws IOException {
-        
-        gen.writeStartObject();
-        gen.writeNumberField("id", conta.getId());
-        if(mediaType.isCompatible(MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE)){
-            gen.writeStringField("nome", conta.getNome());
-        }
-        gen.writeEndObject();
-    }
-
-    @Override
-    public long getSize(
-            final Conta t, 
-            final Class<?> type, 
-            final Type genericType, 
-            final Annotation[] annotations, 
-            final MediaType mediaType) {
-        return -1;
-    }    
 }

@@ -16,27 +16,27 @@
  */
 package br.nom.abdon.gastoso.rest.serial;
 
-import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import br.nom.abdon.gastoso.Conta;
-import br.nom.abdon.modelo.Entidade;
 
 /**
  *
  * @author Bruno Abdon
  * @param <E>
  */
-public interface EntidadeMessageBodyWriter<E extends Entidade> 
-        extends MessageBodyWriter<E>  {
-    
-    public void marshall(
-        final JsonGenerator gen, 
-        final E conta, 
-        final MediaType mediaType) throws IOException;
-    
+public abstract class AbsMessageBodyWriter<T> implements MessageBodyWriter<T>  {
+
+    @Override
+    public long getSize(
+            final T t, 
+            final Class<?> type, 
+            final Type genericType, 
+            final Annotation[] annotations, 
+            final MediaType mediaType) {
+        return -1;
+    }    
 }
