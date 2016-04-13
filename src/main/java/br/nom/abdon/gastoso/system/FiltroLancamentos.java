@@ -20,27 +20,22 @@ package br.nom.abdon.gastoso.system;
  *
  * @author Bruno Abdon
  */
-public class FiltroContas {
-
-    public static enum ORDEM {ID, NOME};
+public class FiltroLancamentos {
     
-    private Integer id;
+    private FiltroFatos filtroFatos;
+    private FiltroContas filtroContas;
     
-    private ORDEM ordem;
+    //private Integer valorMinimo, valorMaximo;
 
-    public Integer getId() {
-        return id;
+    public FiltroFatos getFiltroFatos() {
+        if(this.filtroFatos == null) this.filtroFatos = new FiltroFatos();
+        return filtroFatos;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public FiltroContas getFiltroContas() {
+        if(this.filtroContas == null) this.filtroContas = new FiltroContas();
+        return filtroContas;
     }
 
-    public ORDEM getOrdem() {
-        return ordem;
-    }
-
-    public void setOrdem(ORDEM ordem) {
-        this.ordem = ordem;
-    }
+    
 }

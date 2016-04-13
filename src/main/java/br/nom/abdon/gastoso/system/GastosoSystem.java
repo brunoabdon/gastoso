@@ -49,7 +49,7 @@ public interface GastosoSystem {
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public List<Lancamento> getLancamentos(FiltroLancamento fitro)
+    public List<Lancamento> getLancamentos(FiltroLancamentos fitro)
         throws GastosoSystemRTException, GastosoSystemException;
 
     public void update(Fato fato)
