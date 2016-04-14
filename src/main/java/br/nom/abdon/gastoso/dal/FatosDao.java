@@ -18,7 +18,6 @@ package br.nom.abdon.gastoso.dal;
 
 import br.nom.abdon.dal.AbstractDao;
 import br.nom.abdon.dal.DalException;
-import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 
 import java.time.LocalDate;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.ParameterExpression;
@@ -94,15 +92,13 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
         
         trataOrdenacao(filtroFatos, root, cb, q);
         
-        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
-
-        final TypedQuery<Fato> query = em.createQuery(q);
-        
-        DalUtil.tratarPaginacao(filtroFatos.getPaginacao(), query);
-
-        DalUtil.trataParams(params, query);
-        
-        return query.getResultList();
+        return DalUtil
+                .prepareAndRunQuery(
+                    em, 
+                    q, 
+                    where, 
+                    params, 
+                    filtroFatos.getPaginacao());
     }
 
     protected static void buildQuery(
@@ -151,20 +147,11 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
         }
     }
  
-    public List<Fato> listar(
-        final EntityManager em, 
-        final Conta conta, 
-        final LocalDate dataMaxima,
-        final int quantidadeMaxima){
-        
-        return em.createNamedQuery("Fato.porContaPeriodo",Fato.class)
-                .setParameter("conta", conta)
-                .setParameter("dataMaxima", dataMaxima)
-                .setMaxResults(quantidadeMaxima)
-                .getResultList();
-    }
-
-    private void trataOrdenacao(FiltroFatos filtroFatos, Root<Fato> root, CriteriaBuilder cb, CriteriaQuery<Fato> q) {
+    private void trataOrdenacao(
+        final FiltroFatos filtroFatos, 
+        final Root<Fato> root, 
+        final CriteriaBuilder cb, 
+        final CriteriaQuery<Fato> q) {
         //...
     } 
 }

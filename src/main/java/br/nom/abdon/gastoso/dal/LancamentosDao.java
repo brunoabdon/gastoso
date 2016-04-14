@@ -124,15 +124,12 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
 
         trataOrdenacao(filtro, rootLancamento, cb, q);
         
-        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
-
-        final TypedQuery<Lancamento> query = em.createQuery(q);
+        return 
+            DalUtil
+                .prepareAndRunQuery(
+                    em, q, where, params, filtro.getPaginacao()
+            );
         
-        DalUtil.tratarPaginacao(filtro.getPaginacao(), query);
-
-        DalUtil.trataParams(params, query);
-        
-        return query.getResultList();
     }
 
     private void trataOrdenacao(

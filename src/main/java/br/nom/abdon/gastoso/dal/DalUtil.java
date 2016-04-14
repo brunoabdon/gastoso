@@ -16,11 +16,14 @@
  */
 package br.nom.abdon.gastoso.dal;
 
+import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 
-import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.system.Paginacao;
 
 /**
@@ -29,7 +32,7 @@ import br.nom.abdon.gastoso.system.Paginacao;
  */
 class DalUtil {
 
-    static void tratarPaginacao(
+    private static void tratarPaginacao(
             final Paginacao paginacao, 
             final TypedQuery query) {
 
@@ -40,7 +43,7 @@ class DalUtil {
         if(quantos != null)query.setMaxResults(quantos);
     }
     
-    static void trataParams(
+    private static void trataParams(
             final Map<String, Object> params, 
             final TypedQuery query) {
         
@@ -48,8 +51,22 @@ class DalUtil {
             (entry) -> query.setParameter(entry.getKey(), entry.getValue())
         );
     }
-
     
+    static <X> List<X> prepareAndRunQuery(
+            final EntityManager em, 
+            final CriteriaQuery<X> q, 
+            final List<Predicate> where, 
+            final Map<String, Object> params,
+            final Paginacao paginacao) {
 
-    
+        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
+        
+        final TypedQuery<X> query = em.createQuery(q);
+        
+        DalUtil.tratarPaginacao(paginacao, query);
+
+        DalUtil.trataParams(params, query);
+        
+        return query.getResultList();
+    }
 }
