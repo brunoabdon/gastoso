@@ -16,7 +16,6 @@
  */
 package br.nom.abdon.gastoso.dal;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,12 +34,10 @@ import javax.persistence.criteria.Root;
 import br.nom.abdon.dal.AbstractDao;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Conta;
-import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
-import br.nom.abdon.gastoso.system.Paginacao;
 
 
 
@@ -88,12 +85,6 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         }
     }
     
-    public boolean existe(final EntityManager em, final Conta conta){
-        return em.createNamedQuery("Conta.temLancamento", Boolean.class)
-                .setParameter("conta", conta)
-                .getSingleResult();
-    }
-    
     public List<Lancamento> listar(
         final EntityManager em, 
         final FiltroLancamentos filtro){
@@ -110,7 +101,7 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         final List<Predicate> where = new LinkedList<>();
         final Map<String,Object> params = new HashMap<>();
         
-        FiltroContas filtroContas = filtro.getFiltroContas();
+        final FiltroContas filtroContas = filtro.getFiltroContas();
         if(filtroContas != null){
             
             final Conta conta = filtroContas.getConta();
@@ -127,82 +118,26 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         }
 
         final FiltroFatos filtroFatos = filtro.getFiltroFatos();
-        
-        if(filtroFatos != null){
-            
-            final Fato fato = filtroFatos.getFato();
-            if(fato != null){
-                final ParameterExpression<Fato> fatoParameter = 
-                    cb.parameter(Fato.class, "fato");
-            
-                final Path<Fato> fatoDoLancamento = rootLancamento.get("fato");
-            
-                where.add(cb.equal(fatoParameter, fatoDoLancamento));
-                params.put("fato",fato);
-
-            }
-
-            final LocalDate dataMaxima = filtroFatos.getDataMaxima();
-            if(dataMaxima != null){
-                final Path<LocalDate> diaPath = 
-                    rootLancamento.get("fato").get("dia");
-                
-                final ParameterExpression<LocalDate> dataMaximaParameter =
-                    cb.parameter(LocalDate.class, "dataMaxima");
-                
-                final Predicate menorOuIgualDataMaxima =
-                    cb.lessThanOrEqualTo(diaPath, dataMaximaParameter);
-                
-                where.add(menorOuIgualDataMaxima);
-                params.put("dataMaxima", dataMaxima);
-                
-            }
-            
-            final LocalDate dataMinima = filtroFatos.getDataMinima();
-            if(dataMinima != null){
-                final Path<LocalDate> diaPath = 
-                    rootLancamento.get("fato").get("dia");
-
-                final ParameterExpression<LocalDate> dataMinimaParameter =
-                    cb.parameter(LocalDate.class, "dataMinima");
-
-                final Predicate maiorOuIgualQueDataMinima =
-                    cb.greaterThanOrEqualTo(diaPath, dataMinimaParameter);
-                
-                where.add(maiorOuIgualQueDataMinima);
-                params.put("dataMinima", dataMinima);
-            }
-        
-        }
-        
-        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
+        FatosDao.buildQuery(
+            cb, filtroFatos, rootLancamento.get("fato"), where, params
+        );
 
         trataOrdenacao(filtro, rootLancamento, cb, q);
         
+        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
+
         final TypedQuery<Lancamento> query = em.createQuery(q);
         
-        final Paginacao paginacao = filtro.getPaginacao();
-        
-        final Integer inicio = paginacao.getPrimeiro();
-        final Integer quantos = paginacao.getQuantidadeMaxima();
-        
-        if(inicio != null) query.setFirstResult(inicio);
-        if(quantos != null)query.setMaxResults(quantos);
+        DalUtil.tratarPaginacao(filtro.getPaginacao(), query);
 
-        params.entrySet().stream().forEach((entry) -> {
-            final String paramName = entry.getKey();
-            final Object paramValue = entry.getValue();
-            
-            System.out.printf("filtrando %s: %s\n",paramName,paramValue);
-            
-            query.setParameter(paramName, paramValue);
-        });
+        DalUtil.trataParams(params, query);
+        
         return query.getResultList();
     }
 
     private void trataOrdenacao(
             final FiltroLancamentos filtro, 
-            final Root<Lancamento> rootLancamento, 
+            final Root rootLancamento, 
             final CriteriaBuilder cb, 
             final CriteriaQuery<Lancamento> q) {
         
@@ -251,33 +186,5 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
             
             q.orderBy(orders);
         }
-    }
-    
-    public long valorTotal(
-            final EntityManager em, 
-            final Conta conta, 
-            final LocalDate dataFinal){
-        
-        final Long result = 
-            em.createNamedQuery("Lancamento.totalDaContaEm", Long.class)
-            .setParameter("conta", conta)
-            .setParameter("dataFinal", dataFinal)
-            .getResultList()
-            .get(0);
-        
-        return result == null ? 0 : result;
-    }
-
-    public long valorTotalAte(
-            final EntityManager em, 
-            final Lancamento lancamento){
-        
-        final Long result = 
-            em.createNamedQuery("Lancamento.saldoAnterior", Long.class)
-            .setParameter("lancamento", lancamento)
-            .getResultList()
-            .get(0);
-        
-        return result == null ? 0 : result;
     }
 }
