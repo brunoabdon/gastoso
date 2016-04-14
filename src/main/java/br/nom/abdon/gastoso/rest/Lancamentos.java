@@ -5,6 +5,7 @@ import java.time.YearMonth;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
@@ -37,6 +39,7 @@ import br.nom.abdon.rest.AbstractRestCrud;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
+@Consumes(MediaType.APPLICATION_JSON)
 public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
 
     protected static final String PATH = "lancamentos";

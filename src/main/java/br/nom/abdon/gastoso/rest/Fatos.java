@@ -14,18 +14,20 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-
-import jersey.repackaged.com.google.common.base.Suppliers;
 
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Lancamento;
@@ -44,6 +46,7 @@ import br.nom.abdon.gastoso.system.FiltroLancamentos;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
+@Consumes(MediaType.APPLICATION_JSON)
 public class Fatos extends AbstractRestCrud<Fato,Integer>{
 
     protected static final String PATH = "fatos";
@@ -151,6 +154,5 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         
         return new FatoNormal(fato, lancamentos);
     }
-    
-    
+
 }

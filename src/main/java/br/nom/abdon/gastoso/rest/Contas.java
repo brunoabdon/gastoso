@@ -8,11 +8,14 @@ import br.nom.abdon.rest.AbstractRestCrud;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
@@ -27,6 +30,7 @@ import javax.ws.rs.core.Response;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
+@Consumes(MediaType.APPLICATION_JSON)
 public class Contas extends AbstractRestCrud<Conta,Integer>{
 
     static final String PATH = "contas";
@@ -43,7 +47,6 @@ public class Contas extends AbstractRestCrud<Conta,Integer>{
     }
     
     @GET
-    @Produces({MediaTypes.APPLICATION_GASTOSO_NORMAL,MediaTypes.APPLICATION_GASTOSO_SIMPLES})
     public Response listar(
             final @Context Request request,
             final @Context HttpHeaders httpHeaders) {
@@ -57,7 +60,9 @@ public class Contas extends AbstractRestCrud<Conta,Integer>{
         } finally {
             em.close();
         }
-        
-        return super.buildResponse(request,httpHeaders,contas);
+
+        final GenericEntity<List<Conta>> genericEntity = 
+            new GenericEntity<List<Conta>>(contas){};
+        return super.buildResponse(request,httpHeaders,genericEntity);
     }
  }
