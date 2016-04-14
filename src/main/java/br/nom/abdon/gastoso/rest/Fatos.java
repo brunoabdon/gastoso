@@ -30,7 +30,6 @@ import jersey.repackaged.com.google.common.base.Suppliers;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.rest.model.FatoNormal;
-import br.nom.abdon.gastoso.rest.serial.MediaTypes;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
@@ -151,9 +150,6 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
                 : lancamentos.get(0).getFato();
         
         return new FatoNormal(fato, lancamentos);
-        
-        
-        
     }
     
     

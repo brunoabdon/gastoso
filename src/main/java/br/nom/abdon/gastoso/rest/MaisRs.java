@@ -44,7 +44,6 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.aggregate.Saldo;
 import br.nom.abdon.gastoso.aggregate.dal.AggregateDao;
 import br.nom.abdon.gastoso.aggregate.dal.FiltroSaldo;
-import br.nom.abdon.gastoso.rest.serial.MediaTypes;
 
 
 /**

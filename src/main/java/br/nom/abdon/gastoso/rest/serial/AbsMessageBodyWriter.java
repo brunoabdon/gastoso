@@ -16,6 +16,8 @@
  */
 package br.nom.abdon.gastoso.rest.serial;
 
+import br.nom.abdon.gastoso.rest.MediaTypes;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;

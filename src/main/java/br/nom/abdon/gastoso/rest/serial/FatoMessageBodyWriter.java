@@ -24,8 +24,8 @@ import javax.ws.rs.ext.Provider;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import br.nom.abdon.gastoso.rest.model.FatoNormal;
-import static br.nom.abdon.gastoso.rest.serial.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
-import static br.nom.abdon.gastoso.rest.serial.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 
 /**
  *

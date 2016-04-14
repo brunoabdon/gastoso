@@ -16,7 +16,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
-import br.nom.abdon.gastoso.rest.serial.MediaTypes;
 
 /**
  *

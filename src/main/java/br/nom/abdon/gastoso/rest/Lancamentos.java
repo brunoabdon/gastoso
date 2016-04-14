@@ -11,8 +11,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
@@ -31,7 +32,11 @@ import br.nom.abdon.rest.AbstractRestCrud;
  * @author bruno
  */
 @Path(Lancamentos.PATH)
-@Produces(MediaType.APPLICATION_JSON)
+@Produces({
+    MediaTypes.APPLICATION_GASTOSO_FULL,
+    MediaTypes.APPLICATION_GASTOSO_NORMAL,
+    MediaTypes.APPLICATION_GASTOSO_SIMPLES
+})
 public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
 
     protected static final String PATH = "lancamentos";
@@ -101,6 +106,9 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
             entityManager.close();
         }
             
-        return buildResponse(request, httpHeaders, lancamentos);
+        
+        final GenericEntity<List<Lancamento>> genericEntity = 
+            new GenericEntity<List<Lancamento>>(lancamentos){};
+        return buildResponse(request, httpHeaders, genericEntity);
     }
 }
