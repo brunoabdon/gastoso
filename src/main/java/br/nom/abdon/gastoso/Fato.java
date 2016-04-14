@@ -9,14 +9,10 @@ import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import br.nom.abdon.dal.util.LocalDatePersistenceConverter;
 import br.nom.abdon.modelo.EntidadeBaseInt;
-import br.nom.abdon.util.LocalDateISO8601Deserializer;
-import br.nom.abdon.util.LocalDateISO8601Serializer;
 
 
 /**
@@ -39,8 +35,6 @@ public class Fato extends EntidadeBaseInt {
     public static final int DESC_MAX_LEN = 70;
     
     @Column(nullable = false)
-    @JsonSerialize(using = LocalDateISO8601Serializer.class)
-    @JsonDeserialize(using = LocalDateISO8601Deserializer.class)
     @Convert(converter = LocalDatePersistenceConverter.class)
     private LocalDate dia;
     
