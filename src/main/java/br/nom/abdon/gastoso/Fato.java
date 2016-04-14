@@ -1,19 +1,23 @@
 package br.nom.abdon.gastoso;
 
-import br.nom.abdon.modelo.EntidadeBaseInt;
-import br.nom.abdon.util.LocalDateISO8601Deserializer;
-import br.nom.abdon.util.LocalDateISO8601Serializer;
-import br.nom.abdon.dal.util.LocalDatePersistenceConverter;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import br.nom.abdon.dal.util.LocalDatePersistenceConverter;
+import br.nom.abdon.modelo.EntidadeBaseInt;
+import br.nom.abdon.util.LocalDateISO8601Deserializer;
+import br.nom.abdon.util.LocalDateISO8601Serializer;
+
 
 /**
  *
@@ -46,7 +50,11 @@ public class Fato extends EntidadeBaseInt {
     public Fato() {
     }
 
-    public Fato(LocalDate dia, String descricao) {
+    public Fato(final Integer id) {
+        super.setId(id);
+    }
+    
+    public Fato(final LocalDate dia, final String descricao) {
         this.dia = dia;
         this.descricao = descricao;
     }
