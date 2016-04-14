@@ -34,6 +34,10 @@ public class Conta extends EntidadeBaseInt {
     public Conta() {
     }
 
+    public Conta(Integer id) {
+        this(id,null);
+    }
+    
     public Conta(String nome) {
         this.nome = nome;
     }
