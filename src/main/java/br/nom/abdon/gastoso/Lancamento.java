@@ -1,15 +1,16 @@
 package br.nom.abdon.gastoso;
 
-import br.nom.abdon.gastoso.util.LancamentoJsonSerializer;
 import br.nom.abdon.modelo.EntidadeBaseInt;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -36,7 +37,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
         query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.fato = :fato AND l.conta = :conta"
     )
 })
-@JsonSerialize(using = LancamentoJsonSerializer.class)
 public class Lancamento extends EntidadeBaseInt {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
