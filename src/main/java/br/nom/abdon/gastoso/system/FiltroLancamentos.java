@@ -64,7 +64,7 @@ public class FiltroLancamentos {
     }
 
     public FiltroLancamentos addOrdem(ORDEM ordem){
-        if(ordem == null) this.ordem = new LinkedList<>();
+        if(this.ordem == null) this.ordem = new LinkedList<>();
         this.ordem.add(ordem);
         return this;
     }
