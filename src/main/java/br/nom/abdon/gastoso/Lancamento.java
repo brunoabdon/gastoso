@@ -34,14 +34,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     @NamedQuery(
         name = "Lancamento.existeDuplicata",
         query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.fato = :fato AND l.conta = :conta"
-    ),
-    @NamedQuery(
-        name = "Lancamento.totalDaContaEm",
-        query = "SELECT SUM(l.valor) FROM Lancamento l WHERE l.conta = :conta AND l.fato.dia <= :dataFinal"
-    ),
-    @NamedQuery(
-        name = "Lancamento.saldoAnterior",
-        query = "SELECT SUM(l2.valor) FROM Lancamento l, Lancamento l2 WHERE l = :lancamento AND l.conta = l2.conta AND (l.fato.dia > l2.fato.dia OR (l.fato.dia = l2.fato.dia AND l.fato.id > l2.fato.id))"
     )
 })
 @JsonSerialize(using = LancamentoJsonSerializer.class)

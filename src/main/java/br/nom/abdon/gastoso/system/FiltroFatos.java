@@ -36,6 +36,7 @@ public class FiltroFatos {
     private Fato fato;
 
     private List<ORDEM> ordem;
+    private Paginacao paginacao = new Paginacao();
 
     public Integer getId() {
         return id;
@@ -103,4 +104,7 @@ public class FiltroFatos {
         this.fato = fato;
     }
 
+    public Paginacao getPaginacao() {
+        return paginacao;
+    }
 }

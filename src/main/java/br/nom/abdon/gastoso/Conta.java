@@ -18,9 +18,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     name = "Conta.all",
     query = "SELECT c FROM Conta c ORDER BY c.nome"),
  @NamedQuery(
-    name = "Conta.temLancamento",
-    query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.conta = :conta"),
- @NamedQuery(
     name = "Conta.nomeEmUso",
     query = "SELECT COUNT(c.id) > 0 FROM Conta c WHERE c.nome = :nome")
 })
