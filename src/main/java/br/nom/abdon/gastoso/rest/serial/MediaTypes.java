@@ -51,7 +51,7 @@ public class MediaTypes {
         
         return Arrays
                 .stream(acceptableMediaTypes)
-                .allMatch(mediaTypeToAccept::isCompatible);
+                .anyMatch(mediaTypeToAccept::isCompatible);
     }
     
 }

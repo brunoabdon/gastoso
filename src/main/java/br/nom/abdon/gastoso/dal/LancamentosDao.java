@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Parameter;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -222,6 +221,10 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
                     case POR_CONTA_NOME_ASC:
                     case POR_CONTA_NOME_DESC:
                         path = rootLancamento.get("conta").get("nome");
+                        break;
+                    case POR_FATO_ID_ASC:
+                    case POR_FATO_ID_DESC:
+                        path = rootLancamento.get("fato").get("id");
                         break;
                     case POR_DESC_FATO_ASC:
                     case POR_DESC_FATO_DESC:

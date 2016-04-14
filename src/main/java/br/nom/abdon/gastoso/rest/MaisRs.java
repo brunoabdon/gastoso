@@ -16,45 +16,46 @@
  */
 package br.nom.abdon.gastoso.rest;
 
-import br.nom.abdon.gastoso.Conta;
-import br.nom.abdon.gastoso.Fato;
-import br.nom.abdon.gastoso.dal.ContasDao;
-import br.nom.abdon.gastoso.dal.FatosDao;
-import br.nom.abdon.gastoso.dal.LancamentosDao;
-import br.nom.abdon.gastoso.rest.model.ContaDetalhe;
-import br.nom.abdon.gastoso.rest.model.Extrato;
-import br.nom.abdon.gastoso.rest.model.FatoDetalhe;
-
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.YearMonth;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
-import br.nom.abdon.gastoso.system.FiltroFatos;
-import br.nom.abdon.gastoso.system.FiltroLancamentos;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import br.nom.abdon.dal.DalException;
+import br.nom.abdon.dal.EntityNotFoundException;
+import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.aggregate.Saldo;
+import br.nom.abdon.gastoso.aggregate.dal.AggregateDao;
+import br.nom.abdon.gastoso.aggregate.dal.FiltroSaldo;
+import br.nom.abdon.gastoso.rest.serial.MediaTypes;
+
 
 /**
  * @author Bruno Abdon
  */
-@Produces(MediaType.APPLICATION_JSON)
 @Path("")
+@Produces({
+    MediaTypes.APPLICATION_GASTOSO_FULL,
+    MediaTypes.APPLICATION_GASTOSO_NORMAL,
+    MediaTypes.APPLICATION_GASTOSO_SIMPLES
+})
 public class MaisRs {
 
     private static final LocalDate BIG_BANG = LocalDate.of(1979, Month.APRIL, 26);
@@ -62,202 +63,122 @@ public class MaisRs {
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
-    private final ContasDao contasDao;
-    private final FatosDao fatosDao;
-    private final LancamentosDao lancamentosDao;
+    private final AggregateDao aggregateDao;
 
     public MaisRs() {
-        this.contasDao = new ContasDao();
-        this.fatosDao = new FatosDao();
-        this.lancamentosDao = new LancamentosDao();
+        this.aggregateDao = new AggregateDao();
     }
-
-    @GET
-    @Path("extrato")
-    public Response extratoConta(
-        final @Context Request request,
-        final @QueryParam("conta") Conta conta,
-        final @QueryParam("mes") YearMonth mes,
-        @QueryParam("dataMax") LocalDate dataMaxima){
     
-        final List<Fato> fatos;
-        Response.ResponseBuilder builder;
-        
-        if((mes == null && dataMaxima == null)
-            || conta == null){
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-        
-        if(mes != null){
-            dataMaxima  = mes.atEndOfMonth();
-        }
+    @GET
+    @Path("/saldos/{id}")
+    public Response saldo(
+        final @Context Request request,
+        final @Context HttpHeaders httpHeaders,
+        final @PathParam("id") Integer contaId,
+        final @QueryParam("dia") LocalDate dia){
             
         final EntityManager entityManager = emf.createEntityManager();
-
-        final Function<Fato, FatoDetalhe> detalhaFato = 
-            fato -> new FatoDetalhe(
-                            fato, lancamentosDao
-                                    .listar(entityManager, makeFiltro(fato)));
+        
+        Response response;
+        
+        if(contaId == null || dia == null) 
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        
         try {
-            fatos = fatosDao.listar(entityManager, conta, dataMaxima, 30);
             
-            final List<FatoDetalhe> fatosDetalhados = 
-                fatos.stream().map(detalhaFato).collect(Collectors.toList());
-
-            Collections.reverse(fatosDetalhados);
+            final Conta conta = new Conta(contaId);
+            final Saldo saldo = 
+                aggregateDao.findSaldo(entityManager, conta, dia);
             
-            final LocalDate dataMinima;
-            final long saldoInicial;
-            if(fatosDetalhados.isEmpty()){
-                dataMinima = BIG_BANG;
-                saldoInicial = 0;
-            } else {
-                final FatoDetalhe fatoDetalhadoMaisAntigo = 
-                    fatosDetalhados.get(0);
-
-                dataMinima = 
-                    fatoDetalhadoMaisAntigo
-                    .getFato()
-                    .getDia();
-                
-                saldoInicial = 
-                    lancamentosDao
-                    .valorTotalAte(
-                        entityManager, 
-                        fatoDetalhadoMaisAntigo.getLancamento(conta));
-            }
-
-            final Extrato extrato = 
-                new Extrato(
-                    conta,
-                    saldoInicial,
-                    dataMinima, 
-                    dataMaxima,
-                    fatosDetalhados);
-
-            final EntityTag tag = 
-                new EntityTag(Integer.toString(extrato.hashCode()));
+            response = buildResponse(request, httpHeaders, saldo);
             
-            builder = request.evaluatePreconditions(tag);
-            if(builder==null){
-		//preconditions are not met and the cache is invalid
-		//need to send new value with reponse code 200 (OK)
-		builder = Response.ok(extrato);
-		builder.tag(tag);
-            }
-            
+        } catch (DalException ex) {
+            response = dealWith(ex);
         } finally {
             entityManager.close();
         }
         
-        return builder.build();
+        return response;
     }
-    
+
     @GET
-    @Path("fatosDetalhados")
-    public Response listaFatos(
+    @Path("/saldos")
+    public Response saldos(
         final @Context Request request,
-        final @QueryParam("mes") YearMonth mes,
-        @QueryParam("dataMin") LocalDate dataMinima,
-        @QueryParam("dataMax") LocalDate dataMaxima){
-
-        final List<Fato> fatos;
-        Response.ResponseBuilder builder;
+        final @Context HttpHeaders httpHeaders,
+        final @QueryParam("dia") LocalDate dia){
         
-        if((mes == null && dataMaxima == null)
-            || (mes != null && (dataMaxima != null || dataMinima != null))){
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-        
-        if(mes != null){
-            dataMinima = mes.atDay(1);
-            dataMaxima  = mes.atEndOfMonth();
-        } else if(dataMinima == null) {
-            dataMinima = dataMaxima.minusMonths(1);
-        }
-            
         final EntityManager entityManager = emf.createEntityManager();
-
-        final Function<Fato, FatoDetalhe> detalhaFato = 
-            fato -> new FatoDetalhe(
-                            fato, 
-                            lancamentosDao.listar(entityManager, makeFiltro(fato)));
+        
+        Response response;
+        
+        if(dia == null) 
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
         
         try {
-            fatos = fatosDao.listar(entityManager, dataMinima, dataMaxima);
-            
-            final List<FatoDetalhe> fatosDetalhados = 
-                fatos.stream().map(detalhaFato).collect(Collectors.toList());
-            
-            final br.nom.abdon.gastoso.rest.model.Extrato fs = 
-                new br.nom.abdon.gastoso.rest.model.Extrato(
-                    dataMinima, 
-                    dataMaxima,
-                    fatosDetalhados);
 
-            final EntityTag tag = new EntityTag(Integer.toString(fs.hashCode()));
-            builder = request.evaluatePreconditions(tag);
-            if(builder==null){
-		//preconditions are not met and the cache is invalid
-		//need to send new value with reponse code 200 (OK)
-		builder = Response.ok(fs);
-		builder.tag(tag);
-            }
+            final FiltroSaldo filtroSaldo = new FiltroSaldo();
+            filtroSaldo.setDia(dia);
+            filtroSaldo.addOrdem(FiltroSaldo.ORDEM.POR_CONTA);
             
+            final List<Saldo> saldos = 
+                aggregateDao.list(entityManager, filtroSaldo);
+            
+            response = 
+                buildResponse(
+                    request, 
+                    httpHeaders, 
+                    new GenericEntity<List<Saldo>>(saldos){});
+            
+        } catch (DalException ex) {
+            response = dealWith(ex);
         } finally {
             entityManager.close();
         }
         
-        return builder.build();
+        return response;
     }
+    
+    private Response buildResponse(
+            final Request request, 
+            final HttpHeaders headers, 
+            final Object entity) {
 
-    @GET
-    @Path("contasDetalhadas")
-    public Response listaContas(final @Context Request request){
-
-        Response.ResponseBuilder builder;
+        final EntityTag tag = makeTag(entity,headers);
         
-        final LocalDate hoje = LocalDate.now();
-
-        final EntityManager em = emf.createEntityManager();
-        
-        final Function<Conta, ContaDetalhe> detalhaConta = 
-            conta -> new ContaDetalhe(
-                            conta, 
-                            lancamentosDao.valorTotal(em, conta, hoje));
-
-        try {
-            
-            final List<ContaDetalhe> contasDetalhadas = 
-                contasDao
-                    .listar(em)
-                    .stream()
-                    .map(detalhaConta)
-                    .collect(Collectors.toList());
-
-            final EntityTag tag = 
-                new EntityTag(Integer.toString(contasDetalhadas.hashCode()));
-            builder = request.evaluatePreconditions(tag);
-            if(builder==null){
-		//preconditions are not met and the cache is invalid
-		//need to send new value with reponse code 200 (OK)
-		builder = Response.ok(contasDetalhadas);
-		builder.tag(tag);
-            }
-        } finally {
-            em.close();
+        Response.ResponseBuilder builder = request.evaluatePreconditions(tag);
+        if(builder==null){
+            //preconditions are not met and the cache is invalid
+            //need to send new value with reponse code 200 (OK)
+            builder = Response.ok(entity);
+            builder.tag(tag);
         }
- 
         return builder.build();
     }
-    
-    private FiltroLancamentos makeFiltro(final Fato fato){
-        final FiltroFatos filtroFatos = new FiltroFatos();
-        filtroFatos.setFato(fato);
-        final FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
-        filtroLancamentos.setFiltroFatos(filtroFatos);
-        return filtroLancamentos;
+
+    private EntityTag makeTag(
+        final Object thing, 
+        final HttpHeaders httpHeaders) {
         
+        final String accept = httpHeaders.getHeaderString(HttpHeaders.ACCEPT);
+
+        final int hashCode = 
+            new HashCodeBuilder(3,23)
+                .append(thing)
+                .append(accept)
+                .toHashCode();
+        
+        return new EntityTag(Integer.toString(hashCode));
+
     }
-    
+
+    private Response dealWith(DalException ex) {
+        
+        final Response.StatusType status = 
+            (ex instanceof EntityNotFoundException)
+                ? Response.Status.NOT_FOUND
+                : Response.Status.INTERNAL_SERVER_ERROR;
+        
+        return Response.status(status).entity(ex.getMessage()).build();
+    }
 }

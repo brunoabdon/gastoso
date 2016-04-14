@@ -14,26 +14,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest.mdl;
+package br.nom.abdon.gastoso.aggregate.dal;
 
 import java.time.LocalDate;
+import java.util.LinkedList;
+import java.util.List;
 
 import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.system.Paginacao;
 
 /**
  *
  * @author Bruno Abdon
  */
-public class Saldo {
+public class FiltroSaldo {
 
+    public static enum ORDEM {POR_CONTA, POR_DIA, POR_VALOR};
+    
     private Conta conta;
     private LocalDate dia;
-    private int valor;
 
-    public Saldo(final LocalDate dia, final Conta conta, final int valor) {
-        this.dia = dia;
+    private Paginacao paginacao = new Paginacao();
+    private List<FiltroSaldo.ORDEM> ordem;
+
+
+    public Conta getConta() {
+        return conta;
+    }
+
+    public void setConta(Conta conta) {
         this.conta = conta;
-        this.valor = valor;
     }
 
     public LocalDate getDia() {
@@ -44,19 +54,21 @@ public class Saldo {
         this.dia = dia;
     }
 
-    public Conta getConta() {
-        return conta;
+    public Paginacao getPaginacao() {
+        return paginacao;
     }
 
-    public void setConta(Conta conta) {
-        this.conta = conta;
+    public void setPaginacao(Paginacao paginacao) {
+        this.paginacao = paginacao;
+    }
+    
+    public FiltroSaldo addOrdem(FiltroSaldo.ORDEM ordem){
+        if(this.ordem == null) this.ordem = new LinkedList<>();
+        this.ordem.add(ordem);
+        return this;
     }
 
-    public int getValor() {
-        return valor;
-    }
-
-    public void setValor(int valor) {
-        this.valor = valor;
+    public List<FiltroSaldo.ORDEM> getOrdem() {
+        return ordem;
     }
 }

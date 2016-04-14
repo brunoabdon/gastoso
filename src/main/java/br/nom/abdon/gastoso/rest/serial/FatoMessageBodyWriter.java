@@ -17,42 +17,42 @@
 package br.nom.abdon.gastoso.rest.serial;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
-import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.rest.model.FatoNormal;
+import static br.nom.abdon.gastoso.rest.serial.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
+import static br.nom.abdon.gastoso.rest.serial.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 
 /**
  *
  * @author Bruno Abdon
  */
 @Provider
-@Produces({
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
-    MediaTypes.APPLICATION_GASTOSO_SIMPLES
-})
-public class ContaMessageBodyWriter extends AbsMessageBodyWriter<Conta>{
+public class FatoMessageBodyWriter extends AbsMessageBodyWriter<FatoNormal>{
 
-    public ContaMessageBodyWriter() {
-        super(Conta.class);
+    public FatoMessageBodyWriter() {
+        super(FatoNormal.class);
     }
 
     @Override
     protected void marshall(
-            final JsonGenerator gen, 
-            final Conta conta, 
-            final MediaType mediaType) throws IOException {
+        final JsonGenerator gen, 
+        final FatoNormal fatoNormal, 
+        final MediaType mediaType) throws IOException {
         
-        Marshaller.marshall(gen, conta, Marshaller.TIPO.NORM);
+        final Marshaller.TIPO tipo =
+            mediaType.isCompatible(APPLICATION_GASTOSO_SIMPLES_TYPE)
+                ? Marshaller.TIPO.BARE
+                : mediaType.isCompatible(APPLICATION_GASTOSO_NORMAL_TYPE)
+                    ? Marshaller.TIPO.NORM
+                    : Marshaller.TIPO.FULL;
+        
+        Marshaller.marshall(gen, fatoNormal, tipo);
+        
     }
-
     
-    
-
 }

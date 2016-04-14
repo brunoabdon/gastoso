@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Bruno Abdon
+ * Copyright (C) 2016 Bruno Abdon
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest.model;
+package br.nom.abdon.gastoso.aggregate;
+
+import java.time.LocalDate;
 
 import br.nom.abdon.gastoso.Conta;
 
@@ -22,14 +24,24 @@ import br.nom.abdon.gastoso.Conta;
  *
  * @author Bruno Abdon
  */
-public class ContaDetalhe {
-    
-    private Conta conta;
-    private long saldo;
+public class Saldo {
 
-    public ContaDetalhe(Conta conta, long saldo) {
+    private Conta conta;
+    private LocalDate dia;
+    private long valor;
+
+    public Saldo(final Conta conta, final LocalDate dia, final long valor) {
+        this.dia = dia;
         this.conta = conta;
-        this.saldo = saldo;
+        this.valor = valor;
+    }
+
+    public LocalDate getDia() {
+        return dia;
+    }
+
+    public void setDia(LocalDate dia) {
+        this.dia = dia;
     }
 
     public Conta getConta() {
@@ -40,11 +52,11 @@ public class ContaDetalhe {
         this.conta = conta;
     }
 
-    public long getSaldo() {
-        return saldo;
+    public long getValor() {
+        return valor;
     }
 
-    public void setSaldo(long saldo) {
-        this.saldo = saldo;
+    public void setValor(long valor) {
+        this.valor = valor;
     }
 }

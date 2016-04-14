@@ -20,10 +20,15 @@ import br.nom.abdon.dal.AbstractDao;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
+
 import java.time.LocalDate;
 import java.util.List;
+
 import javax.persistence.EntityManager;
+
 import org.apache.commons.lang3.StringUtils;
+
+import br.nom.abdon.gastoso.system.FiltroFatos;
 
 /**
  *
@@ -64,8 +69,10 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
     
     public List<Fato> listar(
         final EntityManager em, 
-        final LocalDate dataMinima, 
-        final LocalDate dataMaxima){
+        final FiltroFatos filtroFatos){
+        
+        final LocalDate dataMinima = filtroFatos.getDataMinima();
+        final LocalDate dataMaxima = filtroFatos.getDataMaxima();
         
         return em.createNamedQuery("Fato.porPeriodo",Fato.class)
                 .setParameter("dataMinima", dataMinima)

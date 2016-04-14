@@ -18,27 +18,42 @@ package br.nom.abdon.gastoso.rest.serial;
 
 import java.io.IOException;
 
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import pl.touk.throwing.ThrowingConsumer;
 
-import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.aggregate.Saldo;
 
 /**
  *
  * @author Bruno Abdon
  */
 @Provider
-public class ContasMessageBodyWriter extends CollecaoMessageBodyWriter<Conta>{
+@Produces({
+    MediaTypes.APPLICATION_GASTOSO_FULL,
+    MediaTypes.APPLICATION_GASTOSO_NORMAL,
+    MediaTypes.APPLICATION_GASTOSO_SIMPLES
+})
+public class SaldoMessageBodyWriter extends AbsMessageBodyWriter<Saldo>{
 
-    public ContasMessageBodyWriter() {
-        super(Conta.class);
+    public SaldoMessageBodyWriter() {
+        super(Saldo.class);
     }
 
     @Override
-    protected ThrowingConsumer<Conta, IOException> getMarshaller(
-            final JsonGenerator gen, final Marshaller.TIPO tipo) {
-        return c -> Marshaller.marshall(gen, c, tipo);
+    protected void marshall(
+            final JsonGenerator gen, 
+            final Saldo saldo, 
+            final MediaType mediaType) throws IOException {
+        
+        final Marshaller.TIPO tipo =
+            mediaType.isCompatible(MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE)
+                ? Marshaller.TIPO.BARE
+                : Marshaller.TIPO.NORM;
+        
+        Marshaller.marshall(gen, saldo, tipo);
     }
+    
 }

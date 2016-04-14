@@ -29,8 +29,8 @@ import pl.touk.throwing.ThrowingConsumer;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.mdl.FatoNormal;
-import br.nom.abdon.gastoso.rest.mdl.Saldo;
+import br.nom.abdon.gastoso.aggregate.Saldo;
+import br.nom.abdon.gastoso.rest.model.FatoNormal;
 import br.nom.abdon.modelo.Entidade;
 
 /**
@@ -67,46 +67,77 @@ public class Marshaller {
         Marshaller.writeValorField(gen, saldo.getValor());
         gen.writeEndObject();
     }
-    
-    public static void marshallSaldos(
-            final JsonGenerator gen, 
-            final List<Saldo> saldos, 
-            final TIPO tipo) throws IOException {
-        
-        gen.writeStartArray();
-        Marshaller.foreach(saldos, s -> Marshaller.marshall(gen, s, tipo));
-        gen.writeEndArray();
-    }
-
+   
+    /**
+     * Escreve um fato com informacao minimizada sobre seus lancamentos.
+     * 
+     * Sempre vai conter as informacoes basicas do fato (id, dia, descricao).
+     * 
+     * Caso tenha apenas um lancamento, vai ter os atributos da 'conta' e do
+     * 'valor' do lancamento diretamente.
+     * 
+     * Caso tenha dois lancamentos com valores com soma zero (transferência),
+     * vai contar os atributos 'origem' e 'destino' para as contas com valor
+     * positivo e negativo respectivamente, e o atributo 'valor' com o valor
+     * positivo.
+     * 
+     * Caso tenha outro numero qualquer de lancamentos, vai ter o atributo
+     * 'lancamentos' com um array de lancamentos onde cada um tem a conta e o
+     * valor.
+     * 
+     * Sempre, contas serao exibidas de acordo como o TIPO passado como 
+     * parâmetro.
+     * 
+     * 
+     * @param gen
+     * @param fatoNormal
+     * @param tipo
+     * @throws IOException 
+     */
     public static void marshall(
             final JsonGenerator gen, 
             final FatoNormal fatoNormal,
             final TIPO tipo) throws IOException {
         
         gen.writeStartObject();
-        fatoCore(gen, fatoNormal);
+        Marshaller.fatoCore(gen, fatoNormal);
 
-        final List<FatoNormal.Lancamento> lancamentos = 
+        final List<Lancamento> lancamentos = 
             fatoNormal.getLancamentos();
-
+        
         switch(lancamentos.size()) {
             case 1:
-                Marshaller.writeFatoLancamento(gen, lancamentos.get(0), tipo);
+                final Lancamento lancamento = lancamentos.get(0);
+                final Conta conta = lancamento.getConta();
+    
+                Marshaller.writeContaOrFields(gen, conta, tipo);
+                Marshaller.writeValorField(gen, lancamento.getValor());
                 break;
 
             case 2:
 
-                final FatoNormal.Lancamento l0 = lancamentos.get(0);
-                final FatoNormal.Lancamento l1 = lancamentos.get(1);
+                final Lancamento l0 = lancamentos.get(0);
+                final Lancamento l1 = lancamentos.get(1);
+                
+                final int valor0 = l0.getValor();
+                final int valor1 = l1.getValor();
 
-                final FatoNormal.Lancamento origem =
-                    l0.getValor() < l1.getValor() ? l0 : l1;
-                final FatoNormal.Lancamento destino = l0 == origem ? l1 : l0;
+                if(valor0 == -valor1){
+                
+                    final Lancamento origem =
+                        valor0 < valor1 ? l0 : l1;
+                    final Lancamento destino = l0 == origem ? l1 : l0;
 
-                Marshaller.writeContaField(gen, "origem", origem, tipo);
-                Marshaller.writeContaField(gen, "destino", destino, tipo);
-                Marshaller.writeValorField(gen, destino.getValor());
-                break;
+                    if(tipo == TIPO.BARE){
+                        gen.writeNumberField("origemId", origem.getId());
+                        gen.writeNumberField("destinoId", destino.getId());
+                    } else {                
+                        Marshaller.writeContaField(gen, "origem", origem, tipo);
+                        Marshaller.writeContaField(gen, "destino", destino, tipo);
+                    }
+                    Marshaller.writeValorField(gen, destino.getValor());
+                    break;
+                }
 
             default:
                 gen.writeArrayFieldStart("lancamentos");
@@ -119,23 +150,36 @@ public class Marshaller {
         
         gen.writeEndObject();
     }
-    
-    public static void marshallExtrato(
+
+    private static void writeContaOrFields(
             final JsonGenerator gen, 
             final Conta conta,
-            final List<Lancamento> lancamentos) throws IOException {
+            final TIPO tipo) throws IOException {
+        
+        if(tipo == TIPO.BARE){
+            Marshaller.writeContaIdField(gen, conta);
+        } else {
+            Marshaller.writeContaField(gen, conta, tipo);
+        }
+    }
 
-        gen.writeStartArray();
-        Marshaller.foreach(
-            lancamentos,
-            lancamento -> {
-                gen.writeStartObject();
-                Marshaller.fatoCore(gen, lancamento.getFato());
-                Marshaller.writeValorField(gen, lancamento.getValor());
-                gen.writeEndObject();
-            });
-                
-        gen.writeEndArray();
+    /**
+     * Escreve um lancamento como faz sentido no contexto de lancamentos de uma
+     * conta (o extrato da conta). Vai conter as informacoes do Fato (mas nao seus
+     * lancamentos) e o valor do lancamento. A conta fica implicita.
+     * 
+     * @param gen
+     * @param lancamento
+     * @throws IOException 
+     */
+    public static void marshall(
+            final JsonGenerator gen,
+            final Lancamento lancamento) throws IOException {
+
+        gen.writeStartObject();
+        Marshaller.fatoCore(gen, lancamento.getFato());
+        Marshaller.writeValorField(gen, lancamento.getValor());
+        gen.writeEndObject();
     }
     
     private static void writeContaField(
@@ -149,7 +193,7 @@ public class Marshaller {
     private static void writeContaField(
             final JsonGenerator gen, 
             final String fieldName,
-            final FatoNormal.Lancamento lancamentoDoFato,
+            final Lancamento lancamentoDoFato,
             final TIPO tipo) throws IOException{
         
         Marshaller
@@ -171,25 +215,39 @@ public class Marshaller {
 
     private static void writeFatoLancamento(
             final JsonGenerator gen,
-            final FatoNormal.Lancamento lancamento,
+            final Lancamento lancamento,
             final TIPO tipo) throws IOException{
     
         gen.writeStartObject();
-        Marshaller.writeContaField(gen, lancamento.getConta(), tipo);
-        Marshaller.writeValorField(gen, lancamento.getValor());
+        writeFatoLancamentoFields(gen, lancamento, tipo);
         gen.writeEndObject();
+    }
+
+    private static void writeFatoLancamentoFields(
+            final JsonGenerator gen, 
+            final Lancamento lancamento, 
+            final TIPO tipo) throws IOException {
+
+        Marshaller.writeContaOrFields(gen, lancamento.getConta(),tipo);
+        Marshaller.writeValorField(gen, lancamento.getValor());
+    }
+
+    private static void writeContaIdField(
+            final JsonGenerator gen, 
+            final Conta conta) throws IOException {
+        gen.writeNumberField("contaId", conta.getId());
     }
     
     private static void writeValorField(
             final JsonGenerator gen,
-            final int valor) throws IOException{
+            final long valor) throws IOException{
         writeValorField(gen, "valor", valor);
     }
 
     private static void writeValorField(
             final JsonGenerator gen,
             String fieldName,
-            final int valor) throws IOException{
+            final long valor) throws IOException{
         gen.writeNumberField(fieldName, valor);
     }
 

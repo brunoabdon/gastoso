@@ -14,18 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest.mdl;
+package br.nom.abdon.gastoso.rest.model;
 
 import java.util.List;
 
-import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
+import br.nom.abdon.gastoso.Lancamento;
 
 /**
  *
  * @author Bruno Abdon
  */
-public abstract class FatoNormal extends Fato {
+public class FatoNormal extends Fato {
     
     private List<Lancamento> lancamentos;
 
@@ -44,7 +44,7 @@ public abstract class FatoNormal extends Fato {
     public void setLancamentos(List<Lancamento> lancamentos) {
         this.lancamentos = lancamentos;
     }
-    
+    /*
     public class Lancamento {
     
         private Conta conta;
@@ -71,5 +71,6 @@ public abstract class FatoNormal extends Fato {
         public void setConta(Conta conta) {
             this.conta = conta;
         }
-    }
+
+    }*/
 }

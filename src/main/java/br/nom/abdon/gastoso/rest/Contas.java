@@ -23,7 +23,11 @@ import br.nom.abdon.gastoso.rest.serial.MediaTypes;
  * @author bruno
  */
 @Path(Contas.PATH)
-@Produces({MediaTypes.APPLICATION_GASTOSO_NORMAL,MediaTypes.APPLICATION_GASTOSO_SIMPLES})
+@Produces({
+    MediaTypes.APPLICATION_GASTOSO_FULL,
+    MediaTypes.APPLICATION_GASTOSO_NORMAL,
+    MediaTypes.APPLICATION_GASTOSO_SIMPLES
+})
 public class Contas extends AbstractRestCrud<Conta,Integer>{
 
     static final String PATH = "contas";
