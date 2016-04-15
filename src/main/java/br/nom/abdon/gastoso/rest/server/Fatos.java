@@ -1,4 +1,4 @@
-package br.nom.abdon.gastoso.rest;
+package br.nom.abdon.gastoso.rest.server;
 
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.dal.FatosDao;
@@ -34,8 +34,9 @@ import br.nom.abdon.dal.DalException;
 import br.nom.abdon.dal.EntityNotFoundException;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.aggregate.dal.FatosDetalhadosDao;
-import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.server.dal.FatosDetalhadosDao;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.MediaTypes;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;

@@ -31,10 +31,10 @@ import pl.touk.throwing.ThrowingConsumer;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.aggregate.Saldo;
+import br.nom.abdon.gastoso.rest.Saldo;
 import br.nom.abdon.gastoso.rest.MediaTypes;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
-import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
 
 /**
  *

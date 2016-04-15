@@ -40,7 +40,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
 
 /**
  *

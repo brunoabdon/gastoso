@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.aggregate.dal;
+package br.nom.abdon.gastoso.rest.server.dal;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -40,7 +40,7 @@ import javax.persistence.criteria.Root;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.aggregate.Saldo;
+import br.nom.abdon.gastoso.rest.Saldo;
 import br.nom.abdon.gastoso.dal.DalUtil;
 
 /**

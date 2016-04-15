@@ -1,4 +1,4 @@
-package br.nom.abdon.gastoso.rest;
+package br.nom.abdon.gastoso.rest.server;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -22,6 +22,7 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
+import br.nom.abdon.gastoso.rest.MediaTypes;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;

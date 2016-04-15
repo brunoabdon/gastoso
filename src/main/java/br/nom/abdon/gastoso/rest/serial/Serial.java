@@ -24,8 +24,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
-import br.nom.abdon.gastoso.aggregate.Saldo;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.Saldo;
 
 /**
  *

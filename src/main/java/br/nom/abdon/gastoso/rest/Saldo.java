@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.aggregate;
+package br.nom.abdon.gastoso.rest;
 
 import java.time.LocalDate;
 

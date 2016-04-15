@@ -1,8 +1,9 @@
-package br.nom.abdon.gastoso.rest;
+package br.nom.abdon.gastoso.rest.server;
 
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.dal.ContasDao;
+import br.nom.abdon.gastoso.rest.MediaTypes;
 import br.nom.abdon.rest.AbstractRestCrud;
 
 import java.util.List;

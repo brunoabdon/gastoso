@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest;
+package br.nom.abdon.gastoso.rest.server;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -41,9 +41,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.dal.EntityNotFoundException;
 import br.nom.abdon.gastoso.Conta;
-import br.nom.abdon.gastoso.aggregate.Saldo;
-import br.nom.abdon.gastoso.aggregate.dal.AggregateDao;
-import br.nom.abdon.gastoso.aggregate.dal.FiltroSaldo;
+import br.nom.abdon.gastoso.rest.Saldo;
+import br.nom.abdon.gastoso.rest.server.dal.AggregateDao;
+import br.nom.abdon.gastoso.rest.server.dal.FiltroSaldo;
+import br.nom.abdon.gastoso.rest.MediaTypes;
 
 
 /**

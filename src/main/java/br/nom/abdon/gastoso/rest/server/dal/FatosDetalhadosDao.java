@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.aggregate.dal;
+package br.nom.abdon.gastoso.rest.server.dal;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.dal.FatosDao;
 import br.nom.abdon.gastoso.dal.LancamentosDao;
-import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
 
 /**
  *
