@@ -52,17 +52,17 @@ public interface GastosoSystem {
     public List<Lancamento> getLancamentos(FiltroLancamentos fitro)
         throws GastosoSystemRTException, GastosoSystemException;
 
-    public void update(Fato fato)
+    public Fato update(Fato fato)
         throws NotFoundException,
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void update(Conta conta)
+    public Conta update(Conta conta)
         throws NotFoundException,
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void update(Lancamento lancamento)
+    public Lancamento update(Lancamento lancamento)
         throws NotFoundException,
                 GastosoSystemRTException,
                 GastosoSystemException;
