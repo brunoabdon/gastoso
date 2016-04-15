@@ -38,7 +38,6 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.aggregate.Saldo;
 import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
-import static br.nom.abdon.gastoso.rest.serial.Serial.SALDO_CLASSNAME;
 
 /**
  *

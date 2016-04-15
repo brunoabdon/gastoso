@@ -35,7 +35,6 @@ import br.nom.abdon.gastoso.aggregate.Saldo;
 import br.nom.abdon.gastoso.rest.MediaTypes;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
-import br.nom.abdon.modelo.Entidade;
 
 /**
  *
@@ -221,17 +220,17 @@ public class Marshaller {
         gen.writeStringField(fieldName, dia.format(ISO_LOCAL_DATE));
     }
 
-    private void writeIdField(final Entidade<Integer> entidade)
+    private void writeIdField(final Integer id)
             throws IOException {
-        gen.writeNumberField(Serial.ID, entidade.getId());
+        gen.writeNumberField(Serial.ID, id);
     }
 
     private void contaCore(final Conta conta) throws IOException {
-        this.writeIdField(conta);
+        this.writeIdField(conta.getId());
     }
 
     private void fatoCore(final Fato fatoNormal) throws IOException {
-        this.writeIdField(fatoNormal);
+        this.writeIdField(fatoNormal.getId());
         this.writeDiaField(fatoNormal.getDia());
         gen.writeStringField(Serial.DESC, fatoNormal.getDescricao());
     }
