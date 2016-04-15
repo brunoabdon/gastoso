@@ -40,8 +40,6 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.aggregate.Saldo;
 import br.nom.abdon.gastoso.rest.model.FatoNormal;
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 
 /**
  *
@@ -53,8 +51,8 @@ import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_T
     MediaTypes.APPLICATION_GASTOSO_FULL
 })
 @Provider
-public class CollecaoMessageBodyWriter
-        implements MessageBodyWriter<Collection>{
+public class GastosoMessageBodyWriter
+        implements MessageBodyWriter<Object>{
 
     //resusable, thread-safe. move somewhere.
     private static final JsonFactory JSON_FACT = new JsonFactory(); 
@@ -74,25 +72,23 @@ public class CollecaoMessageBodyWriter
         FATO_NORMAL_CLASSNAME,
         LANCAMENTO_CLASSNAME
     };
-    
-    
+
     @Override
     public boolean isWriteable(
             final Class<?> type, 
             final Type genericType, 
             final Annotation[] annotations, 
             final MediaType mediaType) {
-        
-        final String typeName = genericType.getTypeName();
 
-        return 
-            Collection.class.isAssignableFrom(type) 
-            && Arrays.stream(KNOWN_CLASSNAMES).anyMatch(typeName::contains);
+        return
+            Arrays
+                .stream(KNOWN_CLASSNAMES)
+                .anyMatch(getRelevantType(type, genericType)::contains);
     }
 
     @Override
     public void writeTo(
-        final Collection colecao, 
+        final Object entity, 
         final Class<?> type, 
         final Type genericType, 
         final Annotation[] annotations, 
@@ -100,66 +96,60 @@ public class CollecaoMessageBodyWriter
         final MultivaluedMap<String, Object> httpHeaders, 
         final OutputStream entityStream) 
             throws IOException, WebApplicationException {
-        
+
         final JsonGenerator gen = JSON_FACT.createGenerator(entityStream);
+
+        final Marshaller marshaller = new Marshaller(gen,mediaType);
+
+        final boolean ehColecao = Collection.class.isAssignableFrom(type);
         
-        gen.writeStartArray();
+        final String className = 
+            getRelevantTypeName(ehColecao, type, genericType);
+        
+        final ThrowingConsumer<Object, IOException> entityMarshallerMethod = 
+            className.contains(FATO_NORMAL_CLASSNAME)
+                ? f -> marshaller.marshall((FatoNormal)f)
+                : className.contains(SALDO_CLASSNAME)
+                    ? s -> marshaller.marshall((Saldo)s)
+                    : className.contains(CONTA_CLASSNAME)
+                        ? c -> marshaller.marshall((Conta)c)
+                        : l -> marshaller.marshall((Lancamento)l);
+        
+        final ThrowingConsumer<Object,IOException> marshallerMethod = 
+            ehColecao
+                ? col -> {
+                            gen.writeStartArray();
+                            for(Object x : (Collection)col) {
+                                entityMarshallerMethod.accept(x);
+                            }
+                            gen.writeEndArray();
+                } : entityMarshallerMethod;
 
-        if(!colecao.isEmpty()){
-            writeContents(gen, genericType, mediaType, colecao);
-        }
-
-        gen.writeEndArray();
+        marshallerMethod.accept(entity);
 
         gen.flush();
     }
 
-    private void writeContents(
-            final JsonGenerator gen, 
-            final Type genericType, 
-            final MediaType mediaType, 
-            final Collection colecao) throws IOException {
-        
-        final Marshaller.TIPO tipo = getTipo(mediaType);
-        
-        final ThrowingConsumer<Object, IOException> marshaller =
-                getMarshaller(gen,genericType,tipo);
-        
-        for(Object x : colecao) {
-            marshaller.accept(x);
-        }
+    private String getRelevantType(
+            final Class<?> type, 
+            final Type genericType) {
+        return 
+            getRelevantTypeName(
+                Collection.class.isAssignableFrom(type),
+                type, 
+                genericType);
     }
 
-    protected Marshaller.TIPO getTipo(final MediaType mediaType) {
-        Marshaller.TIPO tipo =
-                mediaType.isCompatible(APPLICATION_GASTOSO_SIMPLES_TYPE)
-                ? Marshaller.TIPO.BARE
-                : mediaType.isCompatible(APPLICATION_GASTOSO_NORMAL_TYPE)
-                ? Marshaller.TIPO.NORM
-                : Marshaller.TIPO.FULL;
-        return tipo;
-    }
-    
-    protected ThrowingConsumer<Object,IOException> getMarshaller(
-        final JsonGenerator gen, 
-        final Type genericType,
-        final Marshaller.TIPO tipo){
-        
-        final String className = genericType.getTypeName();
-        
-        return 
-            className.contains(FATO_NORMAL_CLASSNAME)
-                ? f -> Marshaller.marshall(gen, (FatoNormal)f, tipo)
-                : className.contains(SALDO_CLASSNAME)
-                    ? s -> Marshaller.marshall(gen, (Saldo)s, tipo)
-                    : className.contains(CONTA_CLASSNAME)
-                        ? c -> Marshaller.marshall(gen, (Conta)c, tipo)
-                        : l -> Marshaller.marshall(gen, (Lancamento)l);
+    private String getRelevantTypeName(
+            final boolean isCollection, 
+            final Class<?> type, 
+            final Type genericType) {
+        return (isCollection ? genericType : type).getTypeName();
     }
 
     @Override
     public long getSize(
-            final Collection t, Class<?> type, 
+            final Object t, Class<?> type, 
             final Type genericType, 
             final Annotation[] annotations, 
             final MediaType mediaType) {

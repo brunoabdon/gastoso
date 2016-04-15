@@ -44,14 +44,32 @@ public class MediaTypes {
     public static final String APPLICATION_GASTOSO_FULL =
         "application/vnd.gastoso.v1.full+json";
 
+    public static final MediaType[] GASTOSO_MEDIATYPES = {
+        APPLICATION_GASTOSO_SIMPLES_TYPE,
+        APPLICATION_GASTOSO_NORMAL_TYPE,
+        APPLICATION_GASTOSO_FULL_TYPE
+    };
+
+    public static final boolean acceptGastosoMediaTypes(
+            final MediaType mediaTypeToAccept){
+        return acceptMediaTypes(mediaTypeToAccept, GASTOSO_MEDIATYPES);
+    }
 
     public static final boolean acceptMediaTypes(
             final MediaType mediaTypeToAccept, 
             final MediaType ... acceptableMediaTypes){
-        
+
         return Arrays
                 .stream(acceptableMediaTypes)
                 .anyMatch(mediaTypeToAccept::isCompatible);
     }
-    
+
+    public static final MediaType getCompatibleInstance(
+            final MediaType originalMediaType){
+
+        return Arrays
+                .stream(GASTOSO_MEDIATYPES)
+                .filter(originalMediaType::isCompatible)
+                .findFirst().get();
+    }    
 }

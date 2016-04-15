@@ -56,7 +56,7 @@ public class AggregateDao {
         throws DalException{
         
         final List<Tuple> resultList = 
-            em.createNamedQuery("SaldoDaContaNoDia", Tuple.class)
+            em.createNamedQuery("Aggregate.SaldoDaContaNoDia", Tuple.class)
                 .setParameter("conta", conta)
                 .setParameter("dia", dia)
                 .getResultList();

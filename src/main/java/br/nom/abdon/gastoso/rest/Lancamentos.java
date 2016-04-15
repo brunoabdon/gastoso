@@ -95,21 +95,20 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
                 FiltroFatos filtroFatos = new FiltroFatos();
                 filtroFatos.setDataMinima(dataMinima);
                 filtroFatos.setDataMaxima(dataMaxima);
-                
+
                 FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
                 filtroLancamentos.setFiltroContas(filtroContas);
                 filtroLancamentos.setFiltroFatos(filtroFatos);
-                
+
                 lancamentos = dao.listar(entityManager, filtroLancamentos);
             } else {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
-            
+
         } finally {
             entityManager.close();
         }
-            
-        
+
         final GenericEntity<List<Lancamento>> genericEntity = 
             new GenericEntity<List<Lancamento>>(lancamentos){};
         return buildResponse(request, httpHeaders, genericEntity);

@@ -65,8 +65,10 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
     }
 
     @Override
-    protected void prepararDelecao(EntityManager em, Conta conta) throws DalException {
-        Boolean temLancamentos = 
+    protected void prepararDelecao(final EntityManager em, final Conta conta)
+            throws DalException {
+        
+        final Boolean temLancamentos = 
             em.createNamedQuery("Conta.temLancamento", Boolean.class)
             .setParameter("conta", conta)
             .getSingleResult();

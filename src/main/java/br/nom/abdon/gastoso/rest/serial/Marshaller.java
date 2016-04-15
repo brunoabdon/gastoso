@@ -23,6 +23,8 @@ import java.util.List;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import java.util.Collection;
 
+import javax.ws.rs.core.MediaType;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import pl.touk.throwing.ThrowingConsumer;
 
@@ -30,6 +32,8 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.aggregate.Saldo;
+import br.nom.abdon.gastoso.rest.MediaTypes;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 import br.nom.abdon.gastoso.rest.model.FatoNormal;
 import br.nom.abdon.modelo.Entidade;
 
@@ -39,35 +43,34 @@ import br.nom.abdon.modelo.Entidade;
  */
 public class Marshaller {
 
-    public enum TIPO {BARE,NORM,FULL};
+    private final JsonGenerator gen;
+    private final MediaType tipo;
 
-    public static void marshall(
-            final JsonGenerator gen, 
-            final Conta conta, 
-            final TIPO tipo) throws IOException {
-        
+    public Marshaller(final JsonGenerator gen, final MediaType mediaType)
+            throws IOException{
+        this.gen = gen;
+        this.tipo = MediaTypes.getCompatibleInstance(mediaType);
+    }
+    
+    public void marshall(final Conta conta) throws IOException {
         gen.writeStartObject();
-        Marshaller.contaCore(gen, conta);
-        if(tipo != TIPO.BARE){
+        this.contaCore(conta);
+        if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
             gen.writeStringField("nome", conta.getNome());
         }
         gen.writeEndObject();
     }
 
-    public static void marshall(
-            final JsonGenerator gen, 
-            final Saldo saldo, 
-            final TIPO tipo) throws IOException {
-        
+    public void marshall(final Saldo saldo) throws IOException{
         gen.writeStartObject();
-        if(tipo != TIPO.BARE){
-            Marshaller.writeContaField(gen, saldo.getConta(), TIPO.NORM);
-            Marshaller.writeDiaField(gen, saldo.getDia());
+        if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
+            this.writeContaField(saldo.getConta());
+            this.writeDiaField(saldo.getDia());
         }
-        Marshaller.writeValorField(gen, saldo.getValor());
+        this.writeValorField(saldo.getValor());
         gen.writeEndObject();
     }
-   
+
     /**
      * Escreve um fato com informacao minimizada sobre seus lancamentos.
      * 
@@ -89,209 +92,157 @@ public class Marshaller {
      * parâmetro.
      * 
      * 
-     * @param gen
      * @param fatoNormal
-     * @param tipo
      * @throws IOException 
      */
-    public static void marshall(
-            final JsonGenerator gen, 
-            final FatoNormal fatoNormal,
-            final TIPO tipo) throws IOException {
-        
-        gen.writeStartObject();
-        Marshaller.fatoCore(gen, fatoNormal);
+    public void marshall(final FatoNormal fatoNormal) throws IOException {
 
-        final List<Lancamento> lancamentos = 
-            fatoNormal.getLancamentos();
+        gen.writeStartObject();
+        this.fatoCore(fatoNormal);
         
+        final List<Lancamento> lancamentos = fatoNormal.getLancamentos();
+
         switch(lancamentos.size()) {
             case 1:
                 final Lancamento lancamento = lancamentos.get(0);
                 final Conta conta = lancamento.getConta();
-    
-                Marshaller.writeContaOrFields(gen, conta, tipo);
-                Marshaller.writeValorField(gen, lancamento.getValor());
+
+                this.writeContaOrFields(conta);
+                this.writeValorField(lancamento.getValor());
                 break;
 
             case 2:
-
                 final Lancamento l0 = lancamentos.get(0);
                 final Lancamento l1 = lancamentos.get(1);
-                
+
                 final int valor0 = l0.getValor();
                 final int valor1 = l1.getValor();
 
                 if(valor0 == -valor1){
-                
+
                     final Lancamento origem =
                         valor0 < valor1 ? l0 : l1;
                     final Lancamento destino = l0 == origem ? l1 : l0;
 
-                    if(tipo == TIPO.BARE){
+                    if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
                         gen.writeNumberField("origemId", origem.getId());
                         gen.writeNumberField("destinoId", destino.getId());
                     } else {                
-                        Marshaller.writeContaField(gen, "origem", origem, tipo);
-                        Marshaller.writeContaField(gen, "destino", destino, tipo);
+                        this.writeContaField("origem", origem);
+                        this.writeContaField("destino", destino);
                     }
-                    Marshaller.writeValorField(gen, destino.getValor());
+                    this.writeValorField(destino.getValor());
                     break;
                 }
 
             default:
                 gen.writeArrayFieldStart("lancamentos");
                 foreach(
-                    lancamentos,
-                    l -> Marshaller.writeFatoLancamento(gen, l, tipo)
-                );  gen.writeEndArray();
+                    lancamentos, l -> this.writeFatoLancamento(l)
+                );
+                gen.writeEndArray();
                 break;
         }
-        
-        gen.writeEndObject();
-    }
 
-    private static void writeContaOrFields(
-            final JsonGenerator gen, 
-            final Conta conta,
-            final TIPO tipo) throws IOException {
-        
-        if(tipo == TIPO.BARE){
-            Marshaller.writeContaIdField(gen, conta);
-        } else {
-            Marshaller.writeContaField(gen, conta, tipo);
-        }
+        gen.writeEndObject();
     }
 
     /**
      * Escreve um lancamento como faz sentido no contexto de lancamentos de uma
-     * conta (o extrato da conta). Vai conter as informacoes do Fato (mas nao seus
-     * lancamentos) e o valor do lancamento. A conta fica implicita.
+     * conta (o extrato da conta). Vai conter as informacoes do Fato (mas nao 
+     * seus lancamentos) e o valor do lancamento. A conta fica implicita.
      * 
-     * @param gen
      * @param lancamento
      * @throws IOException 
      */
-    public static void marshall(
-            final JsonGenerator gen,
-            final Lancamento lancamento) throws IOException {
-
+    public void marshall(final Lancamento lancamento) throws IOException {
         gen.writeStartObject();
-        Marshaller.fatoCore(gen, lancamento.getFato());
-        Marshaller.writeValorField(gen, lancamento.getValor());
+        this.fatoCore(lancamento.getFato());
+        this.writeValorField(lancamento.getValor());
         gen.writeEndObject();
     }
-    
-    private static void writeContaField(
-            final JsonGenerator gen, 
-            final Conta conta, 
-            final TIPO tipo) throws IOException{
 
-        Marshaller.writeContaField(gen,"conta",conta,tipo);
+    private void writeContaOrFields(final Conta conta) throws IOException {
+        if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
+            this.writeContaIdField(conta);
+        } else {
+            this.writeContaField(conta);
+        }
     }
 
-    private static void writeContaField(
-            final JsonGenerator gen, 
-            final String fieldName,
-            final Lancamento lancamentoDoFato,
-            final TIPO tipo) throws IOException{
-        
-        Marshaller
-            .writeContaField(
-                gen, 
-                fieldName, 
-                lancamentoDoFato.getConta(), 
-                tipo);
+    private void writeContaField(final Conta conta) throws IOException {
+        this.writeContaField("conta",conta);
     }
-    
-    private static void writeContaField(
-            final JsonGenerator gen, 
+
+    private void writeContaField(
             final String fieldName,
-            final Conta conta, 
-            final TIPO tipo) throws IOException{
+            final Lancamento lancamentoDoFato) throws IOException{
+        this.writeContaField(fieldName, lancamentoDoFato.getConta());
+    }
+
+    private void writeContaField(final String fieldName, final Conta conta) 
+            throws IOException{
         gen.writeFieldName(fieldName);
-        Marshaller.marshall(gen, conta, tipo);
+        this.marshall(conta);
     }
 
-    private static void writeFatoLancamento(
-            final JsonGenerator gen,
-            final Lancamento lancamento,
-            final TIPO tipo) throws IOException{
-    
+    private void writeFatoLancamento(
+            final Lancamento lancamento) throws IOException{
         gen.writeStartObject();
-        writeFatoLancamentoFields(gen, lancamento, tipo);
+        this.writeFatoLancamentoFields(lancamento);
         gen.writeEndObject();
     }
 
-    private static void writeFatoLancamentoFields(
-            final JsonGenerator gen, 
-            final Lancamento lancamento, 
-            final TIPO tipo) throws IOException {
-
-        Marshaller.writeContaOrFields(gen, lancamento.getConta(),tipo);
-        Marshaller.writeValorField(gen, lancamento.getValor());
+    private void writeFatoLancamentoFields(
+            final Lancamento lancamento) throws IOException {
+        this.writeContaOrFields(lancamento.getConta());
+        this.writeValorField(lancamento.getValor());
     }
 
-    private static void writeContaIdField(
-            final JsonGenerator gen, 
-            final Conta conta) throws IOException {
+    private void writeContaIdField(final Conta conta) throws IOException {
         gen.writeNumberField("contaId", conta.getId());
     }
-    
-    private static void writeValorField(
-            final JsonGenerator gen,
-            final long valor) throws IOException{
-        writeValorField(gen, "valor", valor);
+
+    private void writeValorField(final long valor) throws IOException{
+        this.writeValorField("valor", valor);
     }
 
-    private static void writeValorField(
-            final JsonGenerator gen,
-            String fieldName,
-            final long valor) throws IOException{
+    private void writeValorField(final String fieldName, final long valor) 
+            throws IOException{
         gen.writeNumberField(fieldName, valor);
     }
 
-    private static void writeDiaField(
-            final JsonGenerator gen,
-            final LocalDate dia) throws IOException{
-        writeDiaField(gen, "dia", dia);
+    private void writeDiaField(final LocalDate dia) throws IOException{
+        this.writeDiaField("dia", dia);
     }
 
-    private static void writeDiaField(
-            final JsonGenerator gen,
-            final String fieldName,
-            final LocalDate dia) throws IOException{
+    private void writeDiaField(final String fieldName, final LocalDate dia)
+            throws IOException{
         gen.writeStringField(fieldName, dia.format(ISO_LOCAL_DATE));
     }
-    
-    private static void writeIdField(
-            final JsonGenerator gen, 
-            final Entidade<Integer> entidade) throws IOException {
+
+    private void writeIdField(final Entidade<Integer> entidade)
+            throws IOException {
         gen.writeNumberField("id", entidade.getId());
     }
-    
-    private static void contaCore(
-            final JsonGenerator gen, 
-            final Conta conta) throws IOException {
-        Marshaller.writeIdField(gen, conta);
+
+    private void contaCore(final Conta conta) throws IOException {
+        this.writeIdField(conta);
     }
-    
-    private static void fatoCore(
-            final JsonGenerator gen, 
-            final Fato fatoNormal) throws IOException {
-        Marshaller.writeIdField(gen, fatoNormal);
-        Marshaller.writeDiaField(gen, fatoNormal.getDia());
+
+    private void fatoCore(final Fato fatoNormal) throws IOException {
+        this.writeIdField(fatoNormal);
+        this.writeDiaField(fatoNormal.getDia());
         gen.writeStringField("desc", fatoNormal.getDescricao());
     }
- 
+
     //utility function.. move to abd-utils someday...
-    private static <E, Ex extends Exception> void foreach(
+    private <E, Ex extends Exception> void foreach(
         final Collection<E> colection, 
         final ThrowingConsumer<E,Ex> consumer) throws Ex{
-        
+
         for(E e : colection) {
             consumer.accept(e);
         }
     }
-
 }

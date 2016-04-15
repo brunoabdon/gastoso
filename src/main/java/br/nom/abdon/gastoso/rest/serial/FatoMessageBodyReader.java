@@ -16,45 +16,46 @@
  */
 package br.nom.abdon.gastoso.rest.serial;
 
-import br.nom.abdon.gastoso.rest.MediaTypes;
-
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.Fato;
 
 /**
  *
  * @author Bruno Abdon
  */
-@Provider
-@Produces({
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
-    MediaTypes.APPLICATION_GASTOSO_SIMPLES
-})
-public class ContaMessageBodyWriter extends AbsMessageBodyWriter<Conta>{
+public class FatoMessageBodyReader implements MessageBodyReader<Fato>{
 
-    public ContaMessageBodyWriter() {
-        super(Conta.class);
+    @Override
+    public boolean isReadable(
+        final Class<?> type, 
+        final Type genericType, 
+        final Annotation[] annotations, 
+        final MediaType mediaType) {
+
+        return 
+            Fato.class.isAssignableFrom(type)
+            && MediaType.APPLICATION_JSON_TYPE.isCompatible(mediaType);
     }
 
     @Override
-    protected void marshall(
-            final JsonGenerator gen, 
-            final Conta conta, 
-            final MediaType mediaType) throws IOException {
-        
-        Marshaller.marshall(gen, conta, Marshaller.TIPO.NORM);
+    public Fato readFrom(
+        final Class<Fato> type, 
+        final Type genericType, 
+        final Annotation[] annotations, 
+        final MediaType mediaType,
+        final MultivaluedMap<String, String> httpHeaders,
+        final InputStream entityStream) 
+            throws IOException, WebApplicationException {
+            return null;
     }
-
     
-    
-
 }
