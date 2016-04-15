@@ -34,7 +34,7 @@ import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.aggregate.Saldo;
 import br.nom.abdon.gastoso.rest.MediaTypes;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
-import br.nom.abdon.gastoso.rest.model.FatoNormal;
+import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
 import br.nom.abdon.modelo.Entidade;
 
 /**
@@ -56,7 +56,7 @@ public class Marshaller {
         gen.writeStartObject();
         this.contaCore(conta);
         if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
-            gen.writeStringField("nome", conta.getNome());
+            gen.writeStringField(Serial.NOME, conta.getNome());
         }
         gen.writeEndObject();
     }
@@ -95,7 +95,7 @@ public class Marshaller {
      * @param fatoNormal
      * @throws IOException 
      */
-    public void marshall(final FatoNormal fatoNormal) throws IOException {
+    public void marshall(final FatoDetalhado fatoNormal) throws IOException {
 
         gen.writeStartObject();
         this.fatoCore(fatoNormal);
@@ -125,18 +125,18 @@ public class Marshaller {
                     final Lancamento destino = l0 == origem ? l1 : l0;
 
                     if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
-                        gen.writeNumberField("origemId", origem.getId());
-                        gen.writeNumberField("destinoId", destino.getId());
+                        gen.writeNumberField(Serial.ORIGEM_ID, origem.getId());
+                        gen.writeNumberField(Serial.DESTINO_ID, destino.getId());
                     } else {                
-                        this.writeContaField("origem", origem);
-                        this.writeContaField("destino", destino);
+                        this.writeContaField(Serial.ORIGEM, origem);
+                        this.writeContaField(Serial.DESTINO, destino);
                     }
                     this.writeValorField(destino.getValor());
                     break;
                 }
 
             default:
-                gen.writeArrayFieldStart("lancamentos");
+                gen.writeArrayFieldStart(Serial.LANCAMENTOS);
                 foreach(
                     lancamentos, l -> this.writeFatoLancamento(l)
                 );
@@ -171,7 +171,7 @@ public class Marshaller {
     }
 
     private void writeContaField(final Conta conta) throws IOException {
-        this.writeContaField("conta",conta);
+        this.writeContaField(Serial.CONTA,conta);
     }
 
     private void writeContaField(
@@ -200,11 +200,11 @@ public class Marshaller {
     }
 
     private void writeContaIdField(final Conta conta) throws IOException {
-        gen.writeNumberField("contaId", conta.getId());
+        gen.writeNumberField(Serial.CONTA_ID, conta.getId());
     }
 
     private void writeValorField(final long valor) throws IOException{
-        this.writeValorField("valor", valor);
+        this.writeValorField(Serial.VALOR, valor);
     }
 
     private void writeValorField(final String fieldName, final long valor) 
@@ -213,7 +213,7 @@ public class Marshaller {
     }
 
     private void writeDiaField(final LocalDate dia) throws IOException{
-        this.writeDiaField("dia", dia);
+        this.writeDiaField(Serial.DIA, dia);
     }
 
     private void writeDiaField(final String fieldName, final LocalDate dia)
@@ -223,7 +223,7 @@ public class Marshaller {
 
     private void writeIdField(final Entidade<Integer> entidade)
             throws IOException {
-        gen.writeNumberField("id", entidade.getId());
+        gen.writeNumberField(Serial.ID, entidade.getId());
     }
 
     private void contaCore(final Conta conta) throws IOException {
@@ -233,7 +233,7 @@ public class Marshaller {
     private void fatoCore(final Fato fatoNormal) throws IOException {
         this.writeIdField(fatoNormal);
         this.writeDiaField(fatoNormal.getDia());
-        gen.writeStringField("desc", fatoNormal.getDescricao());
+        gen.writeStringField(Serial.DESC, fatoNormal.getDescricao());
     }
 
     //utility function.. move to abd-utils someday...

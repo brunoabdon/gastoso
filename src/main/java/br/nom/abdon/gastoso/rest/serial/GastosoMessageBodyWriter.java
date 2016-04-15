@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Collection;
 
 import javax.ws.rs.Produces;
@@ -32,14 +31,14 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import pl.touk.throwing.ThrowingConsumer;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.aggregate.Saldo;
-import br.nom.abdon.gastoso.rest.model.FatoNormal;
+import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
+import static br.nom.abdon.gastoso.rest.serial.Serial.SALDO_CLASSNAME;
 
 /**
  *
@@ -51,27 +50,7 @@ import br.nom.abdon.gastoso.rest.model.FatoNormal;
     MediaTypes.APPLICATION_GASTOSO_FULL
 })
 @Provider
-public class GastosoMessageBodyWriter
-        implements MessageBodyWriter<Object>{
-
-    //resusable, thread-safe. move somewhere.
-    private static final JsonFactory JSON_FACT = new JsonFactory(); 
-
-    private static final String SALDO_CLASSNAME = Saldo.class.getName();
-    private static final String CONTA_CLASSNAME = Conta.class.getName();
-
-    private static final String FATO_NORMAL_CLASSNAME = 
-        FatoNormal.class.getName();
-    
-    private static final String LANCAMENTO_CLASSNAME = 
-        Lancamento.class.getName();
-    
-    private static final String[] KNOWN_CLASSNAMES = {
-        SALDO_CLASSNAME, 
-        CONTA_CLASSNAME, 
-        FATO_NORMAL_CLASSNAME,
-        LANCAMENTO_CLASSNAME
-    };
+public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
 
     @Override
     public boolean isWriteable(
@@ -80,10 +59,14 @@ public class GastosoMessageBodyWriter
             final Annotation[] annotations, 
             final MediaType mediaType) {
 
-        return
-            Arrays
-                .stream(KNOWN_CLASSNAMES)
-                .anyMatch(getRelevantType(type, genericType)::contains);
+        return Serial.isAccecptable(
+                    type, 
+                    genericType, 
+                    Serial.SALDO_CLASSNAME, 
+                    Serial.CONTA_CLASSNAME, 
+                    Serial.FATO_NORMAL_CLASSNAME,
+                    Serial.LANCAMENTO_CLASSNAME)
+                && MediaTypes.acceptGastosoMediaTypes(mediaType);
     }
 
     @Override
@@ -97,21 +80,22 @@ public class GastosoMessageBodyWriter
         final OutputStream entityStream) 
             throws IOException, WebApplicationException {
 
-        final JsonGenerator gen = JSON_FACT.createGenerator(entityStream);
+        final JsonGenerator gen = 
+            Serial.JSON_FACT.createGenerator(entityStream);
 
         final Marshaller marshaller = new Marshaller(gen,mediaType);
 
         final boolean ehColecao = Collection.class.isAssignableFrom(type);
         
         final String className = 
-            getRelevantTypeName(ehColecao, type, genericType);
+            Serial.getRelevantTypeName(ehColecao, type, genericType);
         
         final ThrowingConsumer<Object, IOException> entityMarshallerMethod = 
-            className.contains(FATO_NORMAL_CLASSNAME)
-                ? f -> marshaller.marshall((FatoNormal)f)
-                : className.contains(SALDO_CLASSNAME)
+            className.contains(Serial.FATO_NORMAL_CLASSNAME)
+                ? f -> marshaller.marshall((FatoDetalhado)f)
+                : className.contains(Serial.SALDO_CLASSNAME)
                     ? s -> marshaller.marshall((Saldo)s)
-                    : className.contains(CONTA_CLASSNAME)
+                    : className.contains(Serial.CONTA_CLASSNAME)
                         ? c -> marshaller.marshall((Conta)c)
                         : l -> marshaller.marshall((Lancamento)l);
         
@@ -128,23 +112,6 @@ public class GastosoMessageBodyWriter
         marshallerMethod.accept(entity);
 
         gen.flush();
-    }
-
-    private String getRelevantType(
-            final Class<?> type, 
-            final Type genericType) {
-        return 
-            getRelevantTypeName(
-                Collection.class.isAssignableFrom(type),
-                type, 
-                genericType);
-    }
-
-    private String getRelevantTypeName(
-            final boolean isCollection, 
-            final Class<?> type, 
-            final Type genericType) {
-        return (isCollection ? genericType : type).getTypeName();
     }
 
     @Override

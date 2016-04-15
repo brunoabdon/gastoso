@@ -30,7 +30,7 @@ import br.nom.abdon.gastoso.system.Paginacao;
  *
  * @author Bruno Abdon
  */
-class DalUtil {
+public class DalUtil {
 
     private static void tratarPaginacao(
             final Paginacao paginacao, 
@@ -52,7 +52,7 @@ class DalUtil {
         );
     }
     
-    static <X> List<X> prepareAndRunQuery(
+    public static <X> List<X> prepareAndRunQuery(
             final EntityManager em, 
             final CriteriaQuery<X> q, 
             final List<Predicate> where, 

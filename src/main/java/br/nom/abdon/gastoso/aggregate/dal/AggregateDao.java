@@ -22,12 +22,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -41,13 +41,20 @@ import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.aggregate.Saldo;
-import br.nom.abdon.gastoso.system.Paginacao;
+import br.nom.abdon.gastoso.dal.DalUtil;
 
 /**
  *
  * @author Bruno Abdon
  */
 public class AggregateDao {
+    
+    private static final Function<LocalDate,Function<Tuple,Saldo>> SALDO_CONS = 
+        (dia) -> (t) -> 
+            new Saldo(
+                new Conta(t.get(0,Integer.class),t.get(1,String.class)), 
+                dia, 
+                t.get(2,Long.class));
     
     public Saldo findSaldo(
             final EntityManager em, 
@@ -77,7 +84,7 @@ public class AggregateDao {
     
     public List<Saldo> list(
             final EntityManager em, 
-            final FiltroSaldo filtroSaldo)
+            final FiltroSaldo filtro)
         throws DalException{
         final CriteriaBuilder cb = em.getCriteriaBuilder();
         
@@ -90,7 +97,7 @@ public class AggregateDao {
         final List<Predicate> where = new LinkedList<>();
         final Map<String,Object> params = new HashMap<>();
         
-        final Conta conta = filtroSaldo.getConta();
+        final Conta conta = filtro.getConta();
         if(conta != null){
             final ParameterExpression<Conta> contaParameter = 
                 cb.parameter(Conta.class, "conta");
@@ -99,7 +106,8 @@ public class AggregateDao {
             params.put("conta",conta);
         }
         
-        final LocalDate dia = filtroSaldo.getDia();
+        
+        final LocalDate dia = filtro.getDia();
         if(dia != null){
             final Path<LocalDate> diaPath = 
                 rootLancamento.get("fato").get("dia");
@@ -116,7 +124,7 @@ public class AggregateDao {
         
         if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
 
-        q.orderBy(buildOrdenacao(filtroSaldo, rootLancamento, cb));
+        q.orderBy(buildOrdenacao(filtro, rootLancamento, cb));
 
         final Path<Object> idConta = contaDoLancamento.get("id");
         final Path<Object> nomeConta = contaDoLancamento.get("nome");
@@ -127,30 +135,11 @@ public class AggregateDao {
         
         q.groupBy(idConta,nomeConta);
         
-        final TypedQuery<Tuple> query = em.createQuery(q);
-        
-        final Paginacao paginacao = filtroSaldo.getPaginacao();
-        
-        final Integer inicio = paginacao.getPrimeiro();
-        final Integer quantos = paginacao.getQuantidadeMaxima();
-        
-        if(inicio != null) query.setFirstResult(inicio);
-        if(quantos != null)query.setMaxResults(quantos);
-
-        params.entrySet().stream().forEach((entry) -> {
-            final String paramName = entry.getKey();
-            final Object paramValue = entry.getValue();
-            
-            query.setParameter(paramName, paramValue);
-        });
-        
         return
-            query.getResultList().stream().map(
-                t ->  new Saldo(
-                        new Conta(t.get(0,Integer.class),t.get(1,String.class)), 
-                        dia, 
-                        t.get(2,Long.class))
-            ).collect(Collectors.toList());
+            DalUtil.prepareAndRunQuery(em,q,where,params,filtro.getPaginacao())
+            .stream()
+            .map(SALDO_CONS.apply(dia))
+            .collect(Collectors.toList());
     }
 
     private List<Order> buildOrdenacao(
@@ -187,5 +176,4 @@ public class AggregateDao {
         }
         return orders;
     }
-
 }

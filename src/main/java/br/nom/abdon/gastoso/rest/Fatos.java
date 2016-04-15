@@ -15,8 +15,9 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -30,8 +31,12 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import br.nom.abdon.dal.DalException;
+import br.nom.abdon.dal.EntityNotFoundException;
+import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.model.FatoNormal;
+import br.nom.abdon.gastoso.aggregate.dal.FatosDetalhadosDao;
+import br.nom.abdon.gastoso.aggregate.FatoDetalhado;
+import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
@@ -64,7 +69,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
 
     public Fatos() {
         super(PATH);
-        this.dao = new FatosDao();
+        this.dao = new FatosDetalhadosDao();
         this.lancamentosDao = new LancamentosDao();
     }
 
@@ -81,7 +86,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         @QueryParam("dataMin") LocalDate dataMinima,
         @QueryParam("dataMax") LocalDate dataMaxima){
 
-        final List<FatoNormal> fatosNormais;
+        final List<FatoDetalhado> fatosNormais;
 
         if((mes == null && dataMaxima == null)
             || (mes != null && (dataMaxima != null || dataMinima != null))){
@@ -114,7 +119,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
                 .collect(GROUP_BY_FATO_COLLECTOR)
                 .entrySet()
                 .parallelStream()
-                .map(e -> new FatoNormal(e.getKey(), e.getValue()))
+                .map(e -> new FatoDetalhado(e.getKey(), e.getValue()))
                 .collect(Collectors.toCollection(ArrayList::new));
             
             fatosNormais.sort(
@@ -128,8 +133,8 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
             entityManager.close();
         }
 
-        final GenericEntity<List<FatoNormal>> genericEntity = 
-            new GenericEntity<List<FatoNormal>>(fatosNormais){};
+        final GenericEntity<List<FatoDetalhado>> genericEntity = 
+            new GenericEntity<List<FatoDetalhado>>(fatosNormais){};
 
         return buildResponse(request, httpHeaders, genericEntity);
     }
@@ -152,7 +157,61 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
                 ? dao.find(entityManager, id)
                 : lancamentos.get(0).getFato();
         
-        return new FatoNormal(fato, lancamentos);
+        return new FatoDetalhado(fato, lancamentos);
     }
+    
+    @POST
+    @Path("{id}/{contaId}")
+    public Response atualizar(
+            final @PathParam("id") Integer id, 
+            final @PathParam("contaId") Integer contaId, 
+            final Lancamento lancamento){
+        
+        Response response;
+        
+        if(lancamento == null){
+            response = ERROR_MISSING_ENTITY;
+            
+        } else {
 
+            EntityManager entityManager = emf.createEntityManager();
+            try {
+                entityManager.getTransaction().begin();
+
+                FiltroFatos filtroFatos = new FiltroFatos();
+                filtroFatos.setFato(new Fato(id));
+                
+                FiltroContas filtroContas = new FiltroContas();
+                filtroContas.setConta(new Conta(contaId));
+                
+                FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
+                filtroLancamentos.setFiltroFatos(filtroFatos);
+                filtroLancamentos.setFiltroContas(filtroContas);
+                
+                final Lancamento lancamentoOriginal = 
+                    lancamentosDao.findUnique(entityManager, filtroLancamentos);
+                
+                lancamentoOriginal.setValor(lancamento.getValor());
+                Conta conta = lancamento.getConta();
+                if(conta != null) lancamentoOriginal.setConta(conta);
+
+                lancamentosDao.atualizar(entityManager, lancamentoOriginal);
+                
+                entityManager.getTransaction().commit();
+
+                response = Response.noContent().build();
+
+            } catch ( EntityNotFoundException ex){
+                throw new NotFoundException(ex);
+            } catch (DalException e) {
+                response =
+                    Response.status(Response.Status.CONFLICT)
+                            .entity(e.getMessage())
+                            .build();
+            } finally {
+                entityManager.close();
+            }
+        }
+        return response;
+    }
 }

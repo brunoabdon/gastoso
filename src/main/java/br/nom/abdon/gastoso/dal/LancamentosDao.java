@@ -32,6 +32,7 @@ import javax.persistence.criteria.Root;
 
 import br.nom.abdon.dal.AbstractDao;
 import br.nom.abdon.dal.DalException;
+import br.nom.abdon.dal.EntityNotFoundException;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.system.FiltroContas;
@@ -70,7 +71,9 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
     }
 
     @Override
-    protected void validarPraAtualizacao(EntityManager em, Lancamento lancamento) throws DalException {
+    protected void validarPraAtualizacao(
+            final EntityManager em, 
+            final Lancamento lancamento) throws DalException {
         validaBasico(lancamento);
     }
 
@@ -183,4 +186,23 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
             q.orderBy(orders);
         }
     }
+    
+    public Lancamento findUnique(
+        final EntityManager em, 
+        final FiltroLancamentos filtro) throws DalException{
+        
+        final Lancamento lancamento;
+        
+        final List<Lancamento> col = this.listar(em, filtro);
+        if(col.isEmpty()){
+            throw new EntityNotFoundException(filtro);
+        } else if(col.size() != 1){
+            throw new DalException("Not Unique");
+        } else {
+            lancamento = col.get(0);
+        }
+        
+        return lancamento;
+    }
+    
 }
