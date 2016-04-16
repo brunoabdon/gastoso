@@ -107,6 +107,13 @@
             <version>1.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
+    <scm>
+    	<url>https://github.com/brunoabdon/abd-commons-dal.git</url>
+        <connection>scm:git:git://github.com/brunoabdon/abd-commons-dal.git</connection>
+        <developerConnection>scm:git:git@github.com:brunoabdon/abd-commons-dal.git</developerConnection>
+    </scm>  
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
