@@ -29,4 +29,10 @@ public class GastosoSystemRTException extends RuntimeException {
     public GastosoSystemRTException(final String message) {
         super(message);
     }
+
+    public GastosoSystemRTException(
+            final String message,
+            final Throwable cause) {
+        super(message, cause);
+    }
 }
