@@ -24,6 +24,8 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -70,6 +72,9 @@ import br.nom.abdon.util.Periodo;
  */
 public class GastosoCharacterCommand {
 
+    private static final Logger log  = 
+        Logger.getLogger(GastosoCharacterCommand.class.getName());
+    
     private final PrintWriter writer;
     private final GastosoSystem gastosoSystem;
     private Periodo periodo;
@@ -405,6 +410,8 @@ public class GastosoCharacterCommand {
             );
 
             writer.println(": " + ex.getMessage());
+            
+            log.log(Level.FINEST, ex, () -> "Impossível processar.");
         }
     }
 }
