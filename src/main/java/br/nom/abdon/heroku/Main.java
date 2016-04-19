@@ -23,8 +23,6 @@ public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
-    private static final String WEB_PORT_VAR = "PORT";
-    
     public static void main(String[] args) throws Exception{
         inicializaServidorWeb();
     }
@@ -32,12 +30,9 @@ public class Main {
     private static void inicializaServidorWeb() throws NumberFormatException, InterruptedException, Exception {
         // The port that we should run on can be set into an environment variable
         // Look for that variable and default to 8080 if it isn't there.
-        String webPort = System.getProperty("PORT");
+        String webPort = System.getenv("PORT");
         if (StringUtils.isBlank(webPort)) {
-            webPort = System.getenv(WEB_PORT_VAR);
-            if (StringUtils.isBlank(webPort)) {
-                webPort = "8080";
-            }
+            webPort = "8080";
         }
 
         final Server server = new Server(Integer.valueOf(webPort));
