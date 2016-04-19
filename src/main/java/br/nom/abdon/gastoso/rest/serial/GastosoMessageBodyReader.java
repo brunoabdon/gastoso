@@ -27,10 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
@@ -41,15 +39,20 @@ import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.MediaTypes;
 
 /**
  *
  * @author Bruno Abdon
  */
 @Provider
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes({
+    MediaType.APPLICATION_JSON,
+    MediaTypes.APPLICATION_GASTOSO_SIMPLES,
+    MediaTypes.APPLICATION_GASTOSO_NORMAL,
+    MediaTypes.APPLICATION_GASTOSO_FULL
+})
 public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
-
     
     private static final Class[] KNOWN_CLASSES = {
         Conta.class, Fato.class, Lancamento.class
@@ -66,7 +69,8 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
             Arrays
                 .stream(KNOWN_CLASSES)
                 .anyMatch(k -> k.isAssignableFrom(type))
-                && MediaType.APPLICATION_JSON_TYPE.isCompatible(mediaType);
+                && MediaTypes.acceptGastosoMediaTypes(mediaType);
+
     }
 
     @Override
@@ -77,7 +81,7 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
         final MediaType mediaType,
         final MultivaluedMap<String, String> httpHeaders,
         final InputStream entityStream) 
-            throws IOException, WebApplicationException {
+            throws IOException {
         
         final JsonParser jParser = Serial.JSON_FACT.createParser(entityStream);
         
@@ -143,8 +147,8 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                     lancamentos = parseLancamentos(jParser);
                     break;
                 default:
-                    throw new WebApplicationException(
-                                Response.Status.BAD_REQUEST);
+                    //see https://java.net/jira/browse/JERSEY-3005
+                    throw new IOException("Couldn't parse");
             }
         }
         
@@ -217,8 +221,9 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                     nome = jParser.nextTextValue();
                     break;
                 default: 
-                    throw new WebApplicationException(
-                                Response.Status.BAD_REQUEST);
+                    //see https://java.net/jira/browse/JERSEY-3005
+                    throw new IOException("Couldn't parse");
+
             }
         }
         
@@ -247,8 +252,11 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                     valor = jParser.nextIntValue(0);
                     break;
                 default:
-                    throw new WebApplicationException(
-                                Response.Status.BAD_REQUEST);
+                    //see https://java.net/jira/browse/JERSEY-3005
+                    throw new IOException(
+                        "Couldn't parse. Whats's "
+                        + fieldName 
+                        + " on Lancamento?");
             }
         }
         
