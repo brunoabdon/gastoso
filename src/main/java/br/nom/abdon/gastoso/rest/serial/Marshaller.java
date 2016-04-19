@@ -91,8 +91,8 @@ public class Marshaller {
      * parâmetro.
      * 
      * 
-     * @param fatoNormal
-     * @throws IOException 
+     * @param fatoNormal o fato a ser escrito.
+     * @throws IOException Se não puder escrever.
      */
     public void marshall(final FatoDetalhado fatoNormal) throws IOException {
 
@@ -151,8 +151,8 @@ public class Marshaller {
      * conta (o extrato da conta). Vai conter as informacoes do Fato (mas nao 
      * seus lancamentos) e o valor do lancamento. A conta fica implicita.
      * 
-     * @param lancamento
-     * @throws IOException 
+     * @param lancamento o lancamento a ser escrito.
+     * @throws IOException se não puder escrever.
      */
     public void marshall(final Lancamento lancamento) throws IOException {
         gen.writeStartObject();
