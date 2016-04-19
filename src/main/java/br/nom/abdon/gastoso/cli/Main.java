@@ -5,15 +5,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 
-import br.nom.abdon.gastoso.restclient.GastosoRestClient;
+import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
 import br.nom.abdon.gastoso.system.GastosoSystem;
-import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 
 /**

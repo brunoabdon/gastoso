@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.restclient;
+package br.nom.abdon.gastoso.rest.client;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
@@ -38,12 +37,13 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
-import br.nom.abdon.gastoso.system.FiltroLancamento;
+import br.nom.abdon.gastoso.system.FiltroLancamentos;
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 import br.nom.abdon.gastoso.system.NotFoundException;
 import br.nom.abdon.modelo.Entidade;
+
 
 /**
  *
@@ -58,9 +58,8 @@ public class GastosoRestClient implements GastosoSystem{
                         fatosWebTarget,
                         lancamentosWebTarget,
                         lancamentoWebTarget;
-;
-    private boolean logado;
 
+    private boolean logado;
 
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
@@ -90,6 +89,7 @@ public class GastosoRestClient implements GastosoSystem{
         final Response response =
             this.rootWebTarget.path("login")
             .request(MediaType.APPLICATION_JSON_TYPE)
+            .header("User-Agent", "gastoso-cli")
             .post(Entity.text(password));
 
         if(this.logado =
@@ -163,9 +163,11 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public List<Lancamento> getLancamentos(FiltroLancamento filtro) throws GastosoSystemRTException {
-        Integer fatoId = filtro.getFatoId();
-        Integer contaId = filtro.getContaId();
+    public List<Lancamento> getLancamentos(FiltroLancamentos filtro) throws GastosoSystemRTException {
+        final FiltroFatos filtroFatos = filtro.getFiltroFatos();
+        
+        final Integer fatoId = filtroFatos.getId();
+        final Integer contaId = filtroFatos.getId();
         
         WebTarget webTarget;
         
@@ -174,8 +176,8 @@ public class GastosoRestClient implements GastosoSystem{
         } else if(contaId != null){
             webTarget = 
                 lancamentosWebTarget.queryParam("conta", fatoId)
-                .queryParam("dataMin", filtro.getDataMinima())
-                .queryParam("dataMax", filtro.getDataMaxima());
+                .queryParam("dataMin", filtroFatos.getDataMinima())
+                .queryParam("dataMax", filtroFatos.getDataMaxima());
         } else {
             throw new GastosoSystemRTException("Deu ruim");
         }
@@ -183,21 +185,22 @@ public class GastosoRestClient implements GastosoSystem{
         return 
             webTarget
                 .request(MediaType.APPLICATION_JSON_TYPE)
+                .header("User-Agent", "gastoso-cli")
                 .get(new GenericType<List<Lancamento>>(){});
     }
 
     @Override
-    public void update(Fato fato) throws GastosoSystemException {
-        update(fatoWebTarget, fato, Fato.class);
+    public Fato update(Fato fato) throws GastosoSystemException {
+        return update(fatoWebTarget, fato, Fato.class);
     }
 
     @Override
-    public void update(Conta conta) throws GastosoSystemException {
-        update(contaWebTarget, conta, Conta.class);
+    public Conta update(Conta conta) throws GastosoSystemException {
+        return update(contaWebTarget, conta, Conta.class);
     }
     
     @Override
-    public void update(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException {
+    public Lancamento update(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -255,7 +258,10 @@ public class GastosoRestClient implements GastosoSystem{
         return 
             invokePost(
                 baseWebTarget
-                .request(MediaType.APPLICATION_JSON_TYPE),klass,entity
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .header("User-Agent", "gastoso-cli"),
+                klass,
+                entity
             );
     }
 
@@ -275,7 +281,8 @@ public class GastosoRestClient implements GastosoSystem{
         return 
             baseWebTarget
             .resolveTemplate("id", id)
-            .request(MediaType.APPLICATION_JSON_TYPE);
+            .request("application/vnd.gastoso.v1.full+json")
+            .header("User-Agent", "gastoso-cli");
     }
 
     private <E extends Entidade<Integer>> E invokePost(
@@ -285,7 +292,7 @@ public class GastosoRestClient implements GastosoSystem{
                 throws GastosoSystemException{
         
         return invokeResource(
-                    resourceBuilder.buildPost(Entity.json(entity)),klass);
+            resourceBuilder.buildPost(Entity.json(entity)),klass);
     }
 
     private <E extends Entidade<Integer>> E invokeResource(

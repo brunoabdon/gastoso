@@ -21,9 +21,9 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
+
+import static java.time.format.DateTimeFormatter.ISO_DATE;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -33,7 +33,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
-import br.nom.abdon.gastoso.Lancamento;
+
 import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
@@ -55,11 +55,14 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
-import br.nom.abdon.gastoso.system.FiltroLancamento;
+
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 import br.nom.abdon.gastoso.system.NotFoundException;
+
+import br.nom.abdon.util.Periodo;
+
 
 /**
  *
@@ -177,22 +180,26 @@ public class GastosoCharacterCommand {
 
             final int fatoId = CtxReader.extractId(fatoIdCtx.id());
             
-            final Fato fato = gastosoSystem.getFato(fatoId);
-            
             final GastosoCliParser.DiaContext diaCtx = fatoIdCtx.dia();
             final TextArgContext textArgCtx = fatoIdCtx.textArg();
             
             final boolean updateDia = diaCtx != null;
             final boolean updateDescricao = textArgCtx != null;
+
+            Fato fato;
             
             if(updateDia || updateDescricao){
                 
+                fato = new Fato(fatoId);
+                        
                 if(updateDia) fato.setDia(CtxReader.extractDia(diaCtx));
                 
                 if(updateDescricao) 
                     fato.setDescricao(CtxReader.extractText(textArgCtx));
                 
-                gastosoSystem.update(fato);
+                fato = gastosoSystem.update(fato);
+            } else {
+                fato = gastosoSystem.getFato(fatoId);
             }
             writer.println(
                 fato.getId()

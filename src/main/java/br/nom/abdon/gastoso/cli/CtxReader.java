@@ -16,6 +16,8 @@
  */
 package br.nom.abdon.gastoso.cli;
 
+import br.nom.abdon.util.Periodo;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
