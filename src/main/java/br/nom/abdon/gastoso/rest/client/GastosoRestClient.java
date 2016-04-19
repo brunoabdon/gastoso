@@ -16,12 +16,14 @@
  */
 package br.nom.abdon.gastoso.rest.client;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -35,6 +37,7 @@ import javax.ws.rs.core.Response;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
+import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyReader;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
@@ -86,11 +89,13 @@ public class GastosoRestClient implements GastosoSystem{
     public boolean login(final String user, final String password)
         throws GastosoSystemRTException {
 
-        final Response response =
+        final Invocation invocation =
             this.rootWebTarget.path("login")
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header("User-Agent", "gastoso-cli")
-            .post(Entity.text(password));
+            .buildPost(Entity.text(password));
+            
+        final Response response = invoke(invocation);
 
         if(this.logado =
             response.getStatusInfo().getFamily() == 
@@ -308,8 +313,22 @@ public class GastosoRestClient implements GastosoSystem{
     private Response invokeAndCheck(final Invocation invocation) 
                 throws GastosoSystemException{
     
-        final Response response = invocation.invoke();
+        Response response = invoke(invocation);
         dealWith(response);
+        return response;
+    }
+
+    private Response invoke(final Invocation invocation) {
+        final Response response; 
+        try {
+            response = invocation.invoke();
+        } catch (ProcessingException pe){
+            Throwable cause = pe.getCause();
+            if(cause instanceof ConnectException){
+                throw new GastosoSystemRTException("Servidor fora do ar.",pe);
+            }
+            throw new GastosoSystemRTException(pe);
+        }
         return response;
     }
 
