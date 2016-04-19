@@ -4,7 +4,6 @@ command: WS? lineCommand WS? EOF;
 
 lineCommand: 
     periodo | fato | fatos | conta | contas | rm | gasto | ganho | transf;
-    
 
 periodo : 'periodo' (WS periodoDef)?;
 fato    : 'fato'    WS fatoArgs;
@@ -15,7 +14,6 @@ rm      : 'rm'      WS rmArgs;
 gasto   : 'gasto'   WS gastoGanhoArgs;
 ganho   : 'ganho'   WS gastoGanhoArgs;
 transf  : 'transf'  WS transfArgs;
-
 
 fatoArgs: 
     id (WS (dia|textArg))? #fatoId
