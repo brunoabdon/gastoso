@@ -69,13 +69,14 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     public GastosoRestClient(final URI serverUri) {
-
+        
         try {
             final SSLContext sslContext = SSLContext.getDefault();
             final Client client =
                 ClientBuilder
                     .newBuilder()
                     .sslContext(sslContext)
+                    .register(GastosoMessageBodyReader.class)
                     .build();
 
             this.rootWebTarget = client.target(serverUri);
@@ -101,7 +102,7 @@ public class GastosoRestClient implements GastosoSystem{
             response.getStatusInfo().getFamily() == 
             Response.Status.Family.SUCCESSFUL){
 
-            final String authToken = response.readEntity(AuthToken.class).token;
+            final String authToken = succesfullReadEntity(response, AuthToken.class).token;
             
             final ClientRequestFilter authFilter = 
                 (reqContx) -> {
@@ -119,7 +120,6 @@ public class GastosoRestClient implements GastosoSystem{
             this.fatoWebTarget = this.fatosWebTarget.path("{id}");
             this.lancamentosWebTarget = this.rootWebTarget.path("lancamentos");
             this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
-
         }
 
         return this.logado;
@@ -286,7 +286,7 @@ public class GastosoRestClient implements GastosoSystem{
         return 
             baseWebTarget
             .resolveTemplate("id", id)
-            .request("application/vnd.gastoso.v1.full+json")
+            .request("application/vnd.gastoso.v1.simples+json")
             .header("User-Agent", "gastoso-cli");
     }
 
@@ -307,7 +307,21 @@ public class GastosoRestClient implements GastosoSystem{
         
         final Response response = invokeAndCheck(invocation);
         
-        return response.readEntity(klass);
+        return succesfullReadEntity(response, klass);
+    }
+
+    private <E> E succesfullReadEntity(
+            final Response response, 
+            final Class<E> klass) {
+        final E entity;
+        
+        try {
+            entity = response.readEntity(klass);
+        } catch (ProcessingException pe){
+            throw new GastosoSystemRTException(pe);
+        }
+        
+        return entity;
     }
     
     private Response invokeAndCheck(final Invocation invocation) 
@@ -318,7 +332,7 @@ public class GastosoRestClient implements GastosoSystem{
         return response;
     }
 
-    private Response invoke(final Invocation invocation) {
+    private Response invoke(final Invocation invocation)  {
         final Response response; 
         try {
             response = invocation.invoke();
@@ -327,28 +341,25 @@ public class GastosoRestClient implements GastosoSystem{
             if(cause instanceof ConnectException){
                 throw new GastosoSystemRTException("Servidor fora do ar.",pe);
             }
-            throw new GastosoSystemRTException(pe);
+            throw new GastosoSystemRTException("Impossível lidar.",pe);
         }
         return response;
-    }
-
-    private void successfullResponse(final Response response) throws GastosoSystemException {
-        if(response.getStatusInfo().getFamily() !=
-                Response.Status.Family.SUCCESSFUL){
-            throw new GastosoSystemException(response.readEntity(String.class));
-        }
     }
     
     private void dealWith(final Response response) 
             throws GastosoSystemException, NotFoundException { 
         
         final Response.StatusType statusInfo = response.getStatusInfo();
-        
+
         if(statusInfo.getStatusCode() ==
                 Response.Status.NOT_FOUND.getStatusCode()){
             throw new NotFoundException();
         }
         
-        successfullResponse(response);
+        //todo: separar erros 500 de 400 (erro do cliente)
+        if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
+            throw new GastosoSystemException(
+                statusInfo.getReasonPhrase() + ": " + response.readEntity(String.class));
+        }
     }
 }
