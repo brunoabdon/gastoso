@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
+import org.apache.commons.lang3.StringUtils;
 
 import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
 import br.nom.abdon.gastoso.system.GastosoSystem;
@@ -18,6 +21,8 @@ import br.nom.abdon.gastoso.system.GastosoSystemRTException;
  * @author Bruno Abdon
  */
 public class Main {
+
+    private static final Logger log = Logger.getLogger(Main.class.getName());
     
     public static void main(String[] args) {        
 
@@ -35,8 +40,10 @@ public class Main {
             String line;
             while((line = console.readLine()) != null
                     && !"exit".equals(line)){
-
-                gastosoCharacterCommand.command(line);
+                
+                if(!StringUtils.isBlank(line)){
+                    gastosoCharacterCommand.command(line);
+                }
             }
 
             gastosoSystem.logout();
@@ -44,15 +51,15 @@ public class Main {
             console.println("Bye bye");
 
         } catch (IOException ex) {
-            System.err.printf("Deu ruim!\n%s\n", ex.getLocalizedMessage());
+            log.log(Level.SEVERE, "Deu ruim!", ex);
         } catch (GastosoSystemRTException ex) {
-            System.err.println("Erro grave: " + ex.getMessage());
+            log.log(Level.SEVERE, "Erro grave!", ex);
         } finally {
             if(console != null) console.shutdown();
             try {
                 TerminalFactory.get().restore();
             } catch (Exception e) {
-                System.err.printf("Estranho.... \n%s\n", e.getMessage());
+                log.log(Level.SEVERE, "Estranho.... !", e);
             }            
         }
     }
