@@ -1,6 +1,7 @@
 *.class
 *~
 /target/
+/log/
 
 # Package Files #
 *.jar
