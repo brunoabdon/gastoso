@@ -104,19 +104,16 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         final Map<String,Object> params = new HashMap<>();
         
         final FiltroContas filtroContas = filtro.getFiltroContas();
-        if(filtroContas != null){
-            
-            final Conta conta = filtroContas.getConta();
-            if(conta != null){
-                final ParameterExpression<Conta> contaParameter = 
-                    cb.parameter(Conta.class, "conta");
-                
-                final Path<Object> contaDoLancamento = 
-                    rootLancamento.get("conta");
-                
-                where.add(cb.equal(contaParameter, contaDoLancamento));
-                params.put("conta",conta);
-            }
+        final Conta conta = filtroContas.getConta();
+        if(conta != null){
+            final ParameterExpression<Conta> contaParameter = 
+                cb.parameter(Conta.class, "conta");
+
+            final Path<Object> contaDoLancamento = 
+                rootLancamento.get("conta");
+
+            where.add(cb.equal(contaParameter, contaDoLancamento));
+            params.put("conta",conta);
         }
 
         final FiltroFatos filtroFatos = filtro.getFiltroFatos();
