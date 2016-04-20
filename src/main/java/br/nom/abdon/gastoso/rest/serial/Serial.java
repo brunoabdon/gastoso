@@ -23,6 +23,7 @@ import java.util.Collection;
 import com.fasterxml.jackson.core.JsonFactory;
 
 import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.rest.FatoDetalhado;
 import br.nom.abdon.gastoso.rest.Saldo;
@@ -42,6 +43,7 @@ class Serial {
         DESTINO = "destino",
         DESTINO_ID = "destinoId",
         DIA = "dia",
+        FATO_ID = "fatoId",
         ID = "id",
         LANCAMENTOS = "lancamentos",
         NOME = "nome",
@@ -51,13 +53,13 @@ class Serial {
 
     public static final String SALDO_CLASSNAME = Saldo.class.getName();
     public static final String CONTA_CLASSNAME = Conta.class.getName();
+    public static final String FATO_CLASSNAME = Fato.class.getName();
 
-    public static final String FATO_NORMAL_CLASSNAME = 
+    public static final String FATO_DETALHADO_CLASSNAME = 
         FatoDetalhado.class.getName();
     
     public static final String LANCAMENTO_CLASSNAME = 
         Lancamento.class.getName();
-    
     
     public static boolean isAccecptable(
             final Class<?> type, 

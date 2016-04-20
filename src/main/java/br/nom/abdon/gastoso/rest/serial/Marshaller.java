@@ -31,10 +31,12 @@ import pl.touk.throwing.ThrowingConsumer;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.Saldo;
-import br.nom.abdon.gastoso.rest.MediaTypes;
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import br.nom.abdon.gastoso.rest.MediaTypes;
+import br.nom.abdon.gastoso.rest.Saldo;
+
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 
 /**
  *
@@ -54,9 +56,6 @@ public class Marshaller {
     public void marshall(final Conta conta) throws IOException {
         gen.writeStartObject();
         this.contaCore(conta);
-        if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
-            gen.writeStringField(Serial.NOME, conta.getNome());
-        }
         gen.writeEndObject();
     }
 
@@ -91,81 +90,103 @@ public class Marshaller {
      * parâmetro.
      * 
      * 
-     * @param fatoNormal o fato a ser escrito.
+     * @param fato o fato a ser escrito.
      * @throws IOException Se não puder escrever.
      */
-    public void marshall(final FatoDetalhado fatoNormal) throws IOException {
+    public void marshall(final Fato fato) throws IOException {
 
         gen.writeStartObject();
-        this.fatoCore(fatoNormal);
+        this.fatoCore(fato);
         
-        final List<Lancamento> lancamentos = fatoNormal.getLancamentos();
+        if(fato instanceof FatoDetalhado){
+            FatoDetalhado fatoDetalhado = (FatoDetalhado)fato;
+        
+            final List<Lancamento> lancamentos = fatoDetalhado.getLancamentos();
 
-        switch(lancamentos.size()) {
-            case 1:
-                final Lancamento lancamento = lancamentos.get(0);
-                final Conta conta = lancamento.getConta();
+            switch(lancamentos.size()) {
+                case 1:
+                    final Lancamento lancamento = lancamentos.get(0);
+                    final Conta conta = lancamento.getConta();
 
-                this.writeContaOrFields(conta);
-                this.writeValorField(lancamento.getValor());
-                break;
-
-            case 2:
-                final Lancamento l0 = lancamentos.get(0);
-                final Lancamento l1 = lancamentos.get(1);
-
-                final int valor0 = l0.getValor();
-                final int valor1 = l1.getValor();
-
-                if(valor0 == -valor1){
-
-                    final Lancamento origem =
-                        valor0 < valor1 ? l0 : l1;
-                    final Lancamento destino = l0 == origem ? l1 : l0;
-
-                    if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
-                        gen.writeNumberField(Serial.ORIGEM_ID, origem.getId());
-                        gen.writeNumberField(Serial.DESTINO_ID, destino.getId());
-                    } else {                
-                        this.writeContaField(Serial.ORIGEM, origem);
-                        this.writeContaField(Serial.DESTINO, destino);
-                    }
-                    this.writeValorField(destino.getValor());
+                    this.writeContaOrFields(conta);
+                    this.writeValorField(lancamento.getValor());
                     break;
-                }
 
-            default:
-                gen.writeArrayFieldStart(Serial.LANCAMENTOS);
-                foreach(
-                    lancamentos, l -> this.writeFatoLancamento(l)
-                );
-                gen.writeEndArray();
-                break;
+                case 2:
+                    final Lancamento l0 = lancamentos.get(0);
+                    final Lancamento l1 = lancamentos.get(1);
+
+                    final int valor0 = l0.getValor();
+                    final int valor1 = l1.getValor();
+
+                    if(valor0 == -valor1){
+
+                        final Lancamento origem =
+                            valor0 < valor1 ? l0 : l1;
+                        final Lancamento destino = l0 == origem ? l1 : l0;
+
+                        if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE
+                            || tipo == APPLICATION_GASTOSO_PATCH_TYPE){
+                            gen.writeNumberField(Serial.ORIGEM_ID, origem.getId());
+                            gen.writeNumberField(Serial.DESTINO_ID, destino.getId());
+                        } else {                
+                            this.writeContaField(Serial.ORIGEM, origem);
+                            this.writeContaField(Serial.DESTINO, destino);
+                        }
+                        this.writeValorField(destino.getValor());
+                        break;
+                    }
+
+                default:
+                    gen.writeArrayFieldStart(Serial.LANCAMENTOS);
+                    foreach(
+                        lancamentos, l -> this.writeFatoLancamento(l)
+                    );
+                    gen.writeEndArray();
+                    break;
+            }
         }
-
         gen.writeEndObject();
     }
 
     /**
-     * Escreve um lancamento como faz sentido no contexto de lancamentos de uma
-     * conta (o extrato da conta). Vai conter as informacoes do Fato (mas nao 
-     * seus lancamentos) e o valor do lancamento. A conta fica implicita.
+     * Como tipo simples, normal ou full, escreve um lancamento como faz sentido
+     * no contexto de lancamentos de uma conta (o extrato da conta). Vai conter 
+     * as informacoes do Fato (mas nao seus lancamentos) e o valor do 
+     * lancamento. A conta fica implicita. Com o tipo patch, escreve a 
+     * identificação do lancamento (id ou fatoId+contaId) e o valor.
      * 
      * @param lancamento o lancamento a ser escrito.
      * @throws IOException se não puder escrever.
      */
     public void marshall(final Lancamento lancamento) throws IOException {
         gen.writeStartObject();
-        this.fatoCore(lancamento.getFato());
+        
+        final Fato fato = lancamento.getFato();
+        
+        if(tipo != MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE){
+            this.fatoCore(fato);
+        } else {
+            final Integer id = lancamento.getId();
+            if(id != null){
+                writeIdField(id);
+            } else {                
+                writeFatoIdField(fato);
+                writeContaIdField(lancamento.getConta());                
+            }
+        }
         this.writeValorField(lancamento.getValor());
         gen.writeEndObject();
     }
 
     private void writeContaOrFields(final Conta conta) throws IOException {
-        if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
+        if(tipo == MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE
+            || tipo == MediaTypes.APPLICATION_GASTOSO_FULL_TYPE){
+            this.writeContaField(conta);
+        } else if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
             this.writeContaIdField(conta);
         } else {
-            this.writeContaField(conta);
+            gen.writeStringField(Serial.NOME, conta.getNome());
         }
     }
 
@@ -202,6 +223,10 @@ public class Marshaller {
         gen.writeNumberField(Serial.CONTA_ID, conta.getId());
     }
 
+    private void writeFatoIdField(final Fato fato) throws IOException {
+        gen.writeNumberField(Serial.FATO_ID, fato.getId());
+    }
+
     private void writeValorField(final long valor) throws IOException{
         this.writeValorField(Serial.VALOR, valor);
     }
@@ -226,13 +251,25 @@ public class Marshaller {
     }
 
     private void contaCore(final Conta conta) throws IOException {
-        this.writeIdField(conta.getId());
+        if(tipo != APPLICATION_GASTOSO_PATCH_TYPE){
+            this.writeIdField(conta.getId());
+        }
+        if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
+            gen.writeStringField(Serial.NOME, conta.getNome());
+        }
     }
 
     private void fatoCore(final Fato fatoNormal) throws IOException {
-        this.writeIdField(fatoNormal.getId());
-        this.writeDiaField(fatoNormal.getDia());
-        gen.writeStringField(Serial.DESC, fatoNormal.getDescricao());
+        final boolean obrigatorio = tipo != APPLICATION_GASTOSO_PATCH_TYPE;
+        
+        final Integer id = fatoNormal.getId();
+        final LocalDate dia = fatoNormal.getDia();
+        final String descricao = fatoNormal.getDescricao();
+        
+        if(id != null || obrigatorio) this.writeIdField(id);
+        if(dia != null || obrigatorio) this.writeDiaField(dia);
+        if(descricao != null || obrigatorio) 
+            gen.writeStringField(Serial.DESC, descricao);
     }
 
     //utility function.. move to abd-utils someday...

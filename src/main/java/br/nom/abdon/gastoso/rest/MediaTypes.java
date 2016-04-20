@@ -35,6 +35,9 @@ public class MediaTypes {
     public static final MediaType APPLICATION_GASTOSO_FULL_TYPE =
         new MediaType("application", "vnd.gastoso.v1.full+json");
 
+    public static final MediaType APPLICATION_GASTOSO_PATCH_TYPE =
+        new MediaType("application", "vnd.gastoso.v1.patch+json");
+
     public static final String APPLICATION_GASTOSO_SIMPLES =
         "application/vnd.gastoso.v1.simples+json";
 
@@ -44,10 +47,15 @@ public class MediaTypes {
     public static final String APPLICATION_GASTOSO_FULL =
         "application/vnd.gastoso.v1.full+json";
 
+    public static final String APPLICATION_GASTOSO_PATCH =
+        "application/vnd.gastoso.v1.patch+json";
+    
+    
     public static final MediaType[] GASTOSO_MEDIATYPES = {
         APPLICATION_GASTOSO_SIMPLES_TYPE,
         APPLICATION_GASTOSO_NORMAL_TYPE,
-        APPLICATION_GASTOSO_FULL_TYPE
+        APPLICATION_GASTOSO_FULL_TYPE,
+        APPLICATION_GASTOSO_PATCH_TYPE
     };
 
     public static final boolean acceptGastosoMediaTypes(

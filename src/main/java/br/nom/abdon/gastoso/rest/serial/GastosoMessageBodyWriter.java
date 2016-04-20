@@ -35,9 +35,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import pl.touk.throwing.ThrowingConsumer;
 
 import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.rest.Saldo;
-import br.nom.abdon.gastoso.rest.FatoDetalhado;
 
 /**
  *
@@ -46,7 +46,8 @@ import br.nom.abdon.gastoso.rest.FatoDetalhado;
 @Produces({
     MediaTypes.APPLICATION_GASTOSO_SIMPLES,
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
-    MediaTypes.APPLICATION_GASTOSO_FULL
+    MediaTypes.APPLICATION_GASTOSO_FULL,
+    MediaTypes.APPLICATION_GASTOSO_PATCH,
 })
 @Provider
 public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
@@ -58,12 +59,12 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
             final Annotation[] annotations, 
             final MediaType mediaType) {
 
-        return Serial.isAccecptable(
-                    type, 
+        return Serial.isAccecptable(type, 
                     genericType, 
                     Serial.SALDO_CLASSNAME, 
                     Serial.CONTA_CLASSNAME, 
-                    Serial.FATO_NORMAL_CLASSNAME,
+                    Serial.FATO_CLASSNAME,
+                    Serial.FATO_DETALHADO_CLASSNAME,
                     Serial.LANCAMENTO_CLASSNAME)
                 && MediaTypes.acceptGastosoMediaTypes(mediaType);
     }
@@ -90,8 +91,9 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
             Serial.getRelevantTypeName(ehColecao, type, genericType);
         
         final ThrowingConsumer<Object, IOException> entityMarshallerMethod = 
-            className.contains(Serial.FATO_NORMAL_CLASSNAME)
-                ? f -> marshaller.marshall((FatoDetalhado)f)
+            className.contains(Serial.FATO_CLASSNAME) 
+                || className.contains(Serial.FATO_DETALHADO_CLASSNAME) 
+                ? f -> marshaller.marshall((Fato)f)
                 : className.contains(Serial.SALDO_CLASSNAME)
                     ? s -> marshaller.marshall((Saldo)s)
                     : className.contains(Serial.CONTA_CLASSNAME)

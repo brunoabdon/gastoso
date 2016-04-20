@@ -47,10 +47,10 @@ import br.nom.abdon.gastoso.rest.MediaTypes;
  */
 @Provider
 @Consumes({
-    MediaType.APPLICATION_JSON,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES,
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
-    MediaTypes.APPLICATION_GASTOSO_FULL
+    MediaTypes.APPLICATION_GASTOSO_FULL,
+    MediaTypes.APPLICATION_GASTOSO_PATCH,
 })
 public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
     
@@ -179,7 +179,6 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
         }
         
         return lancamentos == null? fato : new FatoDetalhado(fato,lancamentos);
-    
     }
 
     private static List<Lancamento> makeGasto(final Fato fato, Conta conta, Integer valor) {
@@ -203,7 +202,7 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
 
     private Conta parseConta(
             final JsonParser jParser, 
-            final boolean hasStartObject)  throws IOException{
+            final boolean hasStartObject) throws IOException{
         
         Integer id = null;
         String nome = null;
@@ -234,7 +233,7 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
             final JsonParser jParser, 
             final boolean hasStartObject) throws IOException{
 
-        Integer id = null, contaId = null, valor = null;
+        Integer id = null, contaId = null, fatoId = null, valor = null;
         
         if(hasStartObject)jParser.nextToken(); // START_OBJECT
         
