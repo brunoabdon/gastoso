@@ -13,7 +13,7 @@ import jline.console.ConsoleReader;
 import org.apache.commons.lang3.StringUtils;
 
 import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
-import br.nom.abdon.gastoso.system.GastosoSystem;
+import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 
 /**
@@ -32,7 +32,7 @@ public class Main {
 
             console = new ConsoleReader();
 
-            final GastosoSystem gastosoSystem = inicializaSistema(console);
+            final GastosoRestClient gastosoSystem = inicializaSistema(console);
 
             final GastosoCharacterCommand gastosoCharacterCommand = 
                 new GastosoCharacterCommand(gastosoSystem, console.getOutput());
@@ -64,17 +64,20 @@ public class Main {
         }
     }
 
-    private static GastosoSystem inicializaSistema(final ConsoleReader console) 
+    private static GastosoRestClient inicializaSistema(final ConsoleReader console) 
         throws GastosoSystemRTException, IOException {
 
-        final GastosoSystem gastosoSystem;
+        final GastosoRestClient gastosoRestClient;
 
         try {
             //inicializacao vai setar servidor web, provavelmente atraves de
             //parametros no args ou por variaveis de ambiente...
-            final URI uri = new URI("http://localhost:5000/");
+            String uriStr = System.getenv("ABD_GASTOSO_SRV_URI");
+            if(StringUtils.isBlank(uriStr)) uriStr = "http://localhost:5000/";
+            
+            final URI uri = new URI(uriStr);
 
-            gastosoSystem = new GastosoRestClient(uri);
+            gastosoRestClient = new GastosoRestClient(uri);
 
             final PrintWriter writer = new PrintWriter(console.getOutput());
 
@@ -82,8 +85,11 @@ public class Main {
             int tentativasSobrando = 3;
             while(!conseguiu && tentativasSobrando > 0){
                 console.setEchoCharacter('*');
+                
+                System.out.printf(
+                    "Connecting to Gastoso's severs on %s .\n", uriStr);
                 String password = console.readLine("Senha:");
-                conseguiu = gastosoSystem.login("", String.valueOf(password));
+                conseguiu = gastosoRestClient.login("", String.valueOf(password));
                 if(conseguiu){
                     console.setEchoCharacter(null);
                     console.setPrompt("gastoso>");
@@ -95,11 +101,11 @@ public class Main {
                     System.exit(1);
                 }
             }
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | GastosoSystemException e) {
             throw new GastosoSystemRTException(e);
         }
 
-        return gastosoSystem;
+        return gastosoRestClient;
     }
 
     private static void printWellcome(PrintWriter writer) {

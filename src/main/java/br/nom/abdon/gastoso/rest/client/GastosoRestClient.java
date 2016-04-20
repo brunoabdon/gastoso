@@ -20,7 +20,11 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.ProcessingException;
@@ -31,13 +35,20 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
+import br.nom.abdon.gastoso.rest.Saldo;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyReader;
+import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyWriter;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
@@ -54,22 +65,40 @@ import br.nom.abdon.modelo.Entidade;
  */
 public class GastosoRestClient implements GastosoSystem{
 
-    private final WebTarget rootWebTarget;
-    private WebTarget contaWebTarget, 
-                        fatoWebTarget, 
-                        contasWebTarget, 
-                        fatosWebTarget,
-                        lancamentosWebTarget,
-                        lancamentoWebTarget;
+    private static final GenericType<List<Lancamento>> LANCAMENTO_GEN_TYPE = 
+        new GenericType<List<Lancamento>>(){};
 
-    private boolean logado;
+    private static final GenericType<List<FatoDetalhado>> FATO_GEN_TYPE = 
+        new GenericType<List<FatoDetalhado>>(){};
+    
+    private static final GenericType<List<Conta>> CONTA_GEN_TYPE = 
+        new GenericType<List<Conta>>(){};
+    
+    private static final GenericType<List<Saldo>> SALDO_GEN_TYPE = 
+        new GenericType<List<Saldo>>(){};
+
+    private static final ClientRequestFilter USER_AGENT_FILTER = 
+        (reqContx) -> {
+            reqContx
+            .getHeaders()
+            .add(HttpHeaders.USER_AGENT, "gastoso-cli"); //pegar de um resource
+    };
+
+    
+    private final WebTarget rootWebTarget;
+    
+    private final WebTarget contaWebTarget, contasWebTarget;
+    private final WebTarget fatoWebTarget, fatosWebTarget;
+    private final WebTarget lancamentoWebTarget, lancamentosWebTarget;
+
+    private boolean logado = false;
 
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
     }
 
     public GastosoRestClient(final URI serverUri) {
-        
+
         try {
             final SSLContext sslContext = SSLContext.getDefault();
             final Client client =
@@ -77,23 +106,48 @@ public class GastosoRestClient implements GastosoSystem{
                     .newBuilder()
                     .sslContext(sslContext)
                     .register(GastosoMessageBodyReader.class)
+                    .register(GastosoMessageBodyWriter.class)
                     .build();
 
-            this.rootWebTarget = client.target(serverUri);
+            rootWebTarget = client.target(serverUri);
 
         } catch (NoSuchAlgorithmException e) {
             throw new GastosoSystemRTException(e);
         }
-    }
+        
+        rootWebTarget.register(USER_AGENT_FILTER);
 
-    @Override
-    public boolean login(final String user, final String password)
-        throws GastosoSystemRTException {
+        this.contasWebTarget = rootWebTarget.path("contas");
+        this.fatosWebTarget = rootWebTarget.path("fatos");
+        this.lancamentosWebTarget = rootWebTarget.path("lancamentos");
+
+        this.contaWebTarget = this.contasWebTarget.path("{id}");
+        this.fatoWebTarget = this.fatosWebTarget.path("{id}");
+        this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
+    } 
+    
+    public boolean login (
+        final String user, 
+        final String password) throws GastosoSystemException {
+        /*
+        esse método nao devria lancar GastosoSystemException.
+        
+        ele está lançando pq invoke(invocation) lança, mas não 
+        deveria.
+        
+        idealmente, invoke deveria lancar algum tipo de 
+        InvocationException e essa exceção seria transformada
+        em loginException ou restclient exception aqui, e 
+        transformada em GastosoException nos outros métodos, 
+        que implementam realmente coisas do gastosoSystem.
+        
+        */
+
+        if(this.logado) throw new IllegalStateException();
 
         final Invocation invocation =
             this.rootWebTarget.path("login")
             .request(MediaType.APPLICATION_JSON_TYPE)
-            .header("User-Agent", "gastoso-cli")
             .buildPost(Entity.text(password));
             
         final Response response = invoke(invocation);
@@ -102,7 +156,8 @@ public class GastosoRestClient implements GastosoSystem{
             response.getStatusInfo().getFamily() == 
             Response.Status.Family.SUCCESSFUL){
 
-            final String authToken = succesfullReadEntity(response, AuthToken.class).token;
+            final String authToken = 
+                readEntity(response, AuthToken.class).token;
             
             final ClientRequestFilter authFilter = 
                 (reqContx) -> {
@@ -113,19 +168,11 @@ public class GastosoRestClient implements GastosoSystem{
                 }
             ;
 
-            this.rootWebTarget.register(authFilter);
-            this.contasWebTarget = this.rootWebTarget.path("contas");
-            this.fatosWebTarget = this.rootWebTarget.path("fatos");
-            this.contaWebTarget = this.contasWebTarget.path("{id}");
-            this.fatoWebTarget = this.fatosWebTarget.path("{id}");
-            this.lancamentosWebTarget = this.rootWebTarget.path("lancamentos");
-            this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
+            rootWebTarget.register(authFilter);
         }
-
         return this.logado;
     }
 
-    @Override
     public boolean logout()
             throws GastosoSystemRTException, IllegalStateException {
 
@@ -137,9 +184,86 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public List<Fato> getFatos(FiltroFatos filtro) throws GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<FatoDetalhado> getFatos(final FiltroFatos filtro) 
+            throws GastosoSystemException {
+        
+        return get(
+            FILL_PARAM_FATOS, 
+            FATO_GEN_TYPE,
+            APPLICATION_GASTOSO_SIMPLES_TYPE,
+            fatoWebTarget, 
+            filtro);
     }
+
+    @Override
+    public List<Conta> getContas(final FiltroContas filtro) 
+            throws GastosoSystemException {
+        
+        return get(
+            (wt,f) -> wt, 
+            CONTA_GEN_TYPE,
+            APPLICATION_GASTOSO_FULL_TYPE,
+            contasWebTarget, 
+            filtro);
+    }
+
+    @Override
+    public List<Lancamento> getLancamentos(final FiltroLancamentos filtro) 
+            throws GastosoSystemException {
+        
+        return get(
+            FILL_PARAM_LANCAMENTOS, 
+            LANCAMENTO_GEN_TYPE,
+            APPLICATION_GASTOSO_FULL_TYPE,
+            lancamentosWebTarget, 
+            filtro);
+    }
+    
+
+    private static final BiFunction<WebTarget, FiltroFatos, WebTarget> 
+        FILL_PARAM_FATOS =
+        (wt,f) -> {
+            wt = setData(wt, "dataMin", f.getDataMinima());
+            wt = setData(wt, "dataMax", f.getDataMaxima());
+            return wt;
+    };
+
+    //helper for FILL_PARAM_FATOS
+    private static WebTarget setData(
+        WebTarget webTarget, 
+        final String paramName, 
+        final LocalDate date){
+
+        return date != null 
+            ? webTarget.queryParam(paramName, date.format(ISO_DATE))
+            : webTarget;
+    }
+
+    private static final BiFunction<WebTarget, FiltroLancamentos, WebTarget> 
+        FILL_PARAM_LANCAMENTOS =
+
+        (lancamentosWebTarget,filtro) -> {
+            final FiltroFatos filtroFatos = filtro.getFiltroFatos();
+            final FiltroContas filtroContas = filtro.getFiltroContas();
+
+            final Integer fatoId = filtroFatos.getId();
+            final Integer contaId = filtroContas.getId();
+
+            final WebTarget webTarget;
+
+            if(fatoId != null){
+                webTarget = lancamentosWebTarget.queryParam("fato", fatoId);
+            } else if(contaId != null){
+                webTarget = 
+                    lancamentosWebTarget.queryParam("conta", fatoId)
+                    .queryParam("dataMin", filtroFatos.getDataMinima())
+                    .queryParam("dataMax", filtroFatos.getDataMaxima());
+            } else {
+                throw new GastosoSystemRTException("Deu ruim");
+            }
+
+            return webTarget;
+    };
 
     @Override
     public Fato getFato(int id)
@@ -148,50 +272,9 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
-    public List<Conta> getContas(FiltroContas filtro) throws GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public Conta getConta(int id) 
             throws GastosoSystemRTException, GastosoSystemException {
         return get(contaWebTarget,Conta.class,id);
-    }
-    
-    private <E extends Entidade<Integer>> E get(
-        final WebTarget baseWebTarget, 
-        final Class<E> klass,
-        final int id) 
-            throws GastosoSystemException{
-        return invokeResource(
-                resourceBuilder(baseWebTarget,id).buildGet(),klass);
-    }
-
-    @Override
-    public List<Lancamento> getLancamentos(FiltroLancamentos filtro) throws GastosoSystemRTException {
-        final FiltroFatos filtroFatos = filtro.getFiltroFatos();
-        
-        final Integer fatoId = filtroFatos.getId();
-        final Integer contaId = filtroFatos.getId();
-        
-        WebTarget webTarget;
-        
-        if(fatoId != null){
-            webTarget = lancamentosWebTarget.queryParam("fato", fatoId);
-        } else if(contaId != null){
-            webTarget = 
-                lancamentosWebTarget.queryParam("conta", fatoId)
-                .queryParam("dataMin", filtroFatos.getDataMinima())
-                .queryParam("dataMax", filtroFatos.getDataMaxima());
-        } else {
-            throw new GastosoSystemRTException("Deu ruim");
-        }
-        
-        return 
-            webTarget
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .header("User-Agent", "gastoso-cli")
-                .get(new GenericType<List<Lancamento>>(){});
     }
 
     @Override
@@ -205,30 +288,31 @@ public class GastosoRestClient implements GastosoSystem{
     }
     
     @Override
-    public Lancamento update(Lancamento lancamento) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Lancamento update(Lancamento lancamento) throws GastosoSystemException {
+        return update(lancamentoWebTarget,lancamento,Lancamento.class);
     }
 
     @Override
-    public void deleteFato(int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
-        this.delete(fatoWebTarget, id);
+    public void deleteFato(int id) throws GastosoSystemException {
+        delete(fatoWebTarget, id);
     }
 
     @Override
-    public void deleteConta(int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
-        this.delete(contaWebTarget, id);
+    public void deleteConta(int id) throws GastosoSystemException {
+        delete(contaWebTarget, id);
     }
     
     @Override
-    public void deleteLancamento(int id) throws NotFoundException, GastosoSystemRTException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void deleteLancamento(int id) throws GastosoSystemException {
+        delete(lancamentoWebTarget, id);
     }
 
     @Override
-    public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException {
-        return create(fatosWebTarget,fato,Fato.class);
+    public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException { 
+        return create(
+            fatosWebTarget,
+            fato,
+            (fato instanceof FatoDetalhado) ? FatoDetalhado.class : Fato.class);
     }
 
     @Override
@@ -239,78 +323,154 @@ public class GastosoRestClient implements GastosoSystem{
     
     @Override
     public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return create(contasWebTarget,lancamento,Lancamento.class);
     }
 
-    private <E extends Entidade<Integer>> E update(
-            final WebTarget baseWebTarget, 
-            final E entity,
-            final Class<E> klass) 
-                throws GastosoSystemException, GastosoSystemRTException {
+    private static <E,F> List<E> get(
+            final BiFunction<WebTarget, F, WebTarget> fillParams,
+            final GenericType<List<E>> genericType,
+            final MediaType mediaType,
+            final WebTarget webTarget,
+            final F filtro) 
+                throws GastosoSystemException {
         
-        final Invocation.Builder resourceBuilder = 
-                resourceBuilder(baseWebTarget,entity.getId());
-        
-        return invokePost(resourceBuilder, klass, entity);
-    }
-
-    private <E extends Entidade<Integer>> E create(
-            final WebTarget baseWebTarget, 
-            final E entity,
-            final Class<E> klass)
-        throws GastosoSystemRTException, GastosoSystemException {
-
-        return 
-            invokePost(
-                baseWebTarget
-                    .request(MediaType.APPLICATION_JSON_TYPE)
-                    .header("User-Agent", "gastoso-cli"),
-                klass,
-                entity
-            );
-    }
-
-    private void delete(final WebTarget baseWebTarget, int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
+        final List<E> entities;
         
         final Response response = 
-            invokeAndCheck(resourceBuilder(baseWebTarget,id).buildDelete());
-
-        this.dealWith(response);
-    }
-
-    private Invocation.Builder resourceBuilder(
-            final WebTarget baseWebTarget,
-            final int id){
+            requestOperation(
+                fillParams.apply(webTarget, filtro), 
+                Invocation.Builder::buildGet,
+                mediaType);
         
-        return 
-            baseWebTarget
-            .resolveTemplate("id", id)
-            .request("application/vnd.gastoso.v1.simples+json")
-            .header("User-Agent", "gastoso-cli");
-    }
-
-    private <E extends Entidade<Integer>> E invokePost(
-            final Invocation.Builder resourceBuilder,            
-            final Class<E> klass,
-            final E entity) 
-                throws GastosoSystemException{
+        try {
+            entities = response.readEntity(genericType);
+        } catch (ProcessingException pe){
+            throw new GastosoSystemRTException(pe);
+        }
         
-        return invokeResource(
-            resourceBuilder.buildPost(Entity.json(entity)),klass);
+        return entities;
+    }
+    
+    private <E extends Entidade<Integer>> E get(
+        final WebTarget baseWebTarget, 
+        final Class<E> klass,
+        final int id) 
+            throws GastosoSystemException{
+
+        final Response response = 
+            requestOperation(
+                baseWebTarget.resolveTemplate("id", id), 
+                Invocation.Builder::buildGet,
+                APPLICATION_GASTOSO_FULL_TYPE);
+        
+        return readEntity(response, klass);
+    }
+    
+    private static <E extends Entidade<Integer>> E update(
+            final WebTarget baseWebTarget, 
+            final E entidade,
+            final Class<E> klass) 
+                throws GastosoSystemException {
+
+        return post(
+            baseWebTarget.resolveTemplate("id", entidade.getId()), 
+            entidade, 
+            klass);
     }
 
-    private <E extends Entidade<Integer>> E invokeResource(
-        final Invocation invocation,
-        final Class<E> klass) 
+    private static <E extends Entidade<Integer>> E create(
+            final WebTarget baseWebTarget, 
+            final E entidade,
+            final Class<? extends E> klass)
+        throws GastosoSystemRTException, GastosoSystemException {
+
+        return post(baseWebTarget,entidade,klass);
+    }
+
+    private static void delete(final WebTarget baseWebTarget, int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        
+        requestOperation(
+            baseWebTarget.resolveTemplate("id", id), 
+            Invocation.Builder::buildDelete,
+            MediaType.WILDCARD_TYPE);
+    }
+    
+    private static<E extends Entidade<Integer>> E post(
+        final WebTarget webTarget,
+        final E entidade,
+        final Class<? extends E> klass) 
             throws GastosoSystemException{
         
-        final Response response = invokeAndCheck(invocation);
+        final Entity<E> entity = 
+            Entity.entity(entidade, APPLICATION_GASTOSO_PATCH_TYPE);
+    
+        final Response response = 
+            requestOperation(
+                webTarget, 
+                b -> b.buildPost(entity), 
+                APPLICATION_GASTOSO_FULL_TYPE);
         
-        return succesfullReadEntity(response, klass);
+        return readEntity(response, klass);
     }
 
-    private <E> E succesfullReadEntity(
+    private static Response requestOperation(
+            final WebTarget webTarget,
+            final Function<Invocation.Builder,Invocation> invocFunc,
+            final MediaType acceptedMediaType) 
+                throws GastosoSystemException{
+
+        final Invocation.Builder resourceBuilder = webTarget.request();
+        
+        resourceBuilder.accept(acceptedMediaType);
+        
+        final Invocation invocation = invocFunc.apply(resourceBuilder);
+        
+        return invoke(invocation);
+    }
+    
+    /**
+     * Chama o método {@link Invocation#invoke() invoke} do Invocation 
+     * passado, tratando as exceções.
+     * 
+     * @param invocation Uma instância qualquer de {@link Invocation}.
+     * @return A resposta da requisição.
+     */
+    private static Response invoke(
+            final Invocation invocation) throws GastosoSystemException{
+    
+        final Response response; 
+        try {
+            response = invocation.invoke();
+        } catch (ProcessingException pe){
+            Throwable cause = pe.getCause();
+            if(cause instanceof ConnectException){
+                throw new GastosoSystemRTException("Servidor fora do ar.",pe);
+            }
+            throw new GastosoSystemRTException("Impossível lidar.",pe);
+        }
+        
+        final Response.StatusType statusInfo = response.getStatusInfo();
+
+        if(statusInfo.getStatusCode() ==
+                Response.Status.NOT_FOUND.getStatusCode()){
+            throw new NotFoundException();
+        }
+        //todo: separar erros 500 de 400 (erro do cliente)
+        if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
+            throw new GastosoSystemException(
+                String.format("%d - %s [%s]", 
+                        statusInfo.getStatusCode(),
+                        statusInfo.getReasonPhrase(),
+                        response.readEntity(String.class))
+            );
+                
+        }
+        
+        return response;
+    }
+    
+    private static <E> E readEntity(
             final Response response, 
             final Class<E> klass) {
         final E entity;
@@ -322,44 +482,5 @@ public class GastosoRestClient implements GastosoSystem{
         }
         
         return entity;
-    }
-    
-    private Response invokeAndCheck(final Invocation invocation) 
-                throws GastosoSystemException{
-    
-        Response response = invoke(invocation);
-        dealWith(response);
-        return response;
-    }
-
-    private Response invoke(final Invocation invocation)  {
-        final Response response; 
-        try {
-            response = invocation.invoke();
-        } catch (ProcessingException pe){
-            Throwable cause = pe.getCause();
-            if(cause instanceof ConnectException){
-                throw new GastosoSystemRTException("Servidor fora do ar.",pe);
-            }
-            throw new GastosoSystemRTException("Impossível lidar.",pe);
-        }
-        return response;
-    }
-    
-    private void dealWith(final Response response) 
-            throws GastosoSystemException, NotFoundException { 
-        
-        final Response.StatusType statusInfo = response.getStatusInfo();
-
-        if(statusInfo.getStatusCode() ==
-                Response.Status.NOT_FOUND.getStatusCode()){
-            throw new NotFoundException();
-        }
-        
-        //todo: separar erros 500 de 400 (erro do cliente)
-        if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
-            throw new GastosoSystemException(
-                statusInfo.getReasonPhrase() + ": " + response.readEntity(String.class));
-        }
-    }
+    }   
 }

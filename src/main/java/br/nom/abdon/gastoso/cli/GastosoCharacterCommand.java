@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
+import br.nom.abdon.gastoso.Lancamento;
 
 import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
@@ -57,6 +59,8 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.RmContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
+import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
@@ -215,23 +219,21 @@ public class GastosoCharacterCommand {
                 + " - " 
                 + fato.getDescricao());
 
-                /*
-                final List<Lancamento> lancamentos = 
-                    gastosoSystem
-                    .getLancamentos(
-                        new FiltroLancamento()
-                        .fromFato(fato.getId()));
+            
+                if(fato instanceof FatoDetalhado){
+                    final List<Lancamento> lancamentos = 
+                            ((FatoDetalhado)fato).getLancamentos();
 
-                lancamentos.forEach(
-                l -> {
-                        writer.printf("\t[%4d] - [%4d] - %s %d",
-                            l.getId(),
-                            l.getConta().getId(),
-                            l.getConta().getNome(),
-                            l.getValor());
-                    }
-                );
-            */
+                    lancamentos.forEach(
+                    l -> {
+                            writer.printf("  [%d/%d] - %s %s\n",
+                                fatoId,
+                                l.getConta().getId(),
+                                l.getConta().getNome(),
+                                formata(l.getValor()));
+                        }
+                    );
+                }
 
         } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
@@ -398,6 +400,7 @@ public class GastosoCharacterCommand {
     }
 
     private void dealWith(Throwable ex){
+        
         if(ex instanceof NotFoundException){
             writer.println("Erro: Isso não existe");
         } else {
@@ -410,8 +413,12 @@ public class GastosoCharacterCommand {
             );
 
             writer.println(": " + ex.getMessage());
-            
             log.log(Level.FINEST, ex, () -> "Impossível processar.");
         }
     }
+    
+    private String formata(Integer val){
+        return String.format("R$ %d,%d", (int)val/100,Math.abs(val%100));
+    }
+    
 }
