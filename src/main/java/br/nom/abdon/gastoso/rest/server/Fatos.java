@@ -26,7 +26,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
@@ -52,7 +51,7 @@ import br.nom.abdon.gastoso.system.FiltroLancamentos;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
 public class Fatos extends AbstractRestCrud<Fato,Integer>{
 
     protected static final String PATH = "fatos";
@@ -104,7 +103,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         FiltroFatos filtroFatos = new FiltroFatos();
         filtroFatos.setDataMaxima(dataMaxima);
         filtroFatos.setDataMinima(dataMinima);
-        filtroFatos.setQuantos(MAX_RESULTS);
+//        filtroFatos.setQuantos(MAX_RESULTS); sentido nenhum, já que consulta por lancamento
 
         FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
         filtroLancamentos.setFiltroFatos(filtroFatos);
@@ -160,7 +159,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         
         return new FatoDetalhado(fato, lancamentos);
     }
-    
+
     @POST
     @Path("{id}/{contaId}")
     public Response atualizar(
@@ -214,5 +213,23 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
             }
         }
         return response;
+    }
+
+    @Override
+    protected Fato prepararAtualizacao(
+            final EntityManager entityManager, 
+            final Fato fato, 
+            final Integer id) {
+        
+        final Fato fatoOriginal = entityManager.find(Fato.class, id);
+        
+        final LocalDate dia = fato.getDia();
+        final String descricao = fato.getDescricao();
+        
+        if(dia != null) fatoOriginal.setDia(fato.getDia());
+        if(descricao != null) fatoOriginal.setDescricao(descricao);
+        
+        return fatoOriginal;
+        
     }
 }

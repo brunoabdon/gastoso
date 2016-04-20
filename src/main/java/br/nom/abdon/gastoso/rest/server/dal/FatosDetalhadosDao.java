@@ -68,9 +68,9 @@ public class FatosDetalhadosDao extends FatosDao{
     }
     
     @Override
-    public void atualizar(
+    public Fato atualizar(
             final EntityManager em, 
             final Fato fato) throws DalException {
-        super.atualizar(em, FatoDetalhado.asFato(fato));
+        return super.atualizar(em, FatoDetalhado.asFato(fato));
     }
 }

@@ -31,7 +31,7 @@ import javax.ws.rs.core.Response;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
 public class Contas extends AbstractRestCrud<Conta,Integer>{
 
     static final String PATH = "contas";

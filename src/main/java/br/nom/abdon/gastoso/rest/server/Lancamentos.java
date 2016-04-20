@@ -14,7 +14,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
@@ -39,7 +38,7 @@ import br.nom.abdon.rest.AbstractRestCrud;
     MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
 public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
 
     protected static final String PATH = "lancamentos";
