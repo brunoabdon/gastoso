@@ -19,12 +19,15 @@ package br.nom.abdon.gastoso.cli;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,7 +63,6 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
 import br.nom.abdon.gastoso.rest.FatoDetalhado;
-import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
@@ -132,7 +134,20 @@ public class GastosoCharacterCommand {
             try {
                 commandLineCommand(lineCommandCtx);
             } catch (GastosoSystemException | GastosoSystemRTException ex) {
-                dealWith(ex);
+                if(ex instanceof NotFoundException){
+                    writer.println("Não existe");
+                } else {
+                    writer.print(
+                        (ex instanceof GastosoSystemException)
+                        ? "Erro" 
+                        : (ex instanceof GastosoSystemRTException)
+                            ? "Problema"
+                            : "Bronca"
+                    );
+
+                    writer.println(": " + ex.getMessage());
+                    log.log(Level.FINEST, ex, () -> "Impossível processar.");
+                }
             }
         }
     }
@@ -398,27 +413,12 @@ public class GastosoCharacterCommand {
 
         return new Periodo(domingoPassado, proximoSabado);
     }
-
-    private void dealWith(Throwable ex){
-        
-        if(ex instanceof NotFoundException){
-            writer.println("Erro: Isso não existe");
-        } else {
-            writer.print(
-                (ex instanceof GastosoSystemException)
-                ? "Erro" 
-                : (ex instanceof GastosoSystemRTException)
-                    ? "Problema"
-                    : "Bronca"
-            );
-
-            writer.println(": " + ex.getMessage());
-            log.log(Level.FINEST, ex, () -> "Impossível processar.");
-        }
-    }
     
     private String formata(Integer val){
-        return String.format("R$ %d,%d", (int)val/100,Math.abs(val%100));
+        
+        BigDecimal valor = BigDecimal.valueOf(val, 2);
+        return NumberFormat.getCurrencyInstance(Locale.forLanguageTag("pt-BR")).format(valor);
+//        return String.format("R$ %d,%2d", );
     }
     
 }

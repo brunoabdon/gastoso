@@ -12,9 +12,10 @@ import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import org.apache.commons.lang3.StringUtils;
 
+import br.nom.abdon.gastoso.rest.client.GastosoResponseException;
 import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
-import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
+import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 
 /**
  *
@@ -64,30 +65,48 @@ public class Main {
         }
     }
 
-    private static GastosoRestClient inicializaSistema(final ConsoleReader console) 
+    private static GastosoRestClient inicializaSistema(
+            final ConsoleReader console) 
+        throws GastosoSystemRTException, IOException {
+
+        final GastosoRestClient gastosoRestClient;
+
+        String uriStr = System.getenv("ABD_GASTOSO_SRV_URI");
+        if(StringUtils.isBlank(uriStr)) uriStr = "http://localhost:5000/";
+
+        try {
+            final URI uri = new URI(uriStr);
+            gastosoRestClient = inicializaSistema(console,uri);
+        } catch (URISyntaxException e) {
+            throw new GastosoSystemRTException(e);
+        }
+        
+        return gastosoRestClient;
+    }    
+    
+    private static GastosoRestClient inicializaSistema(
+            final ConsoleReader console, final URI uri) 
         throws GastosoSystemRTException, IOException {
 
         final GastosoRestClient gastosoRestClient;
 
         try {
-            //inicializacao vai setar servidor web, provavelmente atraves de
-            //parametros no args ou por variaveis de ambiente...
-            String uriStr = System.getenv("ABD_GASTOSO_SRV_URI");
-            if(StringUtils.isBlank(uriStr)) uriStr = "http://localhost:5000/";
             
-            final URI uri = new URI(uriStr);
-
             gastosoRestClient = new GastosoRestClient(uri);
 
             final PrintWriter writer = new PrintWriter(console.getOutput());
 
             boolean conseguiu = false;
             int tentativasSobrando = 3;
+
+            System.out.printf(
+                "Connecting to Gastoso's severs on %s:%d.\n", 
+                uri.getHost(),
+                uri.getPort());
+
             while(!conseguiu && tentativasSobrando > 0){
                 console.setEchoCharacter('*');
                 
-                System.out.printf(
-                    "Connecting to Gastoso's severs on %s .\n", uriStr);
                 String password = console.readLine("Senha:");
                 conseguiu = gastosoRestClient.login("", String.valueOf(password));
                 if(conseguiu){
@@ -95,13 +114,24 @@ public class Main {
                     console.setPrompt("gastoso>");
                     printWellcome(writer);
                 } else if(--tentativasSobrando > 0){
-                    writer.println("Foi mal. Tá errada.");
+                    writer.println("Foi mal. Tá errada.\n");
                 } else {
                     writer.println("Não rolou não.");
+                    writer.flush();
                     System.exit(1);
                 }
             }
-        } catch (URISyntaxException | GastosoSystemException e) {
+        } catch (GastosoSystemRTException e) {
+            if(e.getCode() == SERVIDOR_FORA){
+                System.out.printf(
+                    "%s:%d is not responding.\n",
+                    uri.getHost(),
+                    uri.getPort());
+                System.out.flush();
+                System.exit(1);
+            }
+            throw e;
+        } catch (GastosoResponseException e) {
             throw new GastosoSystemRTException(e);
         }
 

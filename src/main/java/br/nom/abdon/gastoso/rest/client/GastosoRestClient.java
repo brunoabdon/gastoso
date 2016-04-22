@@ -55,6 +55,8 @@ import br.nom.abdon.gastoso.system.FiltroLancamentos;
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
+import static br.nom.abdon.gastoso.system.GastosoSystemRTException.ERRO_GERAL;
+import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 import br.nom.abdon.gastoso.system.NotFoundException;
 import br.nom.abdon.modelo.Entidade;
 
@@ -126,9 +128,8 @@ public class GastosoRestClient implements GastosoSystem{
         this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
     } 
     
-    public boolean login (
-        final String user, 
-        final String password) throws GastosoSystemException {
+    public boolean login (final String user, final String password) 
+            throws GastosoResponseException {
         /*
         esse método nao devria lancar GastosoSystemException.
         
@@ -150,25 +151,35 @@ public class GastosoRestClient implements GastosoSystem{
             .request(MediaType.APPLICATION_JSON_TYPE)
             .buildPost(Entity.text(password));
             
-        final Response response = invoke(invocation);
-
-        if(this.logado =
-            response.getStatusInfo().getFamily() == 
-            Response.Status.Family.SUCCESSFUL){
-
-            final String authToken = 
-                readEntity(response, AuthToken.class).token;
+        final Response response;
+        
+        try {
             
-            final ClientRequestFilter authFilter = 
-                (reqContx) -> {
-                    if(this.logado)
-                    reqContx
-                        .getHeaders()
-                        .add("X-Abd-auth_token", authToken);
-                }
-            ;
+            response = invoke(invocation);
 
-            rootWebTarget.register(authFilter);
+            if(this.logado =
+                response.getStatusInfo().getFamily() == 
+                Response.Status.Family.SUCCESSFUL){
+
+                final String authToken = 
+                    readEntity(response, AuthToken.class).token;
+
+                final ClientRequestFilter authFilter = 
+                    (reqContx) -> {
+                        if(this.logado)
+                        reqContx
+                            .getHeaders()
+                            .add("X-Abd-auth_token", authToken);
+                    }
+                ;
+
+                rootWebTarget.register(authFilter);
+            }
+        } catch (GastosoResponseException e){
+            if(e.getStatusInfo().getStatusCode() 
+                != Response.Status.UNAUTHORIZED.getStatusCode()){
+                throw e;
+            }
         }
         return this.logado;
     }
@@ -259,7 +270,7 @@ public class GastosoRestClient implements GastosoSystem{
                     .queryParam("dataMin", filtroFatos.getDataMinima())
                     .queryParam("dataMax", filtroFatos.getDataMaxima());
             } else {
-                throw new GastosoSystemRTException("Deu ruim");
+                throw new GastosoSystemRTException("Deu ruim",ERRO_GERAL);
             }
 
             return webTarget;
@@ -420,13 +431,25 @@ public class GastosoRestClient implements GastosoSystem{
             final MediaType acceptedMediaType) 
                 throws GastosoSystemException{
 
-        final Invocation.Builder resourceBuilder = webTarget.request();
-        
-        resourceBuilder.accept(acceptedMediaType);
+        final Invocation.Builder resourceBuilder = 
+                webTarget
+                    .request()
+                    .accept(acceptedMediaType);
         
         final Invocation invocation = invocFunc.apply(resourceBuilder);
         
-        return invoke(invocation);
+        final Response response;
+                
+        try {
+            response = invoke(invocation);
+        } catch (GastosoResponseException e){
+            if(e.getStatusInfo().getStatusCode() 
+                == Response.Status.NOT_FOUND.getStatusCode()){
+                throw new NotFoundException(e);
+            }
+            throw new GastosoSystemException(e);
+        }
+        return response;
     }
     
     /**
@@ -436,8 +459,8 @@ public class GastosoRestClient implements GastosoSystem{
      * @param invocation Uma instância qualquer de {@link Invocation}.
      * @return A resposta da requisição.
      */
-    private static Response invoke(
-            final Invocation invocation) throws GastosoSystemException{
+    private static Response invoke(final Invocation invocation) 
+                throws GastosoResponseException {
     
         final Response response; 
         try {
@@ -445,26 +468,19 @@ public class GastosoRestClient implements GastosoSystem{
         } catch (ProcessingException pe){
             Throwable cause = pe.getCause();
             if(cause instanceof ConnectException){
-                throw new GastosoSystemRTException("Servidor fora do ar.",pe);
+                throw 
+                    new GastosoSystemRTException(
+                            "Servidor fora do ar.",
+                            pe,
+                            SERVIDOR_FORA);
             }
             throw new GastosoSystemRTException("Impossível lidar.",pe);
         }
         
         final Response.StatusType statusInfo = response.getStatusInfo();
 
-        if(statusInfo.getStatusCode() ==
-                Response.Status.NOT_FOUND.getStatusCode()){
-            throw new NotFoundException();
-        }
-        //todo: separar erros 500 de 400 (erro do cliente)
         if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
-            throw new GastosoSystemException(
-                String.format("%d - %s [%s]", 
-                        statusInfo.getStatusCode(),
-                        statusInfo.getReasonPhrase(),
-                        response.readEntity(String.class))
-            );
-                
+            throw new GastosoResponseException(statusInfo);
         }
         
         return response;
@@ -473,6 +489,7 @@ public class GastosoRestClient implements GastosoSystem{
     private static <E> E readEntity(
             final Response response, 
             final Class<E> klass) {
+
         final E entity;
         
         try {
