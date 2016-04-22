@@ -222,7 +222,6 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                 default: 
                     //see https://java.net/jira/browse/JERSEY-3005
                     throw new IOException("Couldn't parse");
-
             }
         }
         
@@ -235,6 +234,9 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
 
         Integer id = null, contaId = null, fatoId = null, valor = null;
         Conta conta = null;
+        Fato fato = null;
+        LocalDate dia = null;
+        String descricao = null;
         
         if(hasStartObject)jParser.nextToken(); // START_OBJECT
         
@@ -248,8 +250,20 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                 case Serial.CONTA_ID:
                     contaId = jParser.nextIntValue(0);
                     break;
+                case Serial.FATO:
+                    fato = parseFato(jParser, true);
+                    break;
+                case Serial.FATO_ID:
+                    fatoId = jParser.nextIntValue(0);
+                    break;
                 case Serial.CONTA:
                     conta = parseConta(jParser, true);
+                    break;
+                case Serial.DIA:
+                    dia = LocalDate.parse(jParser.nextTextValue());
+                    break;
+                case Serial.DESC:
+                    descricao = jParser.nextTextValue();
                     break;
                 case Serial.VALOR:
                     valor = jParser.nextIntValue(0);
@@ -270,6 +284,14 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
             conta = new Conta(contaId);
         }
         lancamento.setConta(conta);
+        
+        if(fatoId != null){
+            fato = new Fato(fatoId);
+            lancamento.setFato(fato);
+        } else if(dia != null){
+            fato = new Fato(dia,descricao);
+        } 
+        lancamento.setFato(fato); //pode ser null
         
         return lancamento;
     }

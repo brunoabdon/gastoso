@@ -43,6 +43,7 @@ class Serial {
         DESTINO = "destino",
         DESTINO_ID = "destinoId",
         DIA = "dia",
+        FATO = "fato",
         FATO_ID = "fatoId",
         ID = "id",
         LANCAMENTOS = "lancamentos",

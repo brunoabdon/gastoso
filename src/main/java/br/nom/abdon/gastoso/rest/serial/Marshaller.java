@@ -150,11 +150,16 @@ public class Marshaller {
     }
 
     /**
-     * Como tipo simples, normal ou full, escreve um lancamento como faz sentido
-     * no contexto de lancamentos de uma conta (o extrato da conta). Vai conter 
-     * as informacoes do Fato (mas nao seus lancamentos) e o valor do 
-     * lancamento. A conta fica implicita. Com o tipo patch, escreve a 
-     * identificação do lancamento (id ou fatoId+contaId) e o valor.
+     * Como tipo full, exibe um lancamento com seu valor, os dados de sua conta
+     * e os dados de seu fato, porém sem os lancamentos do fato.
+     * 
+     * Como tipo simples ou normal escreve um lancamento como faz sentido no 
+     * contexto de  lancamentos de uma conta (o extrato da conta). Vai conter as
+     * informacoes do Fato (mas nao seus lancamentos) e o valor do lancamento. A
+     * conta fica implicita. 
+     * 
+     * Com o tipo patch, escreve a identificação do lancamento 
+     * (id ou fatoId+contaId) e o valor.
      * 
      * @param lancamento o lancamento a ser escrito.
      * @throws IOException se não puder escrever.
@@ -164,9 +169,7 @@ public class Marshaller {
         
         final Fato fato = lancamento.getFato();
         
-        if(tipo != MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE){
-            this.fatoCore(fato);
-        } else {
+        if(tipo == MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE){
             final Integer id = lancamento.getId();
             if(id != null){
                 writeIdField(id);
@@ -174,6 +177,14 @@ public class Marshaller {
                 writeFatoIdField(fato);
                 writeContaIdField(lancamento.getConta());                
             }
+        } else if(tipo == MediaTypes.APPLICATION_GASTOSO_FULL_TYPE){
+            writeIdField(lancamento.getId());
+            writeContaField(lancamento.getConta());
+            gen.writeFieldName(Serial.FATO);
+            marshall(fato);
+        } else {
+            writeIdField(lancamento.getId());
+            this.fatoCore(fato);
         }
         this.writeValorField(lancamento.getValor());
         gen.writeEndObject();
