@@ -21,5 +21,8 @@ package br.nom.abdon.gastoso.system;
  * @author Bruno Abdon
  */
 public class NotFoundException extends GastosoSystemException {
-    
+
+    public NotFoundException(Throwable cause) {
+        super(cause);
+    }
 }
