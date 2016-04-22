@@ -234,6 +234,7 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
             final boolean hasStartObject) throws IOException{
 
         Integer id = null, contaId = null, fatoId = null, valor = null;
+        Conta conta = null;
         
         if(hasStartObject)jParser.nextToken(); // START_OBJECT
         
@@ -246,6 +247,9 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                     break;
                 case Serial.CONTA_ID:
                     contaId = jParser.nextIntValue(0);
+                    break;
+                case Serial.CONTA:
+                    conta = parseConta(jParser, true);
                     break;
                 case Serial.VALOR:
                     valor = jParser.nextIntValue(0);
@@ -263,8 +267,9 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
         lancamento.setId(id);
         lancamento.setValor(valor);
         if(contaId != null){
-            lancamento.setConta(new Conta(contaId));
+            conta = new Conta(contaId);
         }
+        lancamento.setConta(conta);
         
         return lancamento;
     }
