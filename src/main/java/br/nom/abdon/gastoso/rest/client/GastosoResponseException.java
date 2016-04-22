@@ -27,7 +27,9 @@ public class GastosoResponseException extends Exception{
     private Response.StatusType statusInfo;
 
     
-    public GastosoResponseException(Response.StatusType statusInfo) {
+    public GastosoResponseException(final Response.StatusType statusInfo) {
+        super(statusInfo.getStatusCode() + " " + statusInfo.getReasonPhrase());
+        
         this.statusInfo = statusInfo;
     }
 
