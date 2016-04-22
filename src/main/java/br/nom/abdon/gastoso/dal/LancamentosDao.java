@@ -39,8 +39,6 @@ import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
-
-
 /**
  *
  * @author Bruno Abdon

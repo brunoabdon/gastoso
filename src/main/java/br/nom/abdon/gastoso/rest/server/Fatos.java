@@ -10,13 +10,14 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -54,13 +55,14 @@ import br.nom.abdon.gastoso.system.FiltroLancamentos;
 @Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
 public class Fatos extends AbstractRestCrud<Fato,Integer>{
 
+    private static final Logger log = Logger.getLogger(Fatos.class.getName());
+    
     protected static final String PATH = "fatos";
     
     private static final int MAX_RESULTS = 200;
     
-    private static final Collector<Lancamento, 
-                                    ?, 
-                                    ConcurrentMap<Fato, List<Lancamento>>> 
+    private static final 
+        Collector<Lancamento, ?,ConcurrentMap<Fato, List<Lancamento>>> 
         GROUP_BY_FATO_COLLECTOR = 
             Collectors.groupingByConcurrent(Lancamento::getFato);
  
@@ -161,49 +163,86 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
     }
 
     @POST
-    @Path("{id}/{contaId}")
+    @Path("{fatoId}/{contaId}")
     public Response atualizar(
-            final @PathParam("id") Integer id, 
+            final @PathParam("fatoId") Integer fatoId, 
             final @PathParam("contaId") Integer contaId, 
             final Lancamento lancamento){
         
         Response response;
-        
+
         if(lancamento == null){
             response = ERROR_MISSING_ENTITY;
             
         } else {
 
-            EntityManager entityManager = emf.createEntityManager();
+            final Fato fato = new Fato(fatoId);
+            final Conta conta = new Conta(contaId);            
+            final int valor = lancamento.getValor();
+            
+            final EntityManager entityManager = emf.createEntityManager();
+
             try {
                 entityManager.getTransaction().begin();
 
-                FiltroFatos filtroFatos = new FiltroFatos();
-                filtroFatos.setFato(new Fato(id));
+                final FiltroFatos filtroFatos = new FiltroFatos();
+                filtroFatos.setFato(fato);
                 
-                FiltroContas filtroContas = new FiltroContas();
-                filtroContas.setConta(new Conta(contaId));
+                final FiltroContas filtroContas = new FiltroContas();
+                filtroContas.setConta(conta);
                 
-                FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
+                final FiltroLancamentos filtroLancamentos = 
+                    new FiltroLancamentos();
                 filtroLancamentos.setFiltroFatos(filtroFatos);
                 filtroLancamentos.setFiltroContas(filtroContas);
                 
-                final Lancamento lancamentoOriginal = 
-                    lancamentosDao.findUnique(entityManager, filtroLancamentos);
+                Lancamento lancamentoResultado;
                 
-                lancamentoOriginal.setValor(lancamento.getValor());
-                Conta conta = lancamento.getConta();
-                if(conta != null) lancamentoOriginal.setConta(conta);
+                try { 
+                    final Lancamento lancamentoOriginal = 
+                        lancamentosDao
+                        .findUnique(
+                            entityManager, 
+                            filtroLancamentos);
 
-                lancamentosDao.atualizar(entityManager, lancamentoOriginal);
-                
+                    lancamentoOriginal.setValor(valor);
+                    final Conta contaNova = lancamento.getConta();
+                    if(contaNova != null) 
+                        lancamentoOriginal.setConta(contaNova);
+
+                    lancamentoResultado = 
+                        lancamentosDao
+                            .atualizar(
+                                entityManager,
+                                lancamentoOriginal);
+                    
+                } catch (EntityNotFoundException ex){
+                    log.log(
+                        Level.INFO, 
+                        ex, 
+                        () -> "Criando lancamento pra conta " 
+                                + contaId 
+                                + " no fato " 
+                                + fatoId
+                                + ".");
+
+                    final Lancamento novoLancamento =
+                        new Lancamento(fato, conta, valor);
+
+                    lancamentoResultado = 
+                        lancamentosDao.criar(entityManager, novoLancamento);
+                }
+
                 entityManager.getTransaction().commit();
 
-                response = Response.noContent().build();
+                response = Response.ok(lancamentoResultado).build();
 
-            } catch ( EntityNotFoundException ex){
-                throw new NotFoundException(ex);
             } catch (DalException e) {
+                log.log(Level.FINE, e, 
+                    () -> "Erro ao criar ou atualizar lancamento em "
+                        + fatoId + "/"+ contaId
+                );
+
                 response =
                     Response.status(Response.Status.CONFLICT)
                             .entity(e.getMessage())
@@ -230,6 +269,6 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         if(descricao != null) fatoOriginal.setDescricao(descricao);
         
         return fatoOriginal;
-        
+ 
     }
 }
