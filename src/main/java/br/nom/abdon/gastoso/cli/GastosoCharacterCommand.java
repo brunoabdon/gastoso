@@ -314,18 +314,26 @@ public class GastosoCharacterCommand {
         System.out.println("Listar fatos do periodo setado");
     }
 
-    private void commandContas(ContasContext contasCtx) {
+    private void commandContas(final ContasContext contasCtx) 
+            throws GastosoSystemException {
+        
         final ContasArgsContext contaArgsCtx = 
             contasCtx.contasArgs();
 
+        final List<? extends Conta> contas;
         if(contaArgsCtx != null){
 
             final String filtro = CtxReader.extractText(contaArgsCtx.textArg());
-
-            System.out.println("Listar contas, filtrando por \""+ filtro +"\"");
+            //quando tiver algo, implementar aqui...
+            contas = gastosoSystem.getContas(null);
+            
         } else {
-            System.out.println("Listar todas as contas");
+            contas = gastosoSystem.getContas(null);
         }
+        
+        contas.forEach(
+            c -> writer.printf("%d\t%s\n",c.getId(),c.getNome())
+        );
     }
 
     private void commandConta(ContaContext contaCtx) 
