@@ -192,14 +192,14 @@ public class GastosoCharacterCommand {
         }
     }
 
-    private void commandFato(FatoContext ctx) throws GastosoSystemRTException, GastosoSystemException {
+    private void commandFato(final FatoContext ctx) 
+            throws GastosoSystemException {
 
         final FatoArgsContext fatoArgsCtx = ctx.fatoArgs();
 
         if(fatoArgsCtx instanceof FatoIdContext){
 
-            final FatoIdContext fatoIdCtx = 
-                (FatoIdContext) fatoArgsCtx;
+            final FatoIdContext fatoIdCtx = (FatoIdContext) fatoArgsCtx;
 
             final int fatoId = CtxReader.extractId(fatoIdCtx.id());
             
@@ -221,33 +221,12 @@ public class GastosoCharacterCommand {
                     fato.setDescricao(CtxReader.extractText(textArgCtx));
                 
                 fato = gastosoSystem.update(fato);
+
             } else {
                 fato = gastosoSystem.getFato(fatoId);
             }
 
-            writer.println(
-                fato.getId()
-                + " - "
-                + fato
-                    .getDia()
-                    .format(java.time.format.DateTimeFormatter.ISO_DATE)
-                + " - " 
-                + fato.getDescricao());
-            
-                if(fato instanceof FatoDetalhado){
-                    final List<Lancamento> lancamentos = 
-                            ((FatoDetalhado)fato).getLancamentos();
-
-                    lancamentos.forEach(
-                    l -> {
-                            writer.printf("  [%d/%d] - %s %s\n",
-                                fatoId,
-                                l.getConta().getId(),
-                                l.getConta().getNome(),
-                                formata(l.getValor()));
-                        }
-                    );
-                }
+            printFato(fato);
 
         } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
@@ -268,11 +247,19 @@ public class GastosoCharacterCommand {
             } else {
                 int valor = CtxReader.extract(valorCtx);
 
-                System.out.printf(
-                    "Setar valor do lancamento do fato = %d e conta %d pra %d\n",
-                        idFato,
-                        idConta,
-                        valor);
+                Lancamento lancamento =
+                    new Lancamento(new Fato(idFato), new Conta(idConta), valor);
+
+                lancamento = gastosoSystem.create(lancamento);
+                
+                final Fato fato = lancamento.getFato();
+                
+                writer.printf("%s pra %s em [%d]%s.\n\n",
+                    formata(lancamento.getValor()),
+                    lancamento.getConta().getNome(),
+                    fato.getId(),
+                    lancamento.getFato().getDescricao()
+                );
             }
         } else if(fatoArgsCtx instanceof MkFatoContext){
 
@@ -289,6 +276,37 @@ public class GastosoCharacterCommand {
                 + fato.getId()
                 + "] " + fato.getDia().format(ISO_DATE)
                 + " - " + fato.getDescricao());
+        }
+    }
+
+    private void printFato(final Fato fato) {
+        
+        final Integer fatoId = fato.getId();
+        
+        writer.println(
+                fatoId
+                + " - "
+                + fato
+                    .getDia()
+                    .format(java.time.format.DateTimeFormatter.ISO_DATE)
+                + " - "
+                + fato.getDescricao());
+        
+        if(fato instanceof FatoDetalhado){
+            final List<Lancamento> lancamentos =
+                    ((FatoDetalhado)fato).getLancamentos();
+
+            lancamentos.forEach(
+                    l -> {
+                        writer.printf(
+                            "  [%d/%d] - %s %s\n", 
+                            fatoId,
+                            l.getConta().getId(),
+                            l.getConta().getNome(),
+                            formata(l.getValor())
+                        );
+                    }
+            );
         }
     }
 

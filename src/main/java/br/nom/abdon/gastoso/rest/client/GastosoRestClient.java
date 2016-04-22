@@ -334,7 +334,7 @@ public class GastosoRestClient implements GastosoSystem{
     
     @Override
     public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException {
-        return create(contasWebTarget,lancamento,Lancamento.class);
+        return create(lancamentosWebTarget,lancamento,Lancamento.class);
     }
 
     private static <E,F> List<E> get(
