@@ -25,6 +25,7 @@ import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.ProcessingException;
@@ -61,12 +62,16 @@ import br.nom.abdon.gastoso.system.NotFoundException;
 import br.nom.abdon.modelo.Entidade;
 
 
+
 /**
  *
  * @author Bruno Abdon
  */
 public class GastosoRestClient implements GastosoSystem{
 
+    private static final Logger log = 
+        Logger.getLogger(GastosoRestClient.class.getName());
+    
     private static final GenericType<List<Lancamento>> LANCAMENTO_GEN_TYPE = 
         new GenericType<List<Lancamento>>(){};
 
@@ -86,14 +91,17 @@ public class GastosoRestClient implements GastosoSystem{
             .add(HttpHeaders.USER_AGENT, "gastoso-cli"); //pegar de um resource
     };
 
-    
     private final WebTarget rootWebTarget;
     
     private final WebTarget contaWebTarget, contasWebTarget;
     private final WebTarget fatoWebTarget, fatosWebTarget;
     private final WebTarget lancamentoWebTarget, lancamentosWebTarget;
 
-    private boolean logado = false;
+    private String authToken = null;
+
+    private final ClientRequestFilter authFilter = 
+        (reqContx) -> reqContx.getHeaders().add("X-Abd-auth_token", authToken);
+    
 
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
@@ -102,6 +110,7 @@ public class GastosoRestClient implements GastosoSystem{
     public GastosoRestClient(final URI serverUri) {
 
         try {
+            
             final SSLContext sslContext = SSLContext.getDefault();
             final Client client =
                 ClientBuilder
@@ -109,6 +118,8 @@ public class GastosoRestClient implements GastosoSystem{
                     .sslContext(sslContext)
                     .register(GastosoMessageBodyReader.class)
                     .register(GastosoMessageBodyWriter.class)
+                    .register(USER_AGENT_FILTER)
+                    .register(authFilter)
                     .build();
 
             rootWebTarget = client.target(serverUri);
@@ -117,8 +128,6 @@ public class GastosoRestClient implements GastosoSystem{
             throw new GastosoSystemRTException(e);
         }
         
-        rootWebTarget.register(USER_AGENT_FILTER);
-
         this.contasWebTarget = rootWebTarget.path("contas");
         this.fatosWebTarget = rootWebTarget.path("fatos");
         this.lancamentosWebTarget = rootWebTarget.path("lancamentos");
@@ -130,50 +139,23 @@ public class GastosoRestClient implements GastosoSystem{
     
     public boolean login (final String user, final String password) 
             throws GastosoResponseException {
-        /*
-        esse método nao devria lancar GastosoSystemException.
-        
-        ele está lançando pq invoke(invocation) lança, mas não 
-        deveria.
-        
-        idealmente, invoke deveria lancar algum tipo de 
-        InvocationException e essa exceção seria transformada
-        em loginException ou restclient exception aqui, e 
-        transformada em GastosoException nos outros métodos, 
-        que implementam realmente coisas do gastosoSystem.
-        
-        */
 
-        if(this.logado) throw new IllegalStateException();
+        if(this.authToken != null) throw new IllegalStateException();
 
         final Invocation invocation =
             this.rootWebTarget.path("login")
             .request(MediaType.APPLICATION_JSON_TYPE)
             .buildPost(Entity.text(password));
             
-        final Response response;
-        
         try {
             
-            response = invoke(invocation);
+            final Response response = invoke(invocation);
 
-            if(this.logado =
-                response.getStatusInfo().getFamily() == 
-                Response.Status.Family.SUCCESSFUL){
+            if(response.getStatusInfo().getFamily() 
+                == Response.Status.Family.SUCCESSFUL){
 
-                final String authToken = 
+                this.authToken = 
                     readEntity(response, AuthToken.class).token;
-
-                final ClientRequestFilter authFilter = 
-                    (reqContx) -> {
-                        if(this.logado)
-                        reqContx
-                            .getHeaders()
-                            .add("X-Abd-auth_token", authToken);
-                    }
-                ;
-
-                rootWebTarget.register(authFilter);
             }
         } catch (GastosoResponseException e){
             if(e.getStatusInfo().getStatusCode() 
@@ -181,15 +163,15 @@ public class GastosoRestClient implements GastosoSystem{
                 throw e;
             }
         }
-        return this.logado;
+        return this.authToken != null;
     }
 
     public boolean logout()
             throws GastosoSystemRTException, IllegalStateException {
 
-        if(!this.logado) throw new IllegalStateException();
+        if(this.authToken == null) throw new IllegalStateException();
 
-        this.logado = false;
+        this.authToken = null;
 
         return true;
     }
