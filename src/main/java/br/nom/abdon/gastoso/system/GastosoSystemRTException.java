@@ -22,17 +22,42 @@ package br.nom.abdon.gastoso.system;
  */
 public class GastosoSystemRTException extends RuntimeException {
 
-    public GastosoSystemRTException(final Throwable cause) {
+    public static final int ERRO_GERAL = 0;
+    public static final int SERVIDOR_FORA = 1;
+    
+    private int code;
+
+    public GastosoSystemRTException(final Throwable cause, final int errorCode){
         super(cause);
+        this.code = errorCode;
     }
 
-    public GastosoSystemRTException(final String message) {
+    public GastosoSystemRTException(final String message, final int errorCode) {
         super(message);
+        this.code = errorCode;
+    }
+
+    public GastosoSystemRTException(final String message, final Throwable e) {
+        this(message,e,ERRO_GERAL);
+    }
+
+    public GastosoSystemRTException(Throwable e) {
+        this(e,ERRO_GERAL);
     }
 
     public GastosoSystemRTException(
             final String message,
-            final Throwable cause) {
+            final Throwable cause,
+            final int errorCode) {
         super(message, cause);
+        this.code = errorCode;
     }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }    
 }
