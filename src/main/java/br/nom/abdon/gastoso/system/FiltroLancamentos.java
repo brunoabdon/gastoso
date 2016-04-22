@@ -19,7 +19,6 @@ package br.nom.abdon.gastoso.system;
 import java.util.LinkedList;
 import java.util.List;
 
-
 /**
  *
  * @author Bruno Abdon
@@ -46,8 +45,8 @@ public class FiltroLancamentos {
         }
     };
     
-    private FiltroFatos filtroFatos;
-    private FiltroContas filtroContas;
+    private FiltroFatos filtroFatos = new FiltroFatos();
+    private FiltroContas filtroContas = new FiltroContas();
     
     private List<ORDEM> ordem;
     
@@ -55,10 +54,22 @@ public class FiltroLancamentos {
     
     //private Integer valorMinimo, valorMaximo;
 
+    /**
+     * Diz quais os critérios que o fato de um lancamento deve cumprir para esse
+     * lancamento ser aceito por this filtro. Nunca é nulo.
+     * 
+     * @return o fitro;
+     */
     public FiltroFatos getFiltroFatos() {
         return filtroFatos;
     }
 
+    /**
+     * Diz quais os critérios que a conta de um lancamento deve cumprir para que
+     * esse lancamento seja aceito por this filtro. Nunca é nulo.
+     * 
+     * @return o filtro;
+     */
     public FiltroContas getFiltroContas() {
         return filtroContas;
     }
@@ -77,11 +88,23 @@ public class FiltroLancamentos {
         return paginacao;
     }
 
-    public void setFiltroFatos(FiltroFatos filtroFatos) {
+    /**
+     * Seta um novo filtro, não nulo, de fatos. Um filtro nulo é um argumento
+     * inválido.
+     * @param filtroFatos o filtro;
+     */
+    public void setFiltroFatos(final FiltroFatos filtroFatos) {
+        if(filtroFatos == null) throw new IllegalArgumentException();
         this.filtroFatos = filtroFatos;
     }
 
+    /**
+     * Seta um novo filtro, não nulo, de contas. Um filtro nulo é um argumento
+     * inválido.
+     * @param filtroContas o filtro.
+     */
     public void setFiltroContas(FiltroContas filtroContas) {
+        if(filtroContas == null) throw new IllegalArgumentException();
         this.filtroContas = filtroContas;
     }
 }

@@ -29,4 +29,12 @@ public class GastosoSystemException extends Exception {
     public GastosoSystemException(final String message) {
         super(message);
     }
+    
+    public GastosoSystemException(final Throwable cause) {
+        super(cause);
+    }
+
+    public GastosoSystemException(final String message, final Throwable cause) {
+        super(message, cause);
+    }    
 }
