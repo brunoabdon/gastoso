@@ -128,8 +128,7 @@ public class GastosoCharacterCommand {
 
         if(commandCtx.exception == null){
 
-            final LineCommandContext lineCommandCtx = 
-                commandCtx.lineCommand();
+            final LineCommandContext lineCommandCtx = commandCtx.lineCommand();
 
             try {
                 commandLineCommand(lineCommandCtx);
@@ -225,6 +224,7 @@ public class GastosoCharacterCommand {
             } else {
                 fato = gastosoSystem.getFato(fatoId);
             }
+
             writer.println(
                 fato.getId()
                 + " - "
@@ -233,7 +233,6 @@ public class GastosoCharacterCommand {
                     .format(java.time.format.DateTimeFormatter.ISO_DATE)
                 + " - " 
                 + fato.getDescricao());
-
             
                 if(fato instanceof FatoDetalhado){
                     final List<Lancamento> lancamentos = 
