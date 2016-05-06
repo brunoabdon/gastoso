@@ -42,7 +42,7 @@ import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_T
  *
  * @author Bruno Abdon
  */
-public class Marshaller {
+class Marshaller {
 
     private final JsonGenerator gen;
     private final MediaType tipo;
@@ -52,7 +52,7 @@ public class Marshaller {
         this.gen = gen;
         this.tipo = MediaTypes.getCompatibleInstance(mediaType);
     }
-    
+
     public void marshall(final Conta conta) throws IOException {
         gen.writeStartObject();
         this.contaCore(conta);
@@ -166,9 +166,9 @@ public class Marshaller {
      */
     public void marshall(final Lancamento lancamento) throws IOException {
         gen.writeStartObject();
-        
+
         final Fato fato = lancamento.getFato();
-        
+
         if(tipo == MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE){
             final Integer id = lancamento.getId();
             if(id != null){
