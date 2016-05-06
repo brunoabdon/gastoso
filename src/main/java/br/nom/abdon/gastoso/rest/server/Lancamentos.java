@@ -67,42 +67,42 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         
         final List<Lancamento> lancamentos;
 
-        final EntityManager entityManager = emf.createEntityManager();
+        final boolean temFato = fato != null;
+        final boolean temConta = conta != null;
+        final boolean temMes = mes != null;
+        final boolean temDataMinima = dataMinima != null;
+        final boolean temDataMaxima = dataMaxima != null;
+        
+        final boolean temPeriodoValido = 
+            temMes ^ (temDataMinima && temDataMaxima); //xor
+        
+        final boolean dahPraConsultar = 
+            temFato || (temConta && temPeriodoValido);
+        
+        if(!dahPraConsultar){
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        
+        final FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
+        final FiltroFatos filtroFatos = filtroLancamentos.getFiltroFatos();
 
-        try {
-            if(fato != null){
-                final FiltroFatos filtroFatos = new FiltroFatos();
-                filtroFatos.setFato(fato);
-                FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
-                filtroLancamentos.setFiltroFatos(filtroFatos);
+        if(temFato) filtroFatos.setFato(fato);
+        if(temConta) filtroLancamentos.getFiltroContas().setConta(conta);
 
-                lancamentos = dao.listar(entityManager, filtroLancamentos);
-            } else if (conta != null
-                        &&
-                            (mes != null 
-                            || 
-                            (dataMinima != null && dataMaxima != null))
-                    ){
-                if(mes != null){
-                    dataMinima = mes.atDay(1);
-                    dataMaxima = mes.atEndOfMonth();
-                }
-                    
-                FiltroContas filtroContas = new FiltroContas();
-                filtroContas.setConta(conta);
-
-                FiltroFatos filtroFatos = new FiltroFatos();
-                filtroFatos.setDataMinima(dataMinima);
-                filtroFatos.setDataMaxima(dataMaxima);
-
-                FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
-                filtroLancamentos.setFiltroContas(filtroContas);
-                filtroLancamentos.setFiltroFatos(filtroFatos);
-
-                lancamentos = dao.listar(entityManager, filtroLancamentos);
-            } else {
-                throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        if(temPeriodoValido){
+            if(temMes){
+                dataMinima = mes.atDay(1);
+                dataMaxima = mes.atEndOfMonth();
             }
+
+            filtroFatos.setDataMinima(dataMinima);
+            filtroFatos.setDataMaxima(dataMaxima);
+        }
+
+        final EntityManager entityManager = emf.createEntityManager();
+        
+        try {
+            lancamentos = dao.listar(entityManager, filtroLancamentos);
 
         } finally {
             entityManager.close();

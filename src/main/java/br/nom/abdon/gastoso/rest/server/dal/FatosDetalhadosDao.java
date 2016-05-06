@@ -36,35 +36,25 @@ public class FatosDetalhadosDao extends FatosDao{
     private final LancamentosDao lancamentosDao = new LancamentosDao();
     
     @Override
-    public Fato criar(final EntityManager em, Fato fato) throws DalException {
-        return 
-            (fato instanceof  FatoDetalhado)
-                ? criar(em,(FatoDetalhado)fato)
-                : super.criar(em, fato);
+    public void criar(final EntityManager em, Fato fato) throws DalException {
+        if(fato instanceof  FatoDetalhado){
+            criar(em,(FatoDetalhado)fato);
+        } else {
+            super.criar(em, fato);
+        }
     }
 
-    public FatoDetalhado criar(
+    public void criar(
             final EntityManager em, 
             final FatoDetalhado fatoDetalhado) throws DalException {
         
+        super.criar(em, fatoDetalhado.asFato());
+
         final List<Lancamento> lancamentos = fatoDetalhado.getLancamentos();
         
-        final Fato fatoCriado = super.criar(em, fatoDetalhado.asFato());
-        
-        final List<Lancamento> lancamentosCriados = 
-            fatoDetalhado.getLancamentos();
-        
         for(Lancamento lancamento : lancamentos) {
-            final Lancamento lancamentoCriado = 
-                lancamentosDao.criar(em, lancamento);
-            lancamentosCriados.add(lancamentoCriado);
+            lancamentosDao.criar(em, lancamento);
         }
-        
-        fatoDetalhado.setId(fatoCriado.getId());
-        lancamentos.clear();
-        lancamentos.addAll(lancamentosCriados);
-        
-        return fatoDetalhado;
     }
     
     @Override
