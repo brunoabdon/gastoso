@@ -21,19 +21,16 @@ import br.nom.abdon.util.Periodo;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.YearMonth;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoPorReferenciaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoSimplesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesPorReferenciaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesSimplesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.NomeDePeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutraSemanaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutroPeriodoContext;
@@ -179,8 +176,7 @@ class CtxReader {
             if(diaCtx != null){
                 periodo = extractPeriodo(diaCtx);
             } else {
-                final MesContext mesCtx = 
-                    periodoSimplesCtx.mes();
+                final MesContext mesCtx = periodoSimplesCtx.mes();
                 
                 if(mesCtx != null){
                     periodo = extractPeriodo(mesCtx);
@@ -207,27 +203,22 @@ class CtxReader {
 
     private static Periodo extractPeriodo(AnoContext anoCtx) {
         
-        final AnoPorReferenciaContext anoRefCtx = 
-            anoCtx.anoPorReferencia();
+        final LocalDate inicio;
+         
+        final TerminalNode INT = anoCtx.INT();
         
-        final AnoSimplesContext anoSimplesContext;
-        final Variante variante;
-        
-        if(anoRefCtx != null){
-            anoSimplesContext = anoRefCtx.anoSimples();
-            variante = extractVariante(anoRefCtx.varianteMasc());
+        if(INT != null){
+            
+            final int ano = Integer.parseInt(INT.getText());
+            inicio = LocalDate.ofYearDay(ano, 1);
+
         } else {
-            anoSimplesContext = anoCtx.anoSimples();
-            variante = null;
-        }
-        
-        final int ano = Integer.parseInt(anoSimplesContext.INT().getText());
-        
-        LocalDate inicio = LocalDate.ofYearDay(ano, 1);
-        if(variante == Variante.PASSADO) {
-            inicio.minusYears(1);
-        } else if (variante == Variante.QUE_VEM){
-            inicio.plusYears(1);
+            final Variante variante = extractVariante(anoCtx.varianteMasc());
+            
+            inicio = 
+                LocalDate.now()
+                .withDayOfYear(1)
+                .plusYears(variante == Variante.PASSADO ? -1 : 1);
         }
         
         return 
@@ -235,32 +226,13 @@ class CtxReader {
     }
 
     private static Periodo extractPeriodo(MesContext mesCtx) {
-        final MesPorReferenciaContext mesRefCtx = 
-            mesCtx.mesPorReferencia();
         
-        final MesSimplesContext mesSimplesCtx;
-        final Variante variante;
-        
-        if(mesRefCtx != null){
-            mesSimplesCtx = mesRefCtx.mesSimples();
-            variante = extractVariante(mesRefCtx.varianteMasc());
-        } else {
-            mesSimplesCtx = mesCtx.mesSimples();
-            variante = null;
-        }
-        
-        final Month mesBase = extractMes(mesSimplesCtx);
-        
-        final LocalDate inicio = 
-            LocalDate
-                .now()
-                .withDayOfMonth(1)
-                .with(DiaHelper.mesMaisPerto(mesBase));
+        final YearMonth mes = extractMes(mesCtx);
         
         return 
             new Periodo(
-                inicio, 
-                inicio.with(TemporalAdjusters.lastDayOfMonth())
+                mes.atDay(1), 
+                mes.atEndOfMonth()
             );
         
     }
@@ -359,22 +331,34 @@ class CtxReader {
         return Integer.valueOf(idContext.getText());
     }
     
-    private static Month extractMes(
-            final MesSimplesContext mesSimplesCtx) {
-        return pick(
+    private static YearMonth extractMes(final MesContext mesCtx) {
+
+        final Month mes = pick(
             Month.values(),
-            mesSimplesCtx.JAN(),
-            mesSimplesCtx.FEV(),
-            mesSimplesCtx.MAR(),
-            mesSimplesCtx.ABR(),
-            mesSimplesCtx.MAI(),
-            mesSimplesCtx.JUN(),
-            mesSimplesCtx.JUL(),
-            mesSimplesCtx.AGO(),
-            mesSimplesCtx.SET(),
-            mesSimplesCtx.OUT(),
-            mesSimplesCtx.NOV(),
-            mesSimplesCtx.DEZ());
+            mesCtx.JAN(),
+            mesCtx.FEV(),
+            mesCtx.MAR(),
+            mesCtx.ABR(),
+            mesCtx.MAI(),
+            mesCtx.JUN(),
+            mesCtx.JUL(),
+            mesCtx.AGO(),
+            mesCtx.SET(),
+            mesCtx.OUT(),
+            mesCtx.NOV(),
+            mesCtx.DEZ());
+         
+        final VarianteMascContext varianteMascCtx = mesCtx.varianteMasc();
+        
+         final TemporalAdjuster adjuster = 
+            varianteMascCtx == null
+                ? DiaHelper.mesMaisPerto(mes)
+                : extractVariante(varianteMascCtx) == Variante.QUE_VEM
+                    ? DiaHelper.next(mes)
+                    : DiaHelper.previous(mes);
+         
+         return YearMonth.now().with(adjuster);
+         
     }
     
     private static <E> E pick (E[] values, Object... es){

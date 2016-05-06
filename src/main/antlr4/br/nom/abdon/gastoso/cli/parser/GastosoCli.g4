@@ -47,17 +47,9 @@ dia:
     | (DOM | SEG | TER | QUA | QUI | SEX | SAB) (WS varianteMasc)?
 ;
 
-mes: mesSimples | mesPorReferencia;
+mes: (JAN | FEV | MAR | ABR | MAI | JUN | JUL | AGO | SET | OUT | NOV | DEZ) (WS varianteMasc)?;
 
-mesSimples: JAN | FEV | MAR | ABR | MAI | JUN | JUL | AGO | SET | OUT | NOV | DEZ;
-
-mesPorReferencia: mesSimples WS varianteMasc;
-
-ano: anoSimples | anoPorReferencia;
-
-anoSimples : INT; 
-
-anoPorReferencia: anoSimples WS varianteMasc;
+ano: INT | ANO (WS varianteMasc);
 
 varianteMasc: QUE_VEM | PASSADO;
 varianteFem: QUE_VEM | PASSADA;

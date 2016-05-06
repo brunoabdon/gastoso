@@ -62,10 +62,20 @@ public class DiaHelper {
     }
     
     public static TemporalAdjuster previousOrSame(Month month) {
+        return previousMaybeSame(month, true);
+    }
+    public static TemporalAdjuster previous(Month month) {
+        return previousMaybeSame(month, false);
+    }
+
+    private static TemporalAdjuster previousMaybeSame(
+            final Month month, 
+            final boolean allowSame) {
+        
         int dowValue = month.getValue();
         return (temporal) -> {
             int calDow = temporal.get(MONTH_OF_YEAR);
-            if (calDow == dowValue) {
+            if (allowSame && calDow == dowValue) {
                 return temporal;
             }
             int monthsDiff = dowValue - calDow;
@@ -76,6 +86,7 @@ public class DiaHelper {
                     , MONTHS);
         };
     }
+
 
     public static TemporalAdjuster next(Month month) {
         int dowValue = month.getValue();
