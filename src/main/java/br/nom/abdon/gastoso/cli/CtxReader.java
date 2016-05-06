@@ -30,9 +30,6 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoPorReferenciaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoSimplesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaDaSemanaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaDaSemanaPorReferenciaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaSimplesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesPorReferenciaContext;
@@ -75,38 +72,6 @@ class CtxReader {
         return text;
     }
     
-    public static LocalDate extractDia(DiaContext diaCtx) {
-        final LocalDate dia;
-    
-        if(diaCtx == null){
-            dia = LocalDate.now();
-            
-        } else {
-        
-            final DiaSimplesContext diaSimplesCtx = 
-                diaCtx.diaSimples();
-        
-            if(diaSimplesCtx != null){
-                dia = extractDia(diaSimplesCtx);
-            } else {
-                
-                final DiaDaSemanaContext diaDaSemanaCtx = 
-                    diaCtx.diaDaSemana();
-
-                if(diaDaSemanaCtx != null){
-                    dia = extractDia(diaDaSemanaCtx);
-                } else {
-                    final DiaDaSemanaPorReferenciaContext 
-                        diaDaSemanaRefCtx = diaCtx.diaDaSemanaPorReferencia();
-
-                        dia = extractDia(diaDaSemanaRefCtx);
-                }
-            }
-        }
-        
-        return dia;
-    }
-
     public static int extract(final ValorContext valorCtx)  {
         int valor = (Integer.parseInt(valorCtx.INT().getText()) * 100);
         
@@ -121,56 +86,49 @@ class CtxReader {
         return valor;
     }
     
-    private static LocalDate extractDia(DiaSimplesContext diaSimplesCtx) {
+    public static LocalDate extractDia(DiaContext diaCtx) {
 
         final LocalDate hoje = LocalDate.now();
         
-        return diaSimplesCtx.HOJE() != null
+        return diaCtx.HOJE() != null
             ? hoje
-            : diaSimplesCtx.AMANHA() != null
+            : diaCtx.AMANHA() != null
                 ? hoje.plusDays(1)
-                : diaSimplesCtx.ONTEM() != null
+                : diaCtx.ONTEM() != null
                     ?  hoje.minusDays(1)
-                    : diaSimplesCtx.ANTE_ONTEM() != null
+                    : diaCtx.ANTE_ONTEM() != null
                         ? hoje.minusDays(2)
-                        :  diaSimplesCtx.DEPOIS_DE_AMANHA() != null
+                        :  diaCtx.DEPOIS_DE_AMANHA() != null
                             ? hoje.plusDays(2)
-                            : diaSimplesCtx.DE_HOJE_A_OITO() != null
+                            : diaCtx.DE_HOJE_A_OITO() != null
                                 ? hoje.plusDays(7)
-                                : hoje.plusDays(14);
+                                : diaCtx.DE_HOJE_A_QUINZE() != null
+                                    ? hoje.plusDays(14)
+                                    : diaCtx.varianteMasc() != null
+                                        ? extractDiaDaSemanaRef(diaCtx)
+                                        : LocalDate.now().with(
+                                            DiaHelper.diaDaSemanaMaisPerto( 
+                                                extractDiaDaSemana(diaCtx)));
     }
-
-    private static LocalDate extractDia(
-            final DiaDaSemanaContext diaDaSemanaCtx) {
-
-        return 
-            LocalDate.now().with(
-                DiaHelper.diaDaSemanaMaisPerto(
-                    extractDiaDaSemana(diaDaSemanaCtx)));
-        
-    }
-
     private static DayOfWeek extractDiaDaSemana(
-            final  DiaDaSemanaContext diaDaSemanaCtx) {
+            final  DiaContext diaCtx) {
         
         return pick(DayOfWeek.values(), 
-                diaDaSemanaCtx.SEG(),
-                diaDaSemanaCtx.TER(),
-                diaDaSemanaCtx.QUA(),
-                diaDaSemanaCtx.QUI(),
-                diaDaSemanaCtx.SEX(),
-                diaDaSemanaCtx.SAB(),
-                diaDaSemanaCtx.DOM());
+                diaCtx.SEG(),
+                diaCtx.TER(),
+                diaCtx.QUA(),
+                diaCtx.QUI(),
+                diaCtx.SEX(),
+                diaCtx.SAB(),
+                diaCtx.DOM());
     }
 
-    private static LocalDate extractDia(
-        DiaDaSemanaPorReferenciaContext diaDaSemanaRefCtx) {
+    private static LocalDate extractDiaDaSemanaRef(final DiaContext diaCtx) {
 
-        final DayOfWeek diaDaSemana = 
-            extractDiaDaSemana(diaDaSemanaRefCtx.diaDaSemana());
+        final DayOfWeek diaDaSemana = extractDiaDaSemana(diaCtx);
 
         final Variante variante = 
-            extractVariante(diaDaSemanaRefCtx.varianteMasc());
+            extractVariante(diaCtx.varianteMasc());
         
         return  
             LocalDate.now().with(

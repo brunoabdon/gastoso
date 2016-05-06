@@ -36,12 +36,7 @@ gastoGanhoArgs: (dia WS)? textArg WS id WS valor;
 
 transfArgs: (dia WS)? textArg WS id WS id WS valor;
 
-dia: diaSimples
-     |diaDaSemana
-     |diaDaSemanaPorReferencia
-;
-
-diaSimples:
+dia:
     HOJE 
     | ONTEM
     | AMANHA
@@ -49,11 +44,8 @@ diaSimples:
     | ANTE_ONTEM
     | DE_HOJE_A_OITO
     | DE_HOJE_A_QUINZE
+    | (DOM | SEG | TER | QUA | QUI | SEX | SAB) (WS varianteMasc)?
 ;
-
-diaDaSemana : DOM | SEG | TER | QUA | QUI | SEX | SAB;
-
-diaDaSemanaPorReferencia : diaDaSemana WS varianteMasc;
 
 mes: mesSimples | mesPorReferencia;
 
