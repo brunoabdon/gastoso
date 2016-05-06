@@ -48,6 +48,7 @@ import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 import br.nom.abdon.gastoso.rest.Saldo;
+import br.nom.abdon.gastoso.rest.serial.FatosMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyWriter;
 import br.nom.abdon.gastoso.system.FiltroContas;
@@ -118,6 +119,7 @@ public class GastosoRestClient implements GastosoSystem{
                     .sslContext(sslContext)
                     .register(GastosoMessageBodyReader.class)
                     .register(GastosoMessageBodyWriter.class)
+                    .register(FatosMessageBodyReader.class)
                     .register(USER_AGENT_FILTER)
                     .register(authFilter)
                     .build();
@@ -184,7 +186,7 @@ public class GastosoRestClient implements GastosoSystem{
             FILL_PARAM_FATOS, 
             FATO_GEN_TYPE,
             APPLICATION_GASTOSO_SIMPLES_TYPE,
-            fatoWebTarget, 
+            fatosWebTarget, 
             filtro);
     }
 
@@ -242,17 +244,24 @@ public class GastosoRestClient implements GastosoSystem{
             final Integer fatoId = filtroFatos.getId();
             final Integer contaId = filtroContas.getId();
 
-            final WebTarget webTarget;
+            WebTarget webTarget = lancamentosWebTarget;
 
             if(fatoId != null){
-                webTarget = lancamentosWebTarget.queryParam("fato", fatoId);
-            } else if(contaId != null){
-                webTarget = 
-                    lancamentosWebTarget.queryParam("conta", fatoId)
-                    .queryParam("dataMin", filtroFatos.getDataMinima())
-                    .queryParam("dataMax", filtroFatos.getDataMaxima());
-            } else {
-                throw new GastosoSystemRTException("Deu ruim",ERRO_GERAL);
+                webTarget = webTarget.queryParam("fato", fatoId);
+            } 
+            
+            if(contaId != null){
+                webTarget = webTarget.queryParam("conta", fatoId);
+            }
+            
+            final LocalDate dataMinima = filtroFatos.getDataMinima();
+            if(dataMinima != null){
+                webTarget = webTarget.queryParam("dataMin", dataMinima);
+            }
+
+            final LocalDate dataMaxima = filtroFatos.getDataMaxima();
+            if(dataMaxima != null){
+                webTarget = webTarget.queryParam("dataMax", dataMaxima);
             }
 
             return webTarget;

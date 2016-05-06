@@ -63,10 +63,13 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.SubIdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
 import br.nom.abdon.gastoso.rest.FatoDetalhado;
+import br.nom.abdon.gastoso.system.FiltroFatos;
+import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
+import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_DESNORTEADO;
 import br.nom.abdon.gastoso.system.NotFoundException;
 
 import br.nom.abdon.util.Periodo;
@@ -132,21 +135,18 @@ public class GastosoCharacterCommand {
 
             try {
                 commandLineCommand(lineCommandCtx);
+            } catch (NotFoundException ex){
+                writer.println("Não existe");
             } catch (GastosoSystemException | GastosoSystemRTException ex) {
-                if(ex instanceof NotFoundException){
-                    writer.println("Não existe");
-                } else {
-                    writer.print(
-                        (ex instanceof GastosoSystemException)
+                final String msg = 
+                    (ex instanceof GastosoSystemException)
                         ? "Erro" 
                         : (ex instanceof GastosoSystemRTException)
                             ? "Problema"
-                            : "Bronca"
-                    );
+                            : "Bronca";
 
-                    writer.println(": " + ex.getMessage());
-                    log.log(Level.FINEST, ex, () -> "Impossível processar.");
-                }
+                writer.println(msg + ": " + ex.getMessage());
+                log.log(Level.FINEST, ex, () -> "Impossível processar.");
             }
         }
     }
@@ -230,7 +230,8 @@ public class GastosoCharacterCommand {
 
         } else if (fatoArgsCtx instanceof FatoSubIdContext){
 
-            final FatoSubIdContext fatoSubIdCtx = (FatoSubIdContext) fatoArgsCtx;
+            final FatoSubIdContext fatoSubIdCtx =
+                (FatoSubIdContext) fatoArgsCtx;
 
             final SubIdContext subIdCtx = fatoSubIdCtx.subId();
 
@@ -245,21 +246,48 @@ public class GastosoCharacterCommand {
                         idFato,
                         idConta);
             } else {
-                int valor = CtxReader.extract(valorCtx);
-
-                Lancamento lancamento =
-                    new Lancamento(new Fato(idFato), new Conta(idConta), valor);
-
-                lancamento = gastosoSystem.create(lancamento);
                 
-                final Fato fato = lancamento.getFato();
+                final FiltroLancamentos f = new FiltroLancamentos();
+                f.getFiltroContas().setId(idConta);
+                f.getFiltroFatos().setId(idFato);
                 
-                writer.printf("%s pra %s em [%d]%s.\n\n",
-                    formata(lancamento.getValor()),
-                    lancamento.getConta().getNome(),
-                    fato.getId(),
-                    lancamento.getFato().getDescricao()
-                );
+                final List<? extends Lancamento> lancamentos = 
+                    gastosoSystem.getLancamentos(f);
+                
+                final int quantos = lancamentos.size();
+                if(quantos > 1 ){
+                    throw new GastosoSystemRTException(
+                        "Mais de um lançamento pra mesma conta no mesmo fato!", 
+                        SERVIDOR_DESNORTEADO);
+                } else {
+                    int valor = CtxReader.extract(valorCtx);
+
+                    Lancamento lancamento;
+
+                    if(quantos == 1) {
+                        lancamento = lancamentos.get(0);
+                        lancamento.setValor(valor);
+                        lancamento = gastosoSystem.update(lancamento);
+                        
+                    } else {
+                        lancamento =
+                            new Lancamento(
+                                new Fato(idFato),
+                                new Conta(idConta), 
+                                valor);
+                    
+                        lancamento = gastosoSystem.create(lancamento);
+                    }
+                    
+                    final Fato fato = lancamento.getFato();
+
+                    writer.printf("%s pra %s em [%d]%s.\n\n",
+                        formata(lancamento.getValor()),
+                        lancamento.getConta().getNome(),
+                        fato.getId(),
+                        lancamento.getFato().getDescricao()
+                    );
+                }
             }
         } else if(fatoArgsCtx instanceof MkFatoContext){
 
@@ -270,7 +298,7 @@ public class GastosoCharacterCommand {
             final LocalDate dia = CtxReader.extractDia(mkFatoCtx.dia());
 
             final Fato fato = gastosoSystem.create(new Fato(dia, descricao));
-            
+
             writer.println(
                 "Fato criado: [" 
                 + fato.getId()
@@ -283,6 +311,7 @@ public class GastosoCharacterCommand {
         
         final Integer fatoId = fato.getId();
         
+        writer.flush();
         writer.println(
                 fatoId
                 + " - "
@@ -310,8 +339,16 @@ public class GastosoCharacterCommand {
         }
     }
 
-    private void commandFatos(FatosContext ctx) {
-        System.out.println("Listar fatos do periodo setado");
+    private void commandFatos(FatosContext ctx) throws GastosoSystemException {
+        final FiltroFatos f = new FiltroFatos();
+        f.setDataMinima(periodo.getDataMinima());
+        f.setDataMaxima(periodo.getDataMaxima());
+        f.addOrdem(FiltroFatos.ORDEM.POR_DIA);
+        f.addOrdem(FiltroFatos.ORDEM.POR_DIA);
+        
+        final List<? extends Fato> fatos = gastosoSystem.getFatos(f);
+        
+        fatos.forEach(this::printFato);
     }
 
     private void commandContas(final ContasContext contasCtx) 
