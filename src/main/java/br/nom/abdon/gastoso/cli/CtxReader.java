@@ -27,13 +27,12 @@ import java.time.temporal.TemporalAdjusters;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.NomeDePeriodoContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutraSemanaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.OutroPeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeridoComplexoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoDefContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoReferenciadoContext;
@@ -135,7 +134,7 @@ class CtxReader {
     }
 
     private static Variante extractVariante(
-            VarianteMascContext varianteMascCtx) {
+            final VarianteMascContext varianteMascCtx) {
         
         return varianteMascCtx.PASSADO() != null
                 ? Variante.PASSADO 
@@ -241,20 +240,13 @@ class CtxReader {
             final PeriodoReferenciadoContext 
                     periodoReferenciadoCtx) {
 
-        final OutroPeriodoContext outroPeriodoCtx = 
-            periodoReferenciadoCtx.outroPeriodo();
+        final NomeDePeriodoContext nomeDePeriodoCtx = 
+            periodoReferenciadoCtx.nomeDePeriodo();
         
-        final NomeDePeriodoContext nomeDePeriodoCtx;
-        final Variante variante;
-
-        if(outroPeriodoCtx != null){
-            nomeDePeriodoCtx = outroPeriodoCtx.nomeDePeriodo();
-            variante = extractVariante(outroPeriodoCtx.varianteMasc());
-        } else {
-            nomeDePeriodoCtx = 
-                periodoReferenciadoCtx.essePeriodo().nomeDePeriodo();
-            variante = null;
-        }
+        final Variante variante = 
+            periodoReferenciadoCtx.varianteMasc() != null
+                ? extractVariante(periodoReferenciadoCtx.varianteMasc())
+                : null;
         
         return extractPeriodo(nomeDePeriodoCtx,variante);
     }
@@ -307,20 +299,20 @@ class CtxReader {
 
     private static Periodo extractPeriodo(
         final PeriodoSemanaContext periodoSemanaCtx) {
-        
-        final OutraSemanaContext outraSemanaCtx = 
-            periodoSemanaCtx.outraSemana();
+         
+        final GastosoCliParser.VarianteFemContext varianteFemCtx = 
+            periodoSemanaCtx.varianteFem();
         
         final LocalDate inicio = LocalDate.now().with(
-            outraSemanaCtx == null
-            ? TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
-            : outraSemanaCtx.varianteFem().QUE_VEM() != null
-                ? TemporalAdjusters.next(DayOfWeek.SUNDAY)
-                : date -> date
-                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-                    .with(TemporalAdjusters.previous(DayOfWeek.SUNDAY))
+            varianteFemCtx == null
+                ? TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
+                : varianteFemCtx.QUE_VEM() != null
+                    ? TemporalAdjusters.next(DayOfWeek.SUNDAY)
+                    : date -> date
+                        .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+                        .with(TemporalAdjusters.previous(DayOfWeek.SUNDAY))
         );
-        
+
         return
             new Periodo(
                 inicio, 

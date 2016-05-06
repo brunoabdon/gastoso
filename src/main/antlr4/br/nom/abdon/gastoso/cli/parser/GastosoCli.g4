@@ -66,14 +66,11 @@ periodoSimples :
     | periodoReferenciado
 ;
 
-periodoSemana: essaSemana | outraSemana;
-periodoReferenciado: essePeriodo | outroPeriodo;
+periodoSemana: ESSA WS SEMANA | SEMANA WS varianteFem;
 
-essaSemana: ESSA WS SEMANA;
-outraSemana: SEMANA WS varianteFem;
-
-essePeriodo: ESSE WS nomeDePeriodo;
-outroPeriodo : nomeDePeriodo WS varianteMasc;
+periodoReferenciado: 
+    ESSE WS nomeDePeriodo
+    | nomeDePeriodo WS varianteMasc;
 
 nomeDePeriodo: MES | ANO | SEMESTRE;
 
