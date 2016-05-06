@@ -27,7 +27,7 @@ import br.nom.abdon.gastoso.Fato;
  * @author Bruno Abdon
  */
 public class FiltroFatos {
-    public static enum ORDEM {POR_DIA, POR_DESCRICAO}
+    public static enum ORDEM {POR_DIA, POR_DESCRICAO, POR_CRIACAO}
 
     private LocalDate dataMinima, dataMaxima;
     private Integer inicio, fim, quantos;
@@ -86,9 +86,9 @@ public class FiltroFatos {
         this.quantos = quantos;
     }
 
-    public FiltroFatos addOrdem(ORDEM ordem){
-        if(ordem == null) this.ordem = new LinkedList<>();
-        this.ordem.add(ordem);
+    public FiltroFatos addOrdem(ORDEM ordemItem){
+        if(this.ordem == null) this.ordem = new LinkedList<>();
+        this.ordem.add(ordemItem);
         return this;
     }
 
