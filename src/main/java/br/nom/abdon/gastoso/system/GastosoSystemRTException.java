@@ -24,6 +24,7 @@ public class GastosoSystemRTException extends RuntimeException {
 
     public static final int ERRO_GERAL = 0;
     public static final int SERVIDOR_FORA = 1;
+    public static final int SERVIDOR_DESNORTEADO = 2;
     
     private int code;
 
