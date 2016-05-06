@@ -57,7 +57,6 @@ import br.nom.abdon.gastoso.system.FiltroLancamentos;
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
-import static br.nom.abdon.gastoso.system.GastosoSystemRTException.ERRO_GERAL;
 import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 import br.nom.abdon.gastoso.system.NotFoundException;
 import br.nom.abdon.modelo.Entidade;
