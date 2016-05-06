@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -148,10 +149,37 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
     }
  
     private void trataOrdenacao(
-        final FiltroFatos filtroFatos, 
+        final FiltroFatos filtro, 
         final Root<Fato> root, 
         final CriteriaBuilder cb, 
         final CriteriaQuery<Fato> q) {
-        //...
+
+        final List<FiltroFatos.ORDEM> ordem = filtro.getOrdem();
+        if(ordem != null && !ordem.isEmpty()){
+            List<Order> orders = new LinkedList<>();
+            
+            for(FiltroFatos.ORDEM itemOrdenacao : ordem) {
+                final Path path;
+                
+                switch(itemOrdenacao){
+                    case POR_CRIACAO:
+                        path = root.get("id");
+                        break;
+                    case POR_DESCRICAO:
+                        path = root.get("descricao");
+                        break;
+                    case POR_DIA:
+                    default:
+                        path = root.get("dia");
+                        break;
+                }
+                
+                orders.add(cb.asc(path));
+            }
+            
+            q.orderBy(orders);
+        }
+
+
     } 
 }
