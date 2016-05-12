@@ -36,7 +36,7 @@ public class FiltroFatos {
     private Fato fato;
 
     private List<ORDEM> ordem;
-    private Paginacao paginacao = new Paginacao();
+    private final Paginacao paginacao = new Paginacao();
 
     public Integer getId() {
         return id;

@@ -52,8 +52,6 @@ public class FiltroLancamentos {
     
     private final Paginacao paginacao = new Paginacao();
     
-    //private Integer valorMinimo, valorMaximo;
-
     /**
      * Diz quais os critérios que o fato de um lancamento deve cumprir para esse
      * lancamento ser aceito por this filtro. Nunca é nulo.
