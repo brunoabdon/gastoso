@@ -28,7 +28,7 @@ import java.util.List;
  */
 public interface GastosoSystem {
 
-    public List<? extends Fato> getFatos(FiltroFatos filtro)
+    public List<Fato> getFatos(FiltroFatos filtro)
         throws GastosoSystemRTException, GastosoSystemException;
 
     public Fato getFato(int id)
@@ -36,7 +36,7 @@ public interface GastosoSystem {
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public List<? extends Conta> getContas(FiltroContas filtro)
+    public List<Conta> getContas(FiltroContas filtro)
         throws GastosoSystemRTException, GastosoSystemException;
 
     public Conta getConta(int id)
@@ -44,7 +44,7 @@ public interface GastosoSystem {
                 GastosoSystemRTException,
                 GastosoSystemException;
 
-    public List<? extends Lancamento> getLancamentos(FiltroLancamentos fitro)
+    public List<Lancamento> getLancamentos(FiltroLancamentos fitro)
         throws GastosoSystemRTException, GastosoSystemException;
 
     public Fato update(Fato fato)
