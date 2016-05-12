@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest;
+package br.nom.abdon.gastoso.ext;
 
 import java.time.LocalDate;
-import java.util.LinkedList;
 import java.util.List;
 
 import br.nom.abdon.gastoso.Fato;
@@ -29,7 +28,12 @@ import br.nom.abdon.gastoso.Lancamento;
  */
 public class FatoDetalhado extends Fato {
     
-    private final List<Lancamento> lancamentos;
+    private List<Lancamento> lancamentos;
+
+    
+    public FatoDetalhado() {
+        super();
+    }
 
     public FatoDetalhado(
             final Fato fato, 
@@ -37,9 +41,6 @@ public class FatoDetalhado extends Fato {
         this(fato.getId(), fato.getDia(), fato.getDescricao(), lancamentos);
     }
 
-    public FatoDetalhado() {
-        this.lancamentos = new LinkedList<>();
-    }
 
     public FatoDetalhado(
             final Integer id, 
@@ -55,8 +56,8 @@ public class FatoDetalhado extends Fato {
         return lancamentos;
     }
 
-    public void addLancamento(final Lancamento lancamento) {
-        lancamentos.add(lancamento);
+    public void setLancamentos(final List<Lancamento> lancamentos) {
+        this.lancamentos = lancamentos;
     }
 
     public Fato asFato(){

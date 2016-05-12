@@ -23,19 +23,20 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.Providers;
 
 import com.fasterxml.jackson.core.JsonParser;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.FatoDetalhado;
+
+import br.nom.abdon.gastoso.ext.FatoDetalhado;
+import br.nom.abdon.gastoso.ext.Saldo;
+
 import br.nom.abdon.gastoso.rest.MediaTypes;
 
 /**
@@ -51,11 +52,8 @@ import br.nom.abdon.gastoso.rest.MediaTypes;
 })
 public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
     
-    @Context
-    Providers providers;
-    
     private static final Class[] KNOWN_CLASSES = {
-        Conta.class, Fato.class, FatoDetalhado.class, Lancamento.class
+        Conta.class,Fato.class,FatoDetalhado.class,Lancamento.class,Saldo.class
     };
 
     @Override
@@ -94,6 +92,8 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                 ? UnMarshaller.parseConta(jParser)
                 : Fato.class.isAssignableFrom(type)
                     ? UnMarshaller.parseFato(jParser)
-                    : UnMarshaller.parseLancamento(jParser);
+                    : Saldo.class.isAssignableFrom(type)
+                        ? UnMarshaller.parseSaldo(jParser)
+                        : UnMarshaller.parseLancamento(jParser);
     }
 }

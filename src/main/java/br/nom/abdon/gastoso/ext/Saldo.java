@@ -14,17 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package br.nom.abdon.gastoso.rest;
+package br.nom.abdon.gastoso.ext;
 
 import java.time.LocalDate;
 
 import br.nom.abdon.gastoso.Conta;
+import br.nom.abdon.util.Identifiable;
 
 /**
  *
  * @author Bruno Abdon
  */
-public class Saldo {
+public class Saldo implements Identifiable{
 
     private Conta conta;
     private LocalDate dia;
@@ -36,6 +37,11 @@ public class Saldo {
         this.valor = valor;
     }
 
+    @Override
+    public Integer getId(){
+        return conta == null? 0 : conta.getId();
+    }
+    
     public LocalDate getDia() {
         return dia;
     }

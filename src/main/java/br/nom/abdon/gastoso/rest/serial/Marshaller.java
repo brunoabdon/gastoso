@@ -31,9 +31,12 @@ import pl.touk.throwing.ThrowingConsumer;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.FatoDetalhado;
+
+import br.nom.abdon.gastoso.ext.FatoDetalhado;
+
 import br.nom.abdon.gastoso.rest.MediaTypes;
-import br.nom.abdon.gastoso.rest.Saldo;
+
+import br.nom.abdon.gastoso.ext.Saldo;
 
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
@@ -63,7 +66,9 @@ class Marshaller {
         gen.writeStartObject();
         if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
             this.writeContaField(saldo.getConta());
-            this.writeDiaField(saldo.getDia());
+            if(tipo != MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE){
+                this.writeDiaField(saldo.getDia());
+            }
         }
         this.writeValorField(saldo.getValor());
         gen.writeEndObject();
@@ -108,7 +113,9 @@ class Marshaller {
                     final Lancamento lancamento = lancamentos.get(0);
                     final Conta conta = lancamento.getConta();
 
-                    this.writeContaOrFields(conta);
+                    if(tipo != APPLICATION_GASTOSO_PATCH_TYPE){
+                        this.writeContaOrFields(conta);
+                    }
                     this.writeValorField(lancamento.getValor());
                     break;
 

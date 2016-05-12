@@ -18,8 +18,8 @@ package br.nom.abdon.gastoso.rest.serial;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,7 +29,9 @@ import com.fasterxml.jackson.core.JsonToken;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.FatoDetalhado;
+
+import br.nom.abdon.gastoso.ext.FatoDetalhado;
+import br.nom.abdon.gastoso.ext.Saldo;
 
 /**
  *
@@ -89,7 +91,9 @@ class UnMarshaller {
                     break;
                 default:
                     //see https://java.net/jira/browse/JERSEY-3005
-                    throw new IOException("Couldn't parse");
+                    throw new IOException("Couldn't parse. What's " 
+                                            + fieldName
+                                            + " on fato?");
             }
         }
 
@@ -126,7 +130,10 @@ class UnMarshaller {
             final Fato fato, 
             final Conta conta, 
             final Integer valor) {
-        return Collections.singletonList(new Lancamento(fato,conta,valor));
+        final List<Lancamento> list = new ArrayList<>(1);
+        list.add(new Lancamento(fato,conta,valor));
+        return list;
+        
     }
 
     public static List<Lancamento> parseLancamentos(
@@ -242,6 +249,41 @@ class UnMarshaller {
         return lancamento;
     }
 
+    static Saldo parseSaldo(JsonParser jParser) throws IOException {
+        
+        if(jParser.nextToken() == JsonToken.END_ARRAY) return null;
+        
+        Conta conta = null;
+        LocalDate dia = null;
+        Long valor = null;
+
+        String fieldName;
+
+        while((fieldName = jParser.nextFieldName()) != null){
+            switch(fieldName) {
+                case Serial.CONTA:
+                    conta = parseConta(jParser);
+                    break;
+                case Serial.DIA:
+                    dia = LocalDate.parse(jParser.nextTextValue());
+                    break;
+                case Serial.VALOR:
+                    valor = jParser.nextLongValue(0);
+                    break;
+                default:
+                    //see https://java.net/jira/browse/JERSEY-3005
+                    throw new IOException(
+                        "Couldn't parse. Whats's "
+                        + fieldName 
+                        + " on Saldo?");
+            }
+        }
+        
+        return new Saldo(conta, dia, valor);
+
+    }
+    
+    
     private static List<Lancamento> makeTransferencia(
             final Fato fato, 
             final Conta origem, 
@@ -253,4 +295,5 @@ class UnMarshaller {
 
         return Arrays.asList(de,pra);
     }
+
 }
