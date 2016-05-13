@@ -30,7 +30,8 @@ import java.time.temporal.TemporalAdjusters;
  */
 public class DiaHelper {
 
-    public static TemporalAdjuster diaDaSemanaMaisPerto(final DayOfWeek diaDaSemana){
+    public static TemporalAdjuster diaDaSemanaMaisPerto(
+            final DayOfWeek diaDaSemana){
         
         return (temporal) ->  {
             final int diferenca = 
@@ -86,7 +87,6 @@ public class DiaHelper {
                     , MONTHS);
         };
     }
-
 
     public static TemporalAdjuster next(Month month) {
         int dowValue = month.getValue();

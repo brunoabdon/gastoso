@@ -24,24 +24,26 @@ import java.time.Month;
 import java.time.YearMonth;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
+import java.util.function.Supplier;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.AnoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.MesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.NomeDePeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeridoComplexoContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoDefContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoReferenciadoContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoSemanaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoSimplesContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ValorContext;
+import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.VarianteFemContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.VarianteMascContext;
 import br.nom.abdon.gastoso.cli.util.DiaHelper;
+
 
 /**
  *
@@ -55,6 +57,17 @@ class CtxReader {
 
     private static final TemporalAdjuster COMECO_DO_ANO_ADJSTR = 
         TemporalAdjusters.firstDayOfYear();
+
+
+    public static String extractText(
+        final TextArgContext textArg, final String fallback) {
+        return textArg == null ? fallback : extractText(textArg);
+    }
+    
+    public static String extractText(
+        final TextArgContext textArg, final Supplier<String> fallback) {
+        return textArg == null ? fallback.get() : extractText(textArg);
+    }
     
     public static String extractText(final TextArgContext textArg) {
         String text;
@@ -82,6 +95,17 @@ class CtxReader {
         return valor;
     }
     
+    public static LocalDate extractDia(
+        final DiaContext diaCtx, final LocalDate fallback) {
+        return diaCtx == null ? fallback : extractDia(diaCtx);
+    }
+
+    public static LocalDate extractDia(
+            final DiaContext diaCtx, 
+            final Supplier<LocalDate> fallback) {
+        return diaCtx == null ? fallback.get() : extractDia(diaCtx);
+    }
+
     public static LocalDate extractDia(DiaContext diaCtx) {
 
         final LocalDate hoje = LocalDate.now();
@@ -141,7 +165,19 @@ class CtxReader {
                 : Variante.QUE_VEM;
     }
 
-    public static Periodo extract(final PeriodoDefContext periodoDefCtx) {
+    public static Periodo extract(
+        final PeriodoContext periodoDefCtx, final Periodo fallback) {
+        return periodoDefCtx == null ? fallback : extract(periodoDefCtx);
+        
+    }
+
+    public static Periodo extract(
+        final PeriodoContext periodoDefCtx, final Supplier<Periodo> fallback) {
+        return periodoDefCtx == null ? fallback.get() : extract(periodoDefCtx);
+        
+    }
+
+    public static Periodo extract(final PeriodoContext periodoDefCtx) {
         
         final PeriodoSimplesContext periodoSimplesCtx =
                 periodoDefCtx.periodoSimples();
@@ -300,7 +336,7 @@ class CtxReader {
     private static Periodo extractPeriodo(
         final PeriodoSemanaContext periodoSemanaCtx) {
          
-        final GastosoCliParser.VarianteFemContext varianteFemCtx = 
+        final VarianteFemContext varianteFemCtx = 
             periodoSemanaCtx.varianteFem();
         
         final LocalDate inicio = LocalDate.now().with(

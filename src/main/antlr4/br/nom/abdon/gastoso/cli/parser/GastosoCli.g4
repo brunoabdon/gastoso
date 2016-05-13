@@ -3,38 +3,26 @@ grammar GastosoCli;
 command: WS? lineCommand WS? EOF;
 
 lineCommand: 
-    periodo | fato | fatos | conta | contas | rm | gasto | ganho | transf;
+      MKF WS textArg (WS dia)? (WS conta (WS conta)? WS valor)?
+    | MKC WS textArg
+    | RMF WS id
+    | RMC WS conta
+    | LN  WS id WS WORD
+    | RML WS WORD
+    | (ENTRADA|SAIDA) WS conta WS valor
+    | DIA WS dia
+    | DESC WS textArg
+    | NULL WS conta
+    | SAVE
+    | CANCEL
+    | LS ((WS CONTAS) | ((WS conta)? (WS periodo)?))
+    | MVC WS id WS textArg
+    | MVF WS id (WS dia)? (WS textArg)?
+    | CD WS (id|PARENT)
+    | PERIODO (WS periodo)?
+    ;
 
-periodo : 'periodo' (WS periodoDef)?;
-fato    : 'fato'    WS fatoArgs;
-fatos   : 'fatos';
-conta   : 'conta'   WS contaArgs;
-contas  : 'contas'  (WS contasArgs)?;
-rm      : 'rm'      WS rmArgs;
-gasto   : 'gasto'   WS gastoGanhoArgs;
-ganho   : 'ganho'   WS gastoGanhoArgs;
-transf  : 'transf'  WS transfArgs;
-
-fatoArgs: 
-    id (WS (dia|textArg))? #fatoId
-    | subId (WS valor)?    #fatoSubId
-    | (dia WS)? textArg    #mkFato
-;
-
-contaArgs: 
-    id (WS textArg)?
-    |textArg
-;
-
-contasArgs: textArg;
-
-rmArgs: 
-    ('fato'|'conta') WS id
-    |'lancamento' WS subId;
-
-gastoGanhoArgs: (dia WS)? textArg WS id WS valor;
-
-transfArgs: (dia WS)? textArg WS id WS id WS valor;
+conta: id | WORD;
 
 dia:
     HOJE 
@@ -54,7 +42,7 @@ ano: INT | ANO (WS varianteMasc);
 varianteMasc: QUE_VEM | PASSADO;
 varianteFem: QUE_VEM | PASSADA;
 
-periodoDef: periodoSimples | peridoComplexo;
+periodo: periodoSimples | peridoComplexo;
 
 peridoComplexo: 'de' WS periodoSimples WS ATE WS periodoSimples;
 
@@ -78,10 +66,28 @@ textArg : WORD | TEXT;
 
 valor: MENOS? INT CENTAVOS?;
 id :INT;
-subId: id '/' id;
 
 //lex rules
+MKF: 'mkf';
+MKC: 'mkc';
+RMF: 'rmf';
+RMC: 'rmc';
+LN: 'ln';
+RML: 'rml';
+ENTRADA: 'in';
+SAIDA: 'out';
+NULL: 'null';
+LS: 'ls';
+MVF: 'mvf';
+MVC: 'mvc';
+CD: 'cd';
+SAVE: 'save';
+CANCEL: 'cancel';
 
+PARENT: '..';
+CONTAS: 'contas';
+DIA: 'dia';
+DESC: 'desc';
 
 HOJE: 'hoje';
 ONTEM: 'ontem';
@@ -90,6 +96,7 @@ DEPOIS_DE_AMANHA: 'depois de amanha';
 ANTE_ONTEM: 'ante-ontem';
 DE_HOJE_A_OITO: 'de hoje a oito';
 DE_HOJE_A_QUINZE: 'de hoje a quinze';
+PERIODO: 'periodo';
 
 JAN: 'janeiro'   | 'Janeiro'   | 'JANEIRO'   | 'jan' | 'JAN';
 FEV: 'fevereiro' | 'Fevereiro' | 'FEVEREIRO' | 'fev' | 'FEV';
@@ -126,7 +133,7 @@ QUE_VEM: 'que vem';
 PASSADA: 'passada';
 PASSADO: 'passado';
 
-ATE: 'a' | 'ate';
+ATE: 'a' | 'ate' | 'pra';
 
 fragment ALPHA: [a-zA-Z];
 fragment DIGIT: '0'..'9';

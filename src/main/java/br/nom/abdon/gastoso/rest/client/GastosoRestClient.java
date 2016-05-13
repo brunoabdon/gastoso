@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -43,23 +44,32 @@ import javax.ws.rs.core.Response;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.FatoDetalhado;
+
+import br.nom.abdon.gastoso.ext.FatoDetalhado;
+
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
-import br.nom.abdon.gastoso.rest.Saldo;
+
+import br.nom.abdon.gastoso.ext.Saldo;
+import br.nom.abdon.gastoso.ext.system.FiltroFatosDetalhados;
+import br.nom.abdon.gastoso.ext.system.FiltroSaldos;
+import br.nom.abdon.gastoso.ext.system.GastosoSystemExtended;
+import br.nom.abdon.gastoso.rest.MediaTypes;
+
 import br.nom.abdon.gastoso.rest.serial.FatosMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyWriter;
+import br.nom.abdon.gastoso.rest.serial.LancamentosMessageBodyReader;
+import br.nom.abdon.gastoso.rest.serial.SaldosMessageBodyReader;
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
-import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 import br.nom.abdon.gastoso.system.NotFoundException;
-import br.nom.abdon.modelo.Entidade;
+import br.nom.abdon.util.Identifiable;
 
 
 
@@ -67,7 +77,7 @@ import br.nom.abdon.modelo.Entidade;
  *
  * @author Bruno Abdon
  */
-public class GastosoRestClient implements GastosoSystem{
+public class GastosoRestClient implements GastosoSystemExtended {
 
     private static final Logger log = 
         Logger.getLogger(GastosoRestClient.class.getName());
@@ -75,7 +85,10 @@ public class GastosoRestClient implements GastosoSystem{
     private static final GenericType<List<Lancamento>> LANCAMENTO_GEN_TYPE = 
         new GenericType<List<Lancamento>>(){};
 
-    private static final GenericType<List<FatoDetalhado>> FATO_GEN_TYPE = 
+    private static final GenericType<List<Fato>> FATO_GEN_TYPE = 
+        new GenericType<List<Fato>>(){};
+    
+    private static final GenericType<List<FatoDetalhado>> FATODEL_GEN_TYPE = 
         new GenericType<List<FatoDetalhado>>(){};
     
     private static final GenericType<List<Conta>> CONTA_GEN_TYPE = 
@@ -96,6 +109,7 @@ public class GastosoRestClient implements GastosoSystem{
     private final WebTarget contaWebTarget, contasWebTarget;
     private final WebTarget fatoWebTarget, fatosWebTarget;
     private final WebTarget lancamentoWebTarget, lancamentosWebTarget;
+    private final WebTarget saldoWebTarget, saldosWebTarget;
 
     private String authToken = null;
 
@@ -119,6 +133,8 @@ public class GastosoRestClient implements GastosoSystem{
                     .register(GastosoMessageBodyReader.class)
                     .register(GastosoMessageBodyWriter.class)
                     .register(FatosMessageBodyReader.class)
+                    .register(LancamentosMessageBodyReader.class)
+                    .register(SaldosMessageBodyReader.class)
                     .register(USER_AGENT_FILTER)
                     .register(authFilter)
                     .build();
@@ -132,10 +148,13 @@ public class GastosoRestClient implements GastosoSystem{
         this.contasWebTarget = rootWebTarget.path("contas");
         this.fatosWebTarget = rootWebTarget.path("fatos");
         this.lancamentosWebTarget = rootWebTarget.path("lancamentos");
+        this.saldosWebTarget = rootWebTarget.path("saldos");
 
         this.contaWebTarget = this.contasWebTarget.path("{id}");
         this.fatoWebTarget = this.fatosWebTarget.path("{id}");
         this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
+        this.saldoWebTarget = this.saldosWebTarget.path("{id}");
+        
     } 
     
     public boolean login (final String user, final String password) 
@@ -170,15 +189,13 @@ public class GastosoRestClient implements GastosoSystem{
     public boolean logout()
             throws GastosoSystemRTException, IllegalStateException {
 
-        if(this.authToken == null) throw new IllegalStateException();
-
         this.authToken = null;
 
         return true;
     }
 
     @Override
-    public List<FatoDetalhado> getFatos(final FiltroFatos filtro) 
+    public List<Fato> getFatos(final FiltroFatos filtro) 
             throws GastosoSystemException {
         
         return get(
@@ -189,6 +206,18 @@ public class GastosoRestClient implements GastosoSystem{
             filtro);
     }
 
+    @Override
+    public List<FatoDetalhado> getFatosDetalhados(
+            final FiltroFatosDetalhados filtro) 
+                throws GastosoSystemRTException, GastosoSystemException {
+        return get(
+            FILL_PARAM_FATOS, 
+            FATODEL_GEN_TYPE,
+            APPLICATION_GASTOSO_SIMPLES_TYPE,
+            fatosWebTarget, 
+            filtro);
+    }
+    
     @Override
     public List<Conta> getContas(final FiltroContas filtro) 
             throws GastosoSystemException {
@@ -213,6 +242,18 @@ public class GastosoRestClient implements GastosoSystem{
             filtro);
     }
     
+    @Override
+    public List<Saldo> getSaldos(final FiltroSaldos filtro) 
+            throws GastosoSystemException {
+        
+        return get(
+            FILL_PARAM_SALDOS, 
+            SALDO_GEN_TYPE,
+            MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE,
+            saldosWebTarget, 
+            filtro);
+    }
+    
 
     private static final BiFunction<WebTarget, FiltroFatos, WebTarget> 
         FILL_PARAM_FATOS =
@@ -224,7 +265,7 @@ public class GastosoRestClient implements GastosoSystem{
 
     //helper for FILL_PARAM_FATOS
     private static WebTarget setData(
-        WebTarget webTarget, 
+        final WebTarget webTarget, 
         final String paramName, 
         final LocalDate date){
 
@@ -233,37 +274,30 @@ public class GastosoRestClient implements GastosoSystem{
             : webTarget;
     }
 
+    private static final BiFunction<WebTarget,FiltroSaldos,WebTarget>
+        FILL_PARAM_SALDOS = 
+        
+        (saldosWebTarget,filtro) -> {
+            return saldosWebTarget
+                .queryParam("dia", filtro.getDia().format(ISO_DATE));
+                    
+        };
+    
     private static final BiFunction<WebTarget, FiltroLancamentos, WebTarget> 
         FILL_PARAM_LANCAMENTOS =
 
         (lancamentosWebTarget,filtro) -> {
+
             final FiltroFatos filtroFatos = filtro.getFiltroFatos();
-            final FiltroContas filtroContas = filtro.getFiltroContas();
 
-            final Integer fatoId = filtroFatos.getId();
-            final Integer contaId = filtroContas.getId();
-
-            WebTarget webTarget = lancamentosWebTarget;
-
-            if(fatoId != null){
-                webTarget = webTarget.queryParam("fato", fatoId);
-            } 
-            
-            if(contaId != null){
-                webTarget = webTarget.queryParam("conta", fatoId);
-            }
-            
-            final LocalDate dataMinima = filtroFatos.getDataMinima();
-            if(dataMinima != null){
-                webTarget = webTarget.queryParam("dataMin", dataMinima);
-            }
-
-            final LocalDate dataMaxima = filtroFatos.getDataMaxima();
-            if(dataMaxima != null){
-                webTarget = webTarget.queryParam("dataMax", dataMaxima);
-            }
-
-            return webTarget;
+            //"In case a single null value is entered, all parameters with that
+            //name are removed..."
+            return 
+                lancamentosWebTarget
+                    .queryParam("fato", filtroFatos.getId())
+                    .queryParam("conta", filtro.getFiltroContas().getId())
+                    .queryParam("dataMin", filtroFatos.getDataMinima())
+                    .queryParam("dataMax", filtroFatos.getDataMaxima());
     };
 
     @Override
@@ -273,11 +307,24 @@ public class GastosoRestClient implements GastosoSystem{
     }
 
     @Override
+    public FatoDetalhado getFatoDetalhado(int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        return get(fatoWebTarget,FatoDetalhado.class,id);
+    }
+    
+    @Override
     public Conta getConta(int id) 
             throws GastosoSystemRTException, GastosoSystemException {
         return get(contaWebTarget,Conta.class,id);
     }
 
+    @Override
+    public Saldo getSaldo(int id) 
+            throws GastosoSystemRTException, GastosoSystemException {
+        return get(saldoWebTarget, Saldo.class, id);
+    }
+
+    
     @Override
     public Fato update(Fato fato) throws GastosoSystemException {
         return update(fatoWebTarget, fato, Fato.class);
@@ -352,7 +399,7 @@ public class GastosoRestClient implements GastosoSystem{
         return entities;
     }
     
-    private <E extends Entidade<Integer>> E get(
+    private <E extends Identifiable<? extends Object>> E get(
         final WebTarget baseWebTarget, 
         final Class<E> klass,
         final int id) 
@@ -367,7 +414,7 @@ public class GastosoRestClient implements GastosoSystem{
         return readEntity(response, klass);
     }
     
-    private static <E extends Entidade<Integer>> E update(
+    private static <E extends Identifiable<? extends Object>> E update(
             final WebTarget baseWebTarget, 
             final E entidade,
             final Class<E> klass) 
@@ -379,7 +426,7 @@ public class GastosoRestClient implements GastosoSystem{
             klass);
     }
 
-    private static <E extends Entidade<Integer>> E create(
+    private static <E extends Identifiable<? extends Object>> E create(
             final WebTarget baseWebTarget, 
             final E entidade,
             final Class<? extends E> klass)
@@ -397,7 +444,7 @@ public class GastosoRestClient implements GastosoSystem{
             MediaType.WILDCARD_TYPE);
     }
     
-    private static<E extends Entidade<Integer>> E post(
+    private static<E extends Identifiable<? extends Object>> E post(
         final WebTarget webTarget,
         final E entidade,
         final Class<? extends E> klass) 

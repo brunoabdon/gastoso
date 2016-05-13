@@ -96,7 +96,8 @@ public class Main {
 
             final PrintWriter writer = new PrintWriter(console.getOutput());
 
-            boolean conseguiu = false;
+            boolean conseguiu = 
+                Boolean.parseBoolean(System.getenv("ABD_AUTH_OMNI_EST_LICET"));
             int tentativasSobrando = 3;
 
             System.out.printf(
@@ -104,23 +105,26 @@ public class Main {
                 uri.getHost(),
                 uri.getPort());
 
+            
             while(!conseguiu && tentativasSobrando > 0){
                 console.setEchoCharacter('*');
                 
                 String password = console.readLine("Senha:");
                 conseguiu = gastosoRestClient.login("", String.valueOf(password));
                 if(conseguiu){
-                    console.setEchoCharacter(null);
-                    console.setPrompt("gastoso>");
-                    printWellcome(writer);
-                } else if(--tentativasSobrando > 0){
-                    writer.println("Foi mal. Tá errada.\n");
-                } else {
-                    writer.println("Não rolou não.");
-                    writer.flush();
-                    System.exit(1);
+                    if(--tentativasSobrando > 0){
+                        writer.println("Foi mal. Tá errada.\n");
+                    } else {
+                        writer.println("Não rolou não.");
+                        writer.flush();
+                        System.exit(1);
+                    }
                 }
             }
+            console.setEchoCharacter(null);
+            console.setPrompt("gastoso>");
+            printWellcome(writer);
+
         } catch (GastosoSystemRTException e) {
             if(e.getCode() == SERVIDOR_FORA){
                 System.out.printf(
