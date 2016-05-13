@@ -115,6 +115,8 @@ class Marshaller {
 
                     if(tipo != APPLICATION_GASTOSO_PATCH_TYPE){
                         this.writeContaOrFields(conta);
+                    } else {
+                        writeContaIdField(conta);
                     }
                     this.writeValorField(lancamento.getValor());
                     break;
@@ -201,11 +203,14 @@ class Marshaller {
         if(tipo == MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE
             || tipo == MediaTypes.APPLICATION_GASTOSO_FULL_TYPE){
             this.writeContaField(conta);
-        } else if(tipo == APPLICATION_GASTOSO_SIMPLES_TYPE){
-            this.writeContaIdField(conta);
         } else {
-            gen.writeStringField(Serial.NOME, conta.getNome());
-        }
+            this.writeContaIdField(conta);
+            
+            if(tipo == APPLICATION_GASTOSO_PATCH_TYPE){
+                gen.writeStringField(Serial.NOME, conta.getNome());
+            }
+            
+        } 
     }
 
     private void writeContaField(final Conta conta) throws IOException {
@@ -233,7 +238,13 @@ class Marshaller {
 
     private void writeFatoLancamentoFields(
             final Lancamento lancamento) throws IOException {
-        this.writeContaOrFields(lancamento.getConta());
+        
+        final Conta conta = lancamento.getConta();
+        if(tipo == APPLICATION_GASTOSO_PATCH_TYPE){
+            this.writeContaIdField(conta);
+        } else {
+            this.writeContaOrFields(conta);
+        }
         this.writeValorField(lancamento.getValor());
     }
 
@@ -263,16 +274,15 @@ class Marshaller {
         gen.writeStringField(fieldName, dia.format(ISO_LOCAL_DATE));
     }
 
-    private void writeIdField(final Integer id)
+    private void writeIdField(final int id)
             throws IOException {
         gen.writeNumberField(Serial.ID, id);
     }
 
     private void contaCore(final Conta conta) throws IOException {
-        if(tipo != APPLICATION_GASTOSO_PATCH_TYPE){
-            this.writeIdField(conta.getId());
-        }
-        if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE){
+        this.writeIdField(conta.getId());
+        if(tipo != APPLICATION_GASTOSO_SIMPLES_TYPE
+            && tipo != APPLICATION_GASTOSO_PATCH_TYPE){
             gen.writeStringField(Serial.NOME, conta.getNome());
         }
     }
@@ -284,7 +294,7 @@ class Marshaller {
         final LocalDate dia = fatoNormal.getDia();
         final String descricao = fatoNormal.getDescricao();
         
-        if(id != null || obrigatorio) this.writeIdField(id);
+        this.writeIdField(id);
         if(dia != null || obrigatorio) this.writeDiaField(dia);
         if(descricao != null || obrigatorio) 
             gen.writeStringField(Serial.DESC, descricao);

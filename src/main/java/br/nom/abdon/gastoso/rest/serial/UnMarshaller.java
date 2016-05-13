@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -101,7 +102,9 @@ class UnMarshaller {
         fato.setDia(dia);
         fato.setDescricao(descricao);
 
-        if(lancamentos == null){
+        if(lancamentos != null){
+            lancamentos.forEach(l -> l.setFato(fato));
+        } else {
             if(origem == null){
                 if(origemId != null){
                     lancamentos = 
@@ -136,8 +139,8 @@ class UnMarshaller {
         
     }
 
-    public static List<Lancamento> parseLancamentos(
-            final JsonParser jParser) throws IOException {
+    public static List<Lancamento> parseLancamentos(final JsonParser jParser) 
+            throws IOException {
         
         final List<Lancamento> lancamentos = new LinkedList<>();
         
@@ -146,7 +149,6 @@ class UnMarshaller {
         boolean leu;
         do{
             final Lancamento lancamento = parseLancamento(jParser);
-
             if(leu = (lancamento != null)){
                 lancamentos.add(lancamento);
             }
