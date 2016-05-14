@@ -1,15 +1,18 @@
 package br.nom.abdon.gastoso.cli;
 
-
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
+import jline.console.history.FileHistory;
+import jline.console.history.History;
 import org.apache.commons.lang3.StringUtils;
 
 import br.nom.abdon.gastoso.rest.client.GastosoResponseException;
@@ -24,14 +27,16 @@ import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA
 public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
-    
-    public static void main(String[] args) {        
+
+    public static void main(String[] args) {
 
         ConsoleReader console = null;
 
         try {
 
             console = new ConsoleReader();
+
+            restoreCommandHistory(console);
 
             final GastosoRestClient gastosoSystem = inicializaSistema(console);
 
@@ -56,12 +61,18 @@ public class Main {
         } catch (GastosoSystemRTException ex) {
             log.log(Level.SEVERE, "Erro grave!", ex);
         } finally {
-            if(console != null) console.shutdown();
             try {
+                if(console != null) {
+                    ((FileHistory)console.getHistory()).flush();
+                    console.shutdown();
+                } 
+
                 TerminalFactory.get().restore();
+            } catch (IOException ex) {
+                log.log(Level.SEVERE, "Erro ao fechar command history.", ex);
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Estranho.... !", e);
-            }            
+            }
         }
     }
 
@@ -91,7 +102,7 @@ public class Main {
         final GastosoRestClient gastosoRestClient;
 
         try {
-            
+
             gastosoRestClient = new GastosoRestClient(uri);
 
             final PrintWriter writer = new PrintWriter(console.getOutput());
@@ -105,7 +116,6 @@ public class Main {
                 uri.getHost(),
                 uri.getPort());
 
-            
             while(!conseguiu && tentativasSobrando > 0){
                 console.setEchoCharacter('*');
                 
@@ -117,6 +127,7 @@ public class Main {
                     } else {
                         writer.println("Não rolou não.");
                         writer.flush();
+                        
                         System.exit(1);
                     }
                 }
@@ -141,6 +152,30 @@ public class Main {
 
         return gastosoRestClient;
     }
+
+    private static void restoreCommandHistory(final ConsoleReader console) 
+            throws IOException {
+
+        final String userHome = System.getProperty("user.home");
+        final File gastosoDir = 
+            FileSystems.getDefault().getPath(userHome,".gastoso").toFile();
+
+        if(gastosoDir.exists() || gastosoDir.mkdir()){
+            restoreCommandHistory(console, gastosoDir);
+        }
+
+    }
+
+    private static void restoreCommandHistory(
+        final ConsoleReader console, final File gastosoDir) throws IOException {
+
+        if(gastosoDir.canRead() && gastosoDir.canWrite()){
+            final File histFile = new File(gastosoDir, "gastoso_history");
+            final History history = new FileHistory(histFile);
+
+            console.setHistory(history);
+        }
+    }    
 
     private static void printWellcome(PrintWriter writer) {
         writer.println(
