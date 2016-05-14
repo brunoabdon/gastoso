@@ -121,7 +121,7 @@ public class Main {
                 
                 String password = console.readLine("Senha:");
                 conseguiu = gastosoRestClient.login("", String.valueOf(password));
-                if(conseguiu){
+                if(!conseguiu){
                     if(--tentativasSobrando > 0){
                         writer.println("Foi mal. Tá errada.\n");
                     } else {
