@@ -152,7 +152,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <mainClass>br.nom.abdon.gastoso.cli.Main</mainClass>
-        <jackson.version>2.7.3</jackson.version>
+        <jackson.version>2.7.4</jackson.version>
 
     </properties>
 </project>
