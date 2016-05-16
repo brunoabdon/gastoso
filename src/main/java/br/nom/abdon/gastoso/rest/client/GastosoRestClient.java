@@ -16,6 +16,7 @@
  */
 package br.nom.abdon.gastoso.rest.client;
 
+import java.io.Closeable;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,7 +24,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -46,22 +46,21 @@ import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.gastoso.Lancamento;
 
 import br.nom.abdon.gastoso.ext.FatoDetalhado;
-
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
-
 import br.nom.abdon.gastoso.ext.Saldo;
 import br.nom.abdon.gastoso.ext.system.FiltroFatosDetalhados;
 import br.nom.abdon.gastoso.ext.system.FiltroSaldos;
 import br.nom.abdon.gastoso.ext.system.GastosoSystemExtended;
-import br.nom.abdon.gastoso.rest.MediaTypes;
 
+import br.nom.abdon.gastoso.rest.MediaTypes;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 import br.nom.abdon.gastoso.rest.serial.FatosMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyWriter;
 import br.nom.abdon.gastoso.rest.serial.LancamentosMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.SaldosMessageBodyReader;
+
 import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
@@ -69,15 +68,15 @@ import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 import br.nom.abdon.gastoso.system.NotFoundException;
-import br.nom.abdon.util.Identifiable;
 
+import br.nom.abdon.util.Identifiable;
 
 
 /**
  *
  * @author Bruno Abdon
  */
-public class GastosoRestClient implements GastosoSystemExtended {
+public class GastosoRestClient implements GastosoSystemExtended, Closeable {
 
     private static final Logger log = 
         Logger.getLogger(GastosoRestClient.class.getName());
@@ -104,6 +103,8 @@ public class GastosoRestClient implements GastosoSystemExtended {
             .add(HttpHeaders.USER_AGENT, "gastoso-cli"); //pegar de um resource
     };
 
+    private final Client client;
+    
     private final WebTarget rootWebTarget;
     
     private final WebTarget contaWebTarget, contasWebTarget;
@@ -126,7 +127,7 @@ public class GastosoRestClient implements GastosoSystemExtended {
         try {
             
             final SSLContext sslContext = SSLContext.getDefault();
-            final Client client =
+            this.client =
                 ClientBuilder
                     .newBuilder()
                     .sslContext(sslContext)
@@ -187,7 +188,7 @@ public class GastosoRestClient implements GastosoSystemExtended {
     }
 
     public boolean logout()
-            throws GastosoSystemRTException, IllegalStateException {
+            throws IllegalStateException {
 
         this.authToken = null;
 
@@ -209,7 +210,7 @@ public class GastosoRestClient implements GastosoSystemExtended {
     @Override
     public List<FatoDetalhado> getFatosDetalhados(
             final FiltroFatosDetalhados filtro) 
-                throws GastosoSystemRTException, GastosoSystemException {
+                throws GastosoSystemException {
         return get(
             FILL_PARAM_FATOS, 
             FATODEL_GEN_TYPE,
@@ -302,25 +303,23 @@ public class GastosoRestClient implements GastosoSystemExtended {
 
     @Override
     public Fato getFato(int id)
-            throws GastosoSystemRTException, GastosoSystemException {
+            throws GastosoSystemException {
         return get(fatoWebTarget,Fato.class,id);
     }
 
     @Override
     public FatoDetalhado getFatoDetalhado(int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
+            throws GastosoSystemException {
         return get(fatoWebTarget,FatoDetalhado.class,id);
     }
     
     @Override
-    public Conta getConta(int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
+    public Conta getConta(int id) throws GastosoSystemException {
         return get(contaWebTarget,Conta.class,id);
     }
 
     @Override
-    public Saldo getSaldo(int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
+    public Saldo getSaldo(int id) throws GastosoSystemException {
         return get(saldoWebTarget, Saldo.class, id);
     }
 
@@ -336,7 +335,8 @@ public class GastosoRestClient implements GastosoSystemExtended {
     }
     
     @Override
-    public Lancamento update(Lancamento lancamento) throws GastosoSystemException {
+    public Lancamento update(final Lancamento lancamento) 
+            throws GastosoSystemException {
         return update(lancamentoWebTarget,lancamento,Lancamento.class);
     }
 
@@ -356,21 +356,19 @@ public class GastosoRestClient implements GastosoSystemExtended {
     }
 
     @Override
-    public Fato create(Fato fato) throws GastosoSystemRTException, GastosoSystemException { 
-        return create(
-            fatosWebTarget,
-            fato,
-            (fato instanceof FatoDetalhado) ? FatoDetalhado.class : Fato.class);
+    public Fato create(final Fato fato) throws GastosoSystemException { 
+        return create(fatosWebTarget,fato,fato.getClass());
     }
 
     @Override
     public Conta create(final Conta conta) 
-            throws GastosoSystemRTException, GastosoSystemException {
+            throws GastosoSystemException {
         return create(contasWebTarget,conta,Conta.class);
     }
     
     @Override
-    public Lancamento create(Lancamento lancamento) throws GastosoSystemRTException, GastosoSystemException {
+    public Lancamento create(final Lancamento lancamento) 
+            throws GastosoSystemException {
         return create(lancamentosWebTarget,lancamento,Lancamento.class);
     }
 
@@ -430,13 +428,13 @@ public class GastosoRestClient implements GastosoSystemExtended {
             final WebTarget baseWebTarget, 
             final E entidade,
             final Class<? extends E> klass)
-        throws GastosoSystemRTException, GastosoSystemException {
+        throws GastosoSystemException {
 
         return post(baseWebTarget,entidade,klass);
     }
 
     private static void delete(final WebTarget baseWebTarget, int id) 
-            throws GastosoSystemRTException, GastosoSystemException {
+            throws GastosoSystemException {
         
         requestOperation(
             baseWebTarget.resolveTemplate("id", id), 
@@ -537,4 +535,9 @@ public class GastosoRestClient implements GastosoSystemExtended {
         
         return entity;
     }   
+    
+    @Override
+    public void close() {
+        this.client.close();
+    }
 }

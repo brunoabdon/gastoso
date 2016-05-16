@@ -31,14 +31,15 @@ public class Main {
     public static void main(String[] args) {
 
         ConsoleReader console = null;
-
+        GastosoRestClient gastosoSystem = null;
+        
         try {
 
             console = new ConsoleReader();
 
             restoreCommandHistory(console);
 
-            final GastosoRestClient gastosoSystem = inicializaSistema(console);
+            gastosoSystem = inicializaSistema(console);
 
             final GastosoCharacterCommand gastosoCharacterCommand = 
                 new GastosoCharacterCommand(gastosoSystem, console.getOutput());
@@ -61,6 +62,7 @@ public class Main {
         } catch (GastosoSystemRTException ex) {
             log.log(Level.SEVERE, "Erro grave!", ex);
         } finally {
+            if(gastosoSystem != null) gastosoSystem.close();
             try {
                 if(console != null) {
                     ((FileHistory)console.getHistory()).flush();
