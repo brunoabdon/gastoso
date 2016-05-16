@@ -22,12 +22,11 @@ import javax.ws.rs.core.Response;
  *
  * @author Bruno Abdon
  */
-public class GastosoResponseException extends Exception{
+public class RESTResponseException extends Exception{
     
     private Response.StatusType statusInfo;
 
-    
-    public GastosoResponseException(final Response.StatusType statusInfo) {
+    public RESTResponseException(final Response.StatusType statusInfo) {
         super(statusInfo.getStatusCode() + " " + statusInfo.getReasonPhrase());
         
         this.statusInfo = statusInfo;
@@ -39,7 +38,5 @@ public class GastosoResponseException extends Exception{
 
     public void setStatusInfo(Response.StatusType statusInfo) {
         this.statusInfo = statusInfo;
-    }
-    
-    
+    }  
 }

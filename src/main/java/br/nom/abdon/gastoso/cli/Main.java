@@ -16,10 +16,11 @@ import jline.console.history.FileHistory;
 import jline.console.history.History;
 import org.apache.commons.lang3.StringUtils;
 
-import br.nom.abdon.gastoso.rest.client.GastosoResponseException;
+import br.nom.abdon.gastoso.rest.client.RESTResponseException;
 import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
+import br.nom.abdon.gastoso.rest.client.RESTClientRTException;
+import static br.nom.abdon.gastoso.rest.client.RESTClientRTException.SERVIDOR_FORA;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
-import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 
 /**
  *
@@ -67,6 +68,8 @@ public class Main {
             log.log(Level.SEVERE, "Deu ruim!", ex);
         } catch (GastosoSystemRTException ex) {
             log.log(Level.SEVERE, "Erro grave!", ex);
+        } catch (RESTClientRTException ex) {
+            log.log(Level.SEVERE, "Erro na comunicacao!", ex);
         } finally {
             if(gastosoSystem != null) gastosoSystem.close();
             try {
@@ -146,8 +149,7 @@ public class Main {
     private static final String SERVER_URI_PREF = "serverUri";
     
     private static GastosoRestClient inicializaSistema(
-            final ConsoleReader console, final URI uri) 
-        throws GastosoSystemRTException, IOException {
+            final ConsoleReader console, final URI uri) throws IOException {
 
         final GastosoRestClient gastosoRestClient;
 
@@ -186,7 +188,7 @@ public class Main {
             console.setPrompt("gastoso>");
             printWellcome(writer);
 
-        } catch (GastosoSystemRTException e) {
+        } catch (RESTClientRTException e) {
             if(e.getCode() == SERVIDOR_FORA){
                 System.out.printf(
                     "%s:%d is not responding.\n",
@@ -196,7 +198,7 @@ public class Main {
                 System.exit(1);
             }
             throw e;
-        } catch (GastosoResponseException e) {
+        } catch (RESTResponseException e) {
             throw new GastosoSystemRTException(e);
         }
 

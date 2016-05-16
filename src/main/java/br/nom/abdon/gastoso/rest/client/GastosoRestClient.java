@@ -17,29 +17,25 @@
 package br.nom.abdon.gastoso.rest.client;
 
 import java.io.Closeable;
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import pl.touk.throwing.ThrowingFunction;
 
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Fato;
@@ -65,18 +61,16 @@ import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
-import br.nom.abdon.gastoso.system.GastosoSystemRTException;
-import static br.nom.abdon.gastoso.system.GastosoSystemRTException.SERVIDOR_FORA;
 import br.nom.abdon.gastoso.system.NotFoundException;
 
-import br.nom.abdon.util.Identifiable;
 
 
 /**
  *
  * @author Bruno Abdon
  */
-public class GastosoRestClient implements GastosoSystemExtended, Closeable {
+public class GastosoRestClient extends AbstractRestClient<GastosoSystemException> 
+        implements GastosoSystemExtended, Closeable {
 
     private static final Logger log = 
         Logger.getLogger(GastosoRestClient.class.getName());
@@ -96,14 +90,17 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
     private static final GenericType<List<Saldo>> SALDO_GEN_TYPE = 
         new GenericType<List<Saldo>>(){};
 
-    private static final ClientRequestFilter USER_AGENT_FILTER = 
-        (reqContx) -> {
-            reqContx
-            .getHeaders()
-            .add(HttpHeaders.USER_AGENT, "gastoso-cli"); //pegar de um resource
-    };
-
-    private final Client client;
+    private static ThrowingFunction<
+                        RESTResponseException,
+                        Response,
+                        GastosoSystemException> EXCEPTION_DEALER =
+        e -> {
+            if(e.getStatusInfo().getStatusCode() 
+                == Response.Status.NOT_FOUND.getStatusCode()){
+                throw new NotFoundException(e);
+            }
+            throw new GastosoSystemException(e);
+        };
     
     private final WebTarget rootWebTarget;
     
@@ -115,36 +112,35 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
     private String authToken = null;
 
     private final ClientRequestFilter authFilter = 
-        (reqContx) -> reqContx.getHeaders().add("X-Abd-auth_token", authToken);
+        (reqContx) -> reqContx
+                        .getHeaders()
+                        .add("X-Abd-auth_token", getAuthToken());
     
 
+    private static final Consumer<ClientBuilder> STATIC_CONFIGURATOR = 
+        cb -> 
+            cb.register(GastosoMessageBodyReader.class)
+                .register(GastosoMessageBodyWriter.class)
+                .register(FatosMessageBodyReader.class)
+                .register(LancamentosMessageBodyReader.class)
+                .register(SaldosMessageBodyReader.class);
+    
+    private final Consumer<ClientBuilder> configurator = 
+        STATIC_CONFIGURATOR.andThen(cb -> cb.register(authFilter));
+
+    
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
     }
 
     public GastosoRestClient(final URI serverUri) {
-
-        try {
-            
-            final SSLContext sslContext = SSLContext.getDefault();
-            this.client =
-                ClientBuilder
-                    .newBuilder()
-                    .sslContext(sslContext)
-                    .register(GastosoMessageBodyReader.class)
-                    .register(GastosoMessageBodyWriter.class)
-                    .register(FatosMessageBodyReader.class)
-                    .register(LancamentosMessageBodyReader.class)
-                    .register(SaldosMessageBodyReader.class)
-                    .register(USER_AGENT_FILTER)
-                    .register(authFilter)
-                    .build();
-
-            rootWebTarget = client.target(serverUri);
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new GastosoSystemRTException(e);
-        }
+        super(
+            APPLICATION_GASTOSO_PATCH_TYPE, 
+            APPLICATION_GASTOSO_FULL_TYPE, 
+            EXCEPTION_DEALER);
+        
+        this.rootWebTarget = 
+            super.start(serverUri, "gastoso-cli", configurator);
         
         this.contasWebTarget = rootWebTarget.path("contas");
         this.fatosWebTarget = rootWebTarget.path("fatos");
@@ -159,7 +155,7 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
     } 
     
     public boolean login (final String user, final String password) 
-            throws GastosoResponseException {
+            throws RESTResponseException {
 
         if(this.authToken != null) throw new IllegalStateException();
 
@@ -178,7 +174,7 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
                 this.authToken = 
                     readEntity(response, AuthToken.class).token;
             }
-        } catch (GastosoResponseException e){
+        } catch (RESTResponseException e){
             if(e.getStatusInfo().getStatusCode() 
                 != Response.Status.UNAUTHORIZED.getStatusCode()){
                 throw e;
@@ -254,7 +250,6 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
             saldosWebTarget, 
             filtro);
     }
-    
 
     private static final BiFunction<WebTarget, FiltroFatos, WebTarget> 
         FILL_PARAM_FATOS =
@@ -281,7 +276,6 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
         (saldosWebTarget,filtro) -> {
             return saldosWebTarget
                 .queryParam("dia", filtro.getDia().format(ISO_DATE));
-                    
         };
     
     private static final BiFunction<WebTarget, FiltroLancamentos, WebTarget> 
@@ -372,172 +366,7 @@ public class GastosoRestClient implements GastosoSystemExtended, Closeable {
         return create(lancamentosWebTarget,lancamento,Lancamento.class);
     }
 
-    private static <E,F> List<E> get(
-            final BiFunction<WebTarget, F, WebTarget> fillParams,
-            final GenericType<List<E>> genericType,
-            final MediaType mediaType,
-            final WebTarget webTarget,
-            final F filtro) 
-                throws GastosoSystemException {
-        
-        final List<E> entities;
-        
-        final Response response = 
-            requestOperation(
-                fillParams.apply(webTarget, filtro), 
-                Invocation.Builder::buildGet,
-                mediaType);
-        
-        try {
-            entities = response.readEntity(genericType);
-        } catch (ProcessingException pe){
-            throw new GastosoSystemRTException(pe);
-        }
-        
-        return entities;
-    }
-    
-    private <E extends Identifiable<? extends Object>> E get(
-        final WebTarget baseWebTarget, 
-        final Class<E> klass,
-        final int id) 
-            throws GastosoSystemException{
-
-        final Response response = 
-            requestOperation(
-                baseWebTarget.resolveTemplate("id", id), 
-                Invocation.Builder::buildGet,
-                APPLICATION_GASTOSO_FULL_TYPE);
-        
-        return readEntity(response, klass);
-    }
-    
-    private static <E extends Identifiable<? extends Object>> E update(
-            final WebTarget baseWebTarget, 
-            final E entidade,
-            final Class<E> klass) 
-                throws GastosoSystemException {
-
-        return post(
-            baseWebTarget.resolveTemplate("id", entidade.getId()), 
-            entidade, 
-            klass);
-    }
-
-    private static <E extends Identifiable<? extends Object>> E create(
-            final WebTarget baseWebTarget, 
-            final E entidade,
-            final Class<? extends E> klass)
-        throws GastosoSystemException {
-
-        return post(baseWebTarget,entidade,klass);
-    }
-
-    private static void delete(final WebTarget baseWebTarget, int id) 
-            throws GastosoSystemException {
-        
-        requestOperation(
-            baseWebTarget.resolveTemplate("id", id), 
-            Invocation.Builder::buildDelete,
-            MediaType.WILDCARD_TYPE);
-    }
-    
-    private static<E extends Identifiable<? extends Object>> E post(
-        final WebTarget webTarget,
-        final E entidade,
-        final Class<? extends E> klass) 
-            throws GastosoSystemException{
-        
-        final Entity<E> entity = 
-            Entity.entity(entidade, APPLICATION_GASTOSO_PATCH_TYPE);
-    
-        final Response response = 
-            requestOperation(
-                webTarget, 
-                b -> b.buildPost(entity), 
-                APPLICATION_GASTOSO_FULL_TYPE);
-        
-        return readEntity(response, klass);
-    }
-
-    private static Response requestOperation(
-            final WebTarget webTarget,
-            final Function<Invocation.Builder,Invocation> invocFunc,
-            final MediaType acceptedMediaType) 
-                throws GastosoSystemException{
-
-        final Invocation.Builder resourceBuilder = 
-                webTarget
-                    .request()
-                    .accept(acceptedMediaType);
-        
-        final Invocation invocation = invocFunc.apply(resourceBuilder);
-        
-        final Response response;
-                
-        try {
-            response = invoke(invocation);
-        } catch (GastosoResponseException e){
-            if(e.getStatusInfo().getStatusCode() 
-                == Response.Status.NOT_FOUND.getStatusCode()){
-                throw new NotFoundException(e);
-            }
-            throw new GastosoSystemException(e);
-        }
-        return response;
-    }
-    
-    /**
-     * Chama o método {@link Invocation#invoke() invoke} do Invocation 
-     * passado, tratando as exceções.
-     * 
-     * @param invocation Uma instância qualquer de {@link Invocation}.
-     * @return A resposta da requisição.
-     */
-    private static Response invoke(final Invocation invocation) 
-                throws GastosoResponseException {
-    
-        final Response response; 
-        try {
-            response = invocation.invoke();
-        } catch (ProcessingException pe){
-            Throwable cause = pe.getCause();
-            if(cause instanceof ConnectException){
-                throw 
-                    new GastosoSystemRTException(
-                            "Servidor fora do ar.",
-                            pe,
-                            SERVIDOR_FORA);
-            }
-            throw new GastosoSystemRTException("Impossível lidar.",pe);
-        }
-        
-        final Response.StatusType statusInfo = response.getStatusInfo();
-
-        if(statusInfo.getFamily() != Response.Status.Family.SUCCESSFUL){
-            throw new GastosoResponseException(statusInfo);
-        }
-        
-        return response;
-    }
-    
-    private static <E> E readEntity(
-            final Response response, 
-            final Class<E> klass) {
-
-        final E entity;
-        
-        try {
-            entity = response.readEntity(klass);
-        } catch (ProcessingException pe){
-            throw new GastosoSystemRTException(pe);
-        }
-        
-        return entity;
-    }   
-    
-    @Override
-    public void close() {
-        this.client.close();
+    private String getAuthToken() {
+        return this.authToken;
     }
 }
