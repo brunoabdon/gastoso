@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
@@ -28,6 +29,9 @@ public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
+    private static final Preferences prefs = 
+        Preferences.userNodeForPackage(Main.class);
+    
     public static void main(String[] args) {
 
         ConsoleReader console = null;
@@ -35,10 +39,12 @@ public class Main {
         
         try {
 
-            console = new ConsoleReader();
+            console = buildConsole();
 
-            restoreCommandHistory(console);
-
+            if(args.length > 0 && args[0].equals("--askURI")){ //improve this
+                askForURI(console);
+            }
+            
             gastosoSystem = inicializaSistema(console);
 
             final GastosoCharacterCommand gastosoCharacterCommand = 
@@ -78,24 +84,66 @@ public class Main {
         }
     }
 
-    private static GastosoRestClient inicializaSistema(
-            final ConsoleReader console) 
-        throws GastosoSystemRTException, IOException {
+    private static ConsoleReader buildConsole() throws IOException {
+        
+        final ConsoleReader console = new ConsoleReader();
+        
+        final String userHome = System.getProperty("user.home");
+        final File gastosoDir = 
+            FileSystems.getDefault().getPath(userHome,".gastoso").toFile();
 
-        final GastosoRestClient gastosoRestClient;
+        if(gastosoDir.exists() || gastosoDir.mkdir()){
+            if(gastosoDir.canRead() && gastosoDir.canWrite()){
+                final File histFile = new File(gastosoDir, "gastoso_history");
+                final History history = new FileHistory(histFile);
 
-        String uriStr = System.getenv("ABD_GASTOSO_SRV_URI");
-        if(StringUtils.isBlank(uriStr)) uriStr = "http://localhost:5000/";
-
-        try {
-            final URI uri = new URI(uriStr);
-            gastosoRestClient = inicializaSistema(console,uri);
-        } catch (URISyntaxException e) {
-            throw new GastosoSystemRTException(e);
+                console.setHistory(history);
+            }
         }
         
-        return gastosoRestClient;
+        return console;
+    }
+
+    private static GastosoRestClient inicializaSistema(
+            final ConsoleReader console) throws IOException {
+
+        String uriStr = prefs.get(SERVER_URI_PREF, null);
+        URI uri;
+        try {
+            uri = 
+                uriStr == null
+                    ? askForURI(console)
+                    : new URI(uriStr);
+        } catch(URISyntaxException e){
+            log.severe("Preference file is corrupted.");
+            uri = askForURI(console);
+        }
+
+        return inicializaSistema(console,uri);
+    }
+    
+    private static URI askForURI(ConsoleReader console) throws IOException {
+
+        URI uri = null;
+        
+        String uriStr = console.readLine("Gastoso's Server's URI:");
+        
+        boolean ainda = true;
+        while(ainda) {
+            try {
+                uri = new URI(uriStr);
+                if(ainda = uri.isOpaque()){
+                    uriStr = console.readLine("Invalid Opaque URI. Try again:");
+                } else {
+                    prefs.put(SERVER_URI_PREF, uriStr);
+                }
+            } catch (URISyntaxException e) {
+                uriStr = console.readLine("Invalid URI. Try again:");
+            }
+        }
+        return uri;
     }    
+    private static final String SERVER_URI_PREF = "serverUri";
     
     private static GastosoRestClient inicializaSistema(
             final ConsoleReader console, final URI uri) 
@@ -154,30 +202,6 @@ public class Main {
 
         return gastosoRestClient;
     }
-
-    private static void restoreCommandHistory(final ConsoleReader console) 
-            throws IOException {
-
-        final String userHome = System.getProperty("user.home");
-        final File gastosoDir = 
-            FileSystems.getDefault().getPath(userHome,".gastoso").toFile();
-
-        if(gastosoDir.exists() || gastosoDir.mkdir()){
-            restoreCommandHistory(console, gastosoDir);
-        }
-
-    }
-
-    private static void restoreCommandHistory(
-        final ConsoleReader console, final File gastosoDir) throws IOException {
-
-        if(gastosoDir.canRead() && gastosoDir.canWrite()){
-            final File histFile = new File(gastosoDir, "gastoso_history");
-            final History history = new FileHistory(histFile);
-
-            console.setHistory(history);
-        }
-    }    
 
     private static void printWellcome(PrintWriter writer) {
         writer.println(
