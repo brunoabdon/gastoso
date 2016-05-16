@@ -57,7 +57,6 @@ public class DiaHelper {
                 diferenca <= -6 || (diferenca >= 0 && diferenca <= 6)
                     ? previousOrSame(mes)
                     : next(mes);
-            ;
             return temporal.with(adjuster);
         };
     }

@@ -51,11 +51,9 @@ import br.nom.abdon.gastoso.cli.parser.GastosoCliLexer;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.CommandContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.ContaContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.DiaContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.IdContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.LineCommandContext;
 import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.PeriodoContext;
-import br.nom.abdon.gastoso.cli.parser.GastosoCliParser.TextArgContext;
 
 import br.nom.abdon.gastoso.ext.FatoDetalhado;
 import br.nom.abdon.gastoso.ext.Saldo;
@@ -113,7 +111,6 @@ public class GastosoCharacterCommand {
                 : null;
     }
 
-
     public boolean command(final String commandLine) throws IOException{
 
         boolean ok;
@@ -132,7 +129,7 @@ public class GastosoCharacterCommand {
         parser.removeErrorListeners();
 
         try {
-            commandCtx = parser.command();
+            commandCtx = parser.command();  //reusavel?
             processCommand(commandCtx);
             ok = true;
 
@@ -160,10 +157,7 @@ public class GastosoCharacterCommand {
             } catch (GastosoSystemException | GastosoSystemRTException ex) {
                 final String msg = 
                     (ex instanceof GastosoSystemException)
-                        ? "Erro" 
-                        : (ex instanceof GastosoSystemRTException)
-                            ? "Problema"
-                            : "Bronca";
+                        ? "Erro" : "Problema";
 
                 writer.println(msg + ": " + ex.getMessage());
                 log.log(Level.FINEST, ex, () -> "Impossível processar.");
@@ -590,8 +584,5 @@ public class GastosoCharacterCommand {
             throws CLIException{
         
         if((this.fato == null) == deveTerFato) throw new CLIException(errMsg);
-    }
-    
-    
-    
+    }   
 }
