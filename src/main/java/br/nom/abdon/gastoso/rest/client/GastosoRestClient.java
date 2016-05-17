@@ -16,7 +16,6 @@
  */
 package br.nom.abdon.gastoso.rest.client;
 
-import java.io.Closeable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -71,7 +70,7 @@ import br.nom.abdon.gastoso.system.NotFoundException;
  * @author Bruno Abdon
  */
 public class GastosoRestClient extends AbstractRestClient<GastosoSystemException> 
-        implements GastosoSystemExtended, Closeable {
+        implements GastosoSystemExtended {
 
     private static final Logger log = 
         Logger.getLogger(GastosoRestClient.class.getName());
@@ -114,7 +113,6 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
 
     private final ClientRequestFilter authFilter = 
         (reqContx) -> reqContx.getHeaders().add("X-Abd-auth_token", authToken);
-    
 
     private static final Consumer<ClientBuilder> STATIC_CONFIGURATOR = 
         cb -> 
