@@ -49,6 +49,7 @@ import br.nom.abdon.gastoso.ext.system.GastosoSystemExtended;
 
 import br.nom.abdon.gastoso.rest.MediaTypes;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
+import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
 import br.nom.abdon.gastoso.rest.serial.FatosMessageBodyReader;
@@ -138,7 +139,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
             APPLICATION_GASTOSO_PATCH_TYPE, 
             APPLICATION_GASTOSO_FULL_TYPE, 
             EXCEPTION_DEALER);
-        
+
         this.rootWebTarget = 
             super.start(serverUri, "gastoso-cli", configurator);
         
@@ -234,7 +235,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
         return get(
             FILL_PARAM_LANCAMENTOS, 
             LANCAMENTO_GEN_TYPE,
-            APPLICATION_GASTOSO_FULL_TYPE,
+            APPLICATION_GASTOSO_NORMAL_TYPE,
             lancamentosWebTarget, 
             filtro);
     }
