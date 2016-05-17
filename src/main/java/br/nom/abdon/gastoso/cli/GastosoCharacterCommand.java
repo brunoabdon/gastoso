@@ -578,9 +578,7 @@ public class GastosoCharacterCommand {
         assertFato(false,FATO_NO_CONTEXTO);
     }
     
-    private void assertFato(
-            final boolean deveTerFato,
-            final String errMsg) 
+    private void assertFato(final boolean deveTerFato, final String errMsg) 
             throws CLIException{
         
         if((this.fato == null) == deveTerFato) throw new CLIException(errMsg);

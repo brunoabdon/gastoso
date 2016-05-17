@@ -33,9 +33,13 @@ dia:
     | DE_HOJE_A_OITO
     | DE_HOJE_A_QUINZE
     | (DOM | SEG | TER | QUA | QUI | SEX | SAB) (WS varianteMasc)?
+    | mesISO '/' INT
 ;
 
-mes: (JAN | FEV | MAR | ABR | MAI | JUN | JUL | AGO | SET | OUT | NOV | DEZ) (WS varianteMasc)?;
+mes: (JAN | FEV | MAR | ABR | MAI | JUN | JUL | AGO | SET | OUT | NOV | DEZ) (WS varianteMasc)?
+     | mesISO;
+
+mesISO: INT '/' INT;
 
 ano: INT | ANO (WS varianteMasc);
 
@@ -44,7 +48,7 @@ varianteFem: QUE_VEM | PASSADA;
 
 periodo: periodoSimples | peridoComplexo;
 
-peridoComplexo: 'de' WS periodoSimples WS ATE WS periodoSimples;
+peridoComplexo: DE WS periodoSimples WS ATE WS periodoSimples;
 
 periodoSimples :
     dia 
@@ -133,6 +137,7 @@ QUE_VEM: 'que vem';
 PASSADA: 'passada';
 PASSADO: 'passado';
 
+DE: 'de' | 'desde';
 ATE: 'a' | 'ate' | 'pra';
 
 fragment ALPHA: [a-zA-Z];
@@ -144,6 +149,8 @@ CENTAVOS: ',' DIGIT DIGIT;
 MENOS: '-';
 WORD: ALPHA (ALPHA|DIGIT)*;
 
-TEXT: ASPAS (WS | . )+ ASPAS;
+TEXT: ASPAS (W | . )+? ASPAS;
 
-WS : [ \t\r\n]+; 
+WS : W+; 
+
+W: [ \t\r\n];
