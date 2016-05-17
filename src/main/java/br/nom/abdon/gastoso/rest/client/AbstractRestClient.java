@@ -224,6 +224,9 @@ class AbstractRestClient <T extends Throwable> implements Closeable{
      * 
      * @param invocation Uma instância qualquer de {@link Invocation}.
      * @return A resposta da requisição.
+     * @throws RESTResponseException se a resposta da requisição não for
+     * da família 200.
+     * 
      */
     protected Response invoke(final Invocation invocation) 
                 throws RESTResponseException {
