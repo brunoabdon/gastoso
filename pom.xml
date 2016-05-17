@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.brunoabdon</groupId>
+        <artifactId>Abdonia</artifactId>
+        <version>1.0-SNAPSHOT</version>
+     </parent>
+
     <groupId>com.github.brunoabdon</groupId>
     <artifactId>gastoso-cli</artifactId>
 
@@ -18,14 +25,6 @@
             <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
         </license>
     </licenses>  
-
-    <developers>
-        <developer>
-            <name>Bruno</name>
-            <organization>Abdonia</organization>
-            <organizationUrl>https://github.com/abdonia</organizationUrl>
-        </developer>
-    </developers>    
 
     <dependencyManagement>
         <dependencies>
@@ -85,11 +84,6 @@
         </dependency>
         <dependency>
           <groupId>com.github.brunoabdon</groupId>
-          <artifactId>gastoso-rest</artifactId>
-          <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-          <groupId>com.github.brunoabdon</groupId>
           <artifactId>gastoso-rest-client</artifactId>
           <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -110,36 +104,6 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>2.6</version>
-            <configuration>
-                <archive>
-                    <manifest>
-                        <mainClass>${mainClass}</mainClass>
-                    </manifest>
-                </archive>
-            </configuration>
-        </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.4.0</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                </execution>
-            </executions>
-            <configuration>
-                <mainClass>${mainClass}</mainClass>
-                <!-- the use of java.util.prefs.Preferences may cause weird
-                     error messages without this...-->
-                <cleanupDaemonThreads>false</cleanupDaemonThreads>
-            </configuration>
-        </plugin>            
       </plugins>
     </build>
     <properties>
@@ -148,6 +112,5 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <mainClass>br.nom.abdon.gastoso.cli.Main</mainClass>
         <jackson.version>2.7.4</jackson.version>
-
     </properties>
 </project>
