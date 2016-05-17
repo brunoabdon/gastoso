@@ -113,9 +113,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     private String authToken = null;
 
     private final ClientRequestFilter authFilter = 
-        (reqContx) -> reqContx
-                        .getHeaders()
-                        .add("X-Abd-auth_token", getAuthToken());
+        (reqContx) -> reqContx.getHeaders().add("X-Abd-auth_token", authToken);
     
 
     private static final Consumer<ClientBuilder> STATIC_CONFIGURATOR = 
@@ -365,9 +363,5 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     public Lancamento create(final Lancamento lancamento) 
             throws GastosoSystemException {
         return create(lancamentosWebTarget,lancamento,Lancamento.class);
-    }
-
-    private String getAuthToken() {
-        return this.authToken;
     }
 }
