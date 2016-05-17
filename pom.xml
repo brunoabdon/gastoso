@@ -3,6 +3,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>com.github.brunoabdon</groupId>
+        <artifactId>Abdonia</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
     <groupId>br.nom.abdon</groupId>
     <artifactId>gastoso-webapp</artifactId>
     <packaging>war</packaging>
@@ -66,7 +72,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.4.1207.jre7</version>
+            <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -109,18 +115,6 @@
     <build>
         <finalName>gastoso-webapp</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <inherited>true</inherited>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgument>-proc:none</compilerArgument>
-                </configuration>
-            </plugin>
-            
             <plugin>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
@@ -196,6 +190,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jetty.version>9.3.8.v20160314</jetty.version>
         <hibernate.version>4.3.11.Final</hibernate.version>
-        <postgresql.version>9.4.1207.jre7</postgresql.version>
+        <postgresql.version>9.4.1208.jre7</postgresql.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 </project>
