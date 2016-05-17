@@ -23,10 +23,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.fasterxml.jackson.core.JsonParser;
-import pl.touk.throwing.ThrowingConsumer;
 import pl.touk.throwing.ThrowingFunction;
 
-import br.nom.abdon.gastoso.Fato;
 import br.nom.abdon.rest.providers.CollectionMessageBodyReader;
 
 /**
