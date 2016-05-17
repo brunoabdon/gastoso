@@ -7,10 +7,8 @@ import br.nom.abdon.rest.AbstractRestCrud;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -18,9 +16,7 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -31,13 +27,12 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import br.nom.abdon.dal.DalException;
-import br.nom.abdon.dal.EntityNotFoundException;
-import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
 import br.nom.abdon.gastoso.rest.server.dal.FatosDetalhadosDao;
-import br.nom.abdon.gastoso.rest.FatoDetalhado;
+
+import br.nom.abdon.gastoso.ext.FatoDetalhado;
+
 import br.nom.abdon.gastoso.rest.MediaTypes;
-import br.nom.abdon.gastoso.system.FiltroContas;
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
 
@@ -122,7 +117,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
                 .entrySet()
                 .parallelStream()
                 .map(e -> new FatoDetalhado(e.getKey(), e.getValue()))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toList());
             
             fatosNormais.sort(
                 (f1,f2) -> {
@@ -162,114 +157,22 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         return new FatoDetalhado(fato, lancamentos);
     }
 
-    @POST
-    @Path("{fatoId}/{contaId}")
-    public Response atualizar(
-            final @PathParam("fatoId") Integer fatoId, 
-            final @PathParam("contaId") Integer contaId, 
-            final Lancamento lancamento){
-        
-        Response response;
-
-        if(lancamento == null){
-            response = ERROR_MISSING_ENTITY;
-            
-        } else {
-
-            final Fato fato = new Fato(fatoId);
-            final Conta conta = new Conta(contaId);            
-            final int valor = lancamento.getValor();
-            
-            final EntityManager entityManager = emf.createEntityManager();
-
-            try {
-                entityManager.getTransaction().begin();
-
-                final FiltroFatos filtroFatos = new FiltroFatos();
-                filtroFatos.setFato(fato);
-                
-                final FiltroContas filtroContas = new FiltroContas();
-                filtroContas.setConta(conta);
-                
-                final FiltroLancamentos filtroLancamentos = 
-                    new FiltroLancamentos();
-                filtroLancamentos.setFiltroFatos(filtroFatos);
-                filtroLancamentos.setFiltroContas(filtroContas);
-                
-                Lancamento lancamentoResultado;
-                
-                try { 
-                    final Lancamento lancamentoOriginal = 
-                        lancamentosDao
-                        .findUnique(
-                            entityManager, 
-                            filtroLancamentos);
-
-                    lancamentoOriginal.setValor(valor);
-                    final Conta contaNova = lancamento.getConta();
-                    if(contaNova != null) 
-                        lancamentoOriginal.setConta(contaNova);
-
-                    lancamentoResultado = 
-                        lancamentosDao
-                            .atualizar(
-                                entityManager,
-                                lancamentoOriginal);
-                    
-                } catch (EntityNotFoundException ex){
-                    log.log(
-                        Level.INFO, 
-                        ex, 
-                        () -> "Criando lancamento pra conta " 
-                                + contaId 
-                                + " no fato " 
-                                + fatoId
-                                + ".");
-
-                    final Lancamento novoLancamento =
-                        new Lancamento(fato, conta, valor);
-
-                    lancamentosDao.criar(entityManager, novoLancamento);
-                    entityManager.refresh(novoLancamento);
-                    lancamentoResultado = novoLancamento;
-                }
-
-                entityManager.getTransaction().commit();
-
-                response = Response.ok(lancamentoResultado).build();
-
-            } catch (DalException e) {
-                log.log(Level.FINE, e, 
-                    () -> "Erro ao criar ou atualizar lancamento em "
-                        + fatoId + "/"+ contaId
-                );
-
-                response =
-                    Response.status(Response.Status.CONFLICT)
-                            .entity(e.getMessage())
-                            .build();
-            } finally {
-                entityManager.close();
-            }
-        }
-        return response;
-    }
-
-    @Override
-    protected Fato prepararAtualizacao(
-            final EntityManager entityManager, 
-            final Fato fato, 
-            final Integer id) {
-        
-        final Fato fatoOriginal = entityManager.find(Fato.class, id);
-        
-        final LocalDate dia = fato.getDia();
-        final String descricao = fato.getDescricao();
-        
-        if(dia != null) fatoOriginal.setDia(fato.getDia());
-        if(descricao != null) fatoOriginal.setDescricao(descricao);
-        
-        return fatoOriginal;
- 
-    }
+//    @Override
+//    protected Fato prepararAtualizacao(
+//            final EntityManager entityManager, 
+//            final Fato fato, 
+//            final Integer id) {
+//        
+//        final Fato fatoOriginal = entityManager.find(Fato.class, id);
+//        
+//        final LocalDate dia = fato.getDia();
+//        final String descricao = fato.getDescricao();
+//        
+//        if(dia != null) fatoOriginal.setDia(fato.getDia());
+//        if(descricao != null) fatoOriginal.setDescricao(descricao);
+//        
+//        return fatoOriginal;
+// 
+//    }
+    
 }

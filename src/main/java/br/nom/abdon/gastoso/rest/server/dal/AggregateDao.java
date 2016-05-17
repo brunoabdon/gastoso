@@ -16,6 +16,7 @@
  */
 package br.nom.abdon.gastoso.rest.server.dal;
 
+
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,8 +41,11 @@ import javax.persistence.criteria.Root;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.gastoso.Conta;
 import br.nom.abdon.gastoso.Lancamento;
-import br.nom.abdon.gastoso.rest.Saldo;
+
+import br.nom.abdon.gastoso.ext.Saldo;
+
 import br.nom.abdon.gastoso.dal.DalUtil;
+import br.nom.abdon.gastoso.ext.system.FiltroSaldos;
 
 /**
  *
@@ -58,7 +62,7 @@ public class AggregateDao {
     
     public Saldo findSaldo(
             final EntityManager em, 
-            Conta conta, 
+            final Conta conta, 
             final LocalDate dia) 
         throws DalException{
         
@@ -84,7 +88,7 @@ public class AggregateDao {
     
     public List<Saldo> list(
             final EntityManager em, 
-            final FiltroSaldo filtro)
+            final FiltroSaldos filtro)
         throws DalException{
         final CriteriaBuilder cb = em.getCriteriaBuilder();
         
@@ -143,19 +147,19 @@ public class AggregateDao {
     }
 
     private List<Order> buildOrdenacao(
-            final FiltroSaldo filtro, 
+            final FiltroSaldos filtro, 
             final Root<?> root, 
             final CriteriaBuilder cb) {
         
         final List<Order> orders;
         
-        final List<FiltroSaldo.ORDEM> ordem = filtro.getOrdem();
+        final List<FiltroSaldos.ORDEM> ordem = filtro.getOrdem();
         if(ordem == null || ordem.isEmpty()){
             orders = Collections.emptyList();
         } else {
             orders = new LinkedList<>();
             
-            for(FiltroSaldo.ORDEM itemOrdenacao : ordem) {
+            for(FiltroSaldos.ORDEM itemOrdenacao : ordem) {
                 final Path path;
                 
                 switch(itemOrdenacao){

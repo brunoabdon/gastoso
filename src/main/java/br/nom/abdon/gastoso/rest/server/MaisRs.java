@@ -41,9 +41,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import br.nom.abdon.dal.DalException;
 import br.nom.abdon.dal.EntityNotFoundException;
 import br.nom.abdon.gastoso.Conta;
-import br.nom.abdon.gastoso.rest.Saldo;
+
+import br.nom.abdon.gastoso.ext.Saldo;
+import br.nom.abdon.gastoso.ext.system.FiltroSaldos;
+import static br.nom.abdon.gastoso.ext.system.FiltroSaldos.ORDEM.POR_CONTA;
+
 import br.nom.abdon.gastoso.rest.server.dal.AggregateDao;
-import br.nom.abdon.gastoso.rest.server.dal.FiltroSaldo;
+
+
 import br.nom.abdon.gastoso.rest.MediaTypes;
 
 
@@ -117,9 +122,9 @@ public class MaisRs {
         
         try {
 
-            final FiltroSaldo filtroSaldo = new FiltroSaldo();
+            final FiltroSaldos filtroSaldo = new FiltroSaldos();
             filtroSaldo.setDia(dia);
-            filtroSaldo.addOrdem(FiltroSaldo.ORDEM.POR_CONTA);
+            filtroSaldo.addOrdem(POR_CONTA);
             
             final List<Saldo> saldos = 
                 aggregateDao.list(entityManager, filtroSaldo);
