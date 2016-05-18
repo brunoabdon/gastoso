@@ -77,34 +77,34 @@ import br.nom.abdon.util.Periodo;
  */
 class GastosoCharacterCommand {
 
-    private static final Logger log  = 
+    private static final Logger log  =
         Logger.getLogger(GastosoCharacterCommand.class.getName());
 
     private static final String NO_FATO_NO_CONTEXTO = "Nenhum fato no contexto";
     private static final String FATO_NO_CONTEXTO = "Já existe um fato";
-    
+
     private final PrintWriter writer;
     private final GastosoSystem gastosoSystem;
     private final GastosoSystemExtended gastosoSystemExt;
-    
+
     private Periodo periodo;
 
     private Fato fato;
     private Map<Integer,Lancamento> mapContaLancamento = new HashMap<>();
 
     private final Map<String,Integer> nicks = new HashMap();
-    
+
     private final boolean extSupported;
-    
+
     public GastosoCharacterCommand(
-            final GastosoSystem gastosoSystem, 
+            final GastosoSystem gastosoSystem,
             final Writer writer) {
 
         this.gastosoSystem = gastosoSystem;
         this.writer = new PrintWriter(writer);
         this.periodo = essaSemana();
-        
-        this.gastosoSystemExt = 
+
+        this.gastosoSystemExt =
             (this.extSupported = gastosoSystem instanceof GastosoSystemExtended)
                 ? (GastosoSystemExtended) gastosoSystem
                 : null;
@@ -121,7 +121,7 @@ class GastosoCharacterCommand {
         final GastosoCliLexer hl = new GastosoCliLexer(cs);
 
         final CommonTokenStream tokens = new CommonTokenStream(hl);
-        
+
         final GastosoCliParser parser = new GastosoCliParser(tokens);
 
         parser.setErrorHandler(new BailErrorStrategy());
@@ -144,7 +144,7 @@ class GastosoCharacterCommand {
 
         if(commandCtx.exception == null){
 
-            final GastosoCliParser.LineCommandContext lineCommandCtx = 
+            final GastosoCliParser.LineCommandContext lineCommandCtx =
                 commandCtx.lineCommand();
 
             try {
@@ -154,7 +154,7 @@ class GastosoCharacterCommand {
             } catch (NotFoundException ex){
                 writer.println("Não existe");
             } catch (GastosoSystemException | GastosoSystemRTException ex) {
-                final String msg = 
+                final String msg =
                     (ex instanceof GastosoSystemException)
                         ? "Erro" : "Problema";
 
@@ -163,38 +163,38 @@ class GastosoCharacterCommand {
             }
         }
     }
-    private void commandLineCommand(final LineCommandContext lineCommandCtx) 
+    private void commandLineCommand(final LineCommandContext lineCommandCtx)
             throws GastosoSystemException, CLIException{
 
         if(lineCommandCtx.CD() != null){
-            
+
             if(lineCommandCtx.PARENT() != null){
                 dispensaFato();
             } else {
                 final int id = CtxReader.extractId(lineCommandCtx.id());
-                
+
                 this.fato = gastosoSystem.getFato(id);
                 this.mapContaLancamento = new HashMap<>();
-                
+
                 final List<Lancamento> lancamentos;
-                
+
                 if(this.fato instanceof FatoDetalhado){
                     lancamentos = ((FatoDetalhado)this.fato).getLancamentos();
-                    
+
                 } else {
                     final FiltroLancamentos filtrol = new FiltroLancamentos();
                     filtrol.getFiltroFatos().setId(id);
-                
+
                     lancamentos = gastosoSystem.getLancamentos(filtrol);
                 }
-                
+
                 lancamentos.forEach(
                     l -> this.mapContaLancamento.put(l.getConta().getId(),l)
                 );
-                
+
                 printFato();
             }
-        
+
         } else if (lineCommandCtx.MKC() != null){
             final String nome = CtxReader.extractText(lineCommandCtx.textArg());
             Conta conta = new Conta(nome);
@@ -209,19 +209,19 @@ class GastosoCharacterCommand {
             final Integer id = extractContaId(contaCtx);
             gastosoSystem.deleteConta(id);
             writer.println("Conta deletada");
-            
+
         } else if (lineCommandCtx.MVC() != null){
             final int id = CtxReader.extractId(lineCommandCtx.id());
             final String nome = CtxReader.extractText(lineCommandCtx.textArg());
-            
+
             Conta conta = new Conta(id, nome);
-            
+
             conta = gastosoSystem.update(conta);
             writer.printf(
                 "Conta atualizada %d - %s\n",
                 conta.getId(),
                 conta.getNome());
-        
+
         } else if(lineCommandCtx.LS() != null){
 
             if(lineCommandCtx.CONTAS() != null){
@@ -230,12 +230,12 @@ class GastosoCharacterCommand {
                     filtroSaldos.setDia(LocalDate.now());
                     filtroSaldos.addOrdem(POR_CONTA);
 
-                    final List<Saldo> saldos = 
+                    final List<Saldo> saldos =
                         gastosoSystemExt.getSaldos(filtroSaldos);
 
                     writer.printf("Saldos em %s.\n\n",
                         filtroSaldos.getDia().format(ISO_DATE));
-                    
+
                     saldos.forEach(
                         s -> writer.printf(
                             "%s\t%s\n",
@@ -246,14 +246,14 @@ class GastosoCharacterCommand {
                     contas.forEach(c -> writer.println(formata(c)));
                 }
             } else {
-                final Periodo periodo = 
+                final Periodo periodo =
                     CtxReader.extract(lineCommandCtx.periodo(),this.periodo);
-                
+
                 final ContaContext contaCtx = lineCommandCtx.conta(0);
                 if(contaCtx != null){
-                    
+
                     final Integer idConta = extractContaId(contaCtx);
-                        
+
                     final FiltroLancamentos f = new FiltroLancamentos();
 
                     final FiltroFatos filtroFatos = f.getFiltroFatos();
@@ -262,7 +262,7 @@ class GastosoCharacterCommand {
 
                     f.getFiltroContas().setId(idConta);
 
-                    final List<Lancamento> lancamentos = 
+                    final List<Lancamento> lancamentos =
                         gastosoSystem.getLancamentos(f);
 
                     //usar cache...
@@ -287,16 +287,16 @@ class GastosoCharacterCommand {
                 }
             }
         } else if (lineCommandCtx.MKF() != null){
-            
+
             assertNoFato();
-            
-            this.fato = 
+
+            this.fato =
                 new Fato( //dia (default hoje), descricao
                     CtxReader.extractDia(lineCommandCtx.dia(), LocalDate::now),
                     CtxReader.extractText(lineCommandCtx.textArg()));
-            
+
             this.mapContaLancamento = new HashMap<>();
-            
+
             final ContaContext conta0Ctx = lineCommandCtx.conta(0);
             if(conta0Ctx != null){
 
@@ -309,9 +309,9 @@ class GastosoCharacterCommand {
 
                     final Integer idConta1 = extractContaId(conta1Ctx);
                     final Conta conta1 = new Conta(idConta1);
-                    final Lancamento saida = 
+                    final Lancamento saida =
                         new Lancamento(null, conta0, -valor);
-                    final Lancamento entrada = 
+                    final Lancamento entrada =
                         new Lancamento(null, conta1, valor);
 
                     mapContaLancamento.put(idConta0, entrada);
@@ -323,14 +323,14 @@ class GastosoCharacterCommand {
                 }
             }
             printFato();
-        } else if (lineCommandCtx.ENTRADA() != null 
+        } else if (lineCommandCtx.ENTRADA() != null
                 || lineCommandCtx.SAIDA() != null){
-            
+
             assertHasFato();
-            
+
             final Integer idConta = extractContaId(lineCommandCtx.conta(0));
             final Conta conta = new Conta(idConta);
-            final int valor = 
+            final int valor =
                 CtxReader.extract(lineCommandCtx.valor())
                 * ((lineCommandCtx.ENTRADA() != null) ? 1:-1);
             final Lancamento lancamento  = new Lancamento(this.fato, conta, valor);
@@ -339,11 +339,11 @@ class GastosoCharacterCommand {
             printFato();
 
         } else if(lineCommandCtx.NULL() != null){
-            
+
             assertHasFato();
-            
+
             mapContaLancamento.remove(extractContaId(lineCommandCtx.conta(0)));
-            
+
             printFato();
 
         } else if(lineCommandCtx.DIA() != null){
@@ -362,19 +362,19 @@ class GastosoCharacterCommand {
 
             printFato();
         } else if(lineCommandCtx.CANCEL() != null){
-            
+
             dispensaFato();
-            
+
         } else if (lineCommandCtx.RMF() != null){
             final Integer id = CtxReader.extractId(lineCommandCtx.id());
             gastosoSystem.deleteFato(id);
             writer.println("Fato deletado");
         } else if(lineCommandCtx.SAVE() != null){
-            
+
             assertHasFato();
-            
+
             final ThrowingUnaryOperator<Fato,GastosoSystemException> op;
-            
+
             final String verbo;
             if(this.fato.getId() == null){
                 op = gastosoSystem::create;
@@ -383,7 +383,7 @@ class GastosoCharacterCommand {
                 op = gastosoSystem::update;
                 verbo = "atualizado";
             }
-            
+
             final FatoDetalhado fatoDetalhado =
                 new FatoDetalhado(
                     this.fato,
@@ -391,59 +391,59 @@ class GastosoCharacterCommand {
 
             this.fato = null;
             this.mapContaLancamento = null;
-            
+
             final Fato fatoAtualizado = op.apply(fatoDetalhado);
-            
+
             writer.println(
                 String.format("Fato %s: %s", verbo,formata(fatoAtualizado)));
-            
+
         } else if(lineCommandCtx.LN() != null){
             final int id = CtxReader.extractId(lineCommandCtx.id());
-            
+
             final Conta conta = gastosoSystem.getConta(id);
-            
+
             final String nick = lineCommandCtx.WORD().getText();
             nicks.put(nick, id);
             writer.printf(
-                    "\"%s\" setado como apelido de \"%s\".\n", 
-                    nick, 
+                    "\"%s\" setado como apelido de \"%s\".\n",
+                    nick,
                     conta.getNome());
-            
+
         } else if(lineCommandCtx.RML() != null){
             final String nick = lineCommandCtx.WORD().getText();
             final Integer id  = nicks.remove(nick);
             writer.printf(
-                    id == null 
+                    id == null
                         ? "Não sei que é \"%s\".\n"
-                        : "Apelido \"%s\" removido\n.", 
+                        : "Apelido \"%s\" removido\n.",
                     nick);
-            
+
         } else if (lineCommandCtx.PERIODO() != null){
             final PeriodoContext periodoCtx = lineCommandCtx.periodo();
-            
+
             if(periodoCtx != null) this.periodo = CtxReader.extract(periodoCtx);
-            
+
             printPeriodo();
-        
+
         } else if(lineCommandCtx.MVF() != null){
 
-            final LocalDate dia = 
+            final LocalDate dia =
                 CtxReader.extractDia(lineCommandCtx.dia(),(LocalDate)null);
-            
-            final String desc = 
+
+            final String desc =
                 CtxReader.extractText(lineCommandCtx.textArg(),(String)null);
-            
+
             if(dia == null && desc == null){
                 throw new CLIException("Diga um dia ou uma descrição.");
             }
 
             final int id = CtxReader.extractId(lineCommandCtx.id());
-            
+
             Fato fato = gastosoSystem.getFato(id);
 
             fato.setDia(dia);
             fato.setDescricao(desc);
-            
+
             fato = gastosoSystem.update(fato);
 
             printFato(fato);
@@ -452,12 +452,12 @@ class GastosoCharacterCommand {
 
     private void dispensaFato() throws CLIException {
         assertHasFato();
-        
+
         final Fato fatoCancelado = this.fato;
-        
+
         this.fato = null;
         this.mapContaLancamento = null;
-        
+
         writer.printf("%s de \"%s\" cancelada.\n",
                 fatoCancelado.getId() != null? "Edição":"Criação",
                 fatoCancelado.getDescricao()
@@ -465,11 +465,11 @@ class GastosoCharacterCommand {
     }
 
     private void printFato(final Fato fato) {
-        
+
         final Integer fatoId = fato.getId();
-        
+
         writer.println(formata(fato));
-        
+
         if(fato instanceof FatoDetalhado){
             final List<Lancamento> lancamentos =
                     ((FatoDetalhado)fato).getLancamentos();
@@ -480,7 +480,7 @@ class GastosoCharacterCommand {
                 lancamentos.forEach(
                     l -> {
                         writer.printf(
-                            "  [%d/%d] - %s %s\n", 
+                            "  [%d/%d] - %s %s\n",
                             fatoId,
                             l.getConta().getId(),
                             l.getConta().getNome(),
@@ -493,15 +493,15 @@ class GastosoCharacterCommand {
     }
 
     private static String formata(final Fato fato) {
-        return fato.getId() 
-                + " - " + fato.getDia().format(DateTimeFormatter.ISO_DATE) 
+        return fato.getId()
+                + " - " + fato.getDia().format(DateTimeFormatter.ISO_DATE)
                 + " - " + fato.getDescricao();
     }
-    
+
     private static String formata(final Conta conta){
         return String.format("%2d - %s",conta.getId(),conta.getNome());
     }
-    
+
 
     private void printPeriodo() {
         this.printPeriodo(this.periodo);
@@ -531,7 +531,7 @@ class GastosoCharacterCommand {
 
         return new Periodo(domingoPassado, proximoSabado);
     }
-    
+
     private String formata(final Integer val){
         return formata((long)val);
     }
@@ -547,11 +547,11 @@ class GastosoCharacterCommand {
         printFato(this.fato);
     }
 
-    private Integer extractContaId(final ContaContext contaCtx) 
+    private Integer extractContaId(final ContaContext contaCtx)
             throws CLIException {
-        
+
         final Integer id;
-        
+
         final IdContext idContext = contaCtx.id();
 
         if(idContext != null){
@@ -569,14 +569,14 @@ class GastosoCharacterCommand {
     private void assertHasFato() throws CLIException{
         assertFato(true,NO_FATO_NO_CONTEXTO);
     }
-    
+
     private void assertNoFato() throws CLIException{
         assertFato(false,FATO_NO_CONTEXTO);
     }
-    
-    private void assertFato(final boolean deveTerFato, final String errMsg) 
+
+    private void assertFato(final boolean deveTerFato, final String errMsg)
             throws CLIException{
-        
+
         if((this.fato == null) == deveTerFato) throw new CLIException(errMsg);
-    }   
+    }
 }

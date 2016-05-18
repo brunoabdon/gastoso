@@ -55,10 +55,10 @@ import br.nom.abdon.gastoso.cli.util.DiaHelper;
 class CtxReader {
      static enum Variante {PASSADO, QUE_VEM};
 
-    private static final TemporalAdjuster COMECO_DO_MES_ADJSTR = 
+    private static final TemporalAdjuster COMECO_DO_MES_ADJSTR =
         TemporalAdjusters.firstDayOfMonth();
 
-    private static final TemporalAdjuster COMECO_DO_ANO_ADJSTR = 
+    private static final TemporalAdjuster COMECO_DO_ANO_ADJSTR =
         TemporalAdjusters.firstDayOfYear();
 
 
@@ -99,19 +99,19 @@ class CtxReader {
     }
 
     public static LocalDate extractDia(
-        final DiaContext diaCtx, final LocalDate fallback) 
+        final DiaContext diaCtx, final LocalDate fallback)
             throws CLIException {
         return diaCtx == null ? fallback : extractDia(diaCtx);
     }
 
     public static LocalDate extractDia(
-        final DiaContext diaCtx, 
-        final Supplier<LocalDate> fallback) 
+        final DiaContext diaCtx,
+        final Supplier<LocalDate> fallback)
             throws CLIException {
         return diaCtx == null ? fallback.get() : extractDia(diaCtx);
     }
 
-    public static LocalDate extractDia(final DiaContext diaCtx) 
+    public static LocalDate extractDia(final DiaContext diaCtx)
             throws CLIException {
 
         final LocalDate hoje = LocalDate.now();
@@ -134,14 +134,14 @@ class CtxReader {
                                         : diaCtx.varianteMasc() != null
                                             ? extractDiaDaSemanaRef(diaCtx)
                                             : LocalDate.now().with(
-                                                DiaHelper.diaDaSemanaMaisPerto( 
+                                                DiaHelper.diaDaSemanaMaisPerto(
                                                     extractDiaDaSemana(diaCtx)))
         ;
     }
 
-    private static LocalDate extractDiaIso(final DiaContext diaCtx) 
+    private static LocalDate extractDiaIso(final DiaContext diaCtx)
             throws CLIException {
-        final LocalDate dia; 
+        final LocalDate dia;
         try {
             dia = extract(diaCtx.mesISO()).atDay(asInt(diaCtx.INT()));
         } catch (DateTimeException e){
@@ -153,7 +153,7 @@ class CtxReader {
     private static DayOfWeek extractDiaDaSemana(
             final  DiaContext diaCtx) {
 
-        return pick(DayOfWeek.values(), 
+        return pick(DayOfWeek.values(),
                 diaCtx.SEG(),
                 diaCtx.TER(),
                 diaCtx.QUA(),
@@ -167,38 +167,38 @@ class CtxReader {
 
         final DayOfWeek diaDaSemana = extractDiaDaSemana(diaCtx);
 
-        final Variante variante = 
+        final Variante variante =
             extractVariante(diaCtx.varianteMasc());
 
-        return  
+        return
             LocalDate.now().with(
-                variante == Variante.QUE_VEM 
+                variante == Variante.QUE_VEM
                     ? TemporalAdjusters.next(diaDaSemana)
-                    : TemporalAdjusters.previous(diaDaSemana));       
+                    : TemporalAdjusters.previous(diaDaSemana));
     }
 
     private static Variante extractVariante(
             final VarianteMascContext varianteMascCtx) {
 
         return varianteMascCtx.PASSADO() != null
-                ? Variante.PASSADO 
+                ? Variante.PASSADO
                 : Variante.QUE_VEM;
     }
 
     public static Periodo extract(
-        final PeriodoContext periodoDefCtx, final Periodo fallback) 
+        final PeriodoContext periodoDefCtx, final Periodo fallback)
             throws CLIException {
         return periodoDefCtx == null ? fallback : extract(periodoDefCtx);
     }
 
     public static Periodo extract(
-        final PeriodoContext periodoDefCtx, final Supplier<Periodo> fallback) 
+        final PeriodoContext periodoDefCtx, final Supplier<Periodo> fallback)
             throws CLIException {
         return periodoDefCtx == null ? fallback.get() : extract(periodoDefCtx);
 
     }
 
-    public static Periodo extract(final PeriodoContext periodoDefCtx) 
+    public static Periodo extract(final PeriodoContext periodoDefCtx)
             throws CLIException {
 
         final PeriodoSimplesContext periodoSimplesCtx =
@@ -212,10 +212,10 @@ class CtxReader {
     private static Periodo extractPeriodo(
         final PeridoComplexoContext peridoComplexo) throws CLIException {
 
-        final LocalDate inicio = 
+        final LocalDate inicio =
             extractPeriodo(peridoComplexo.periodoSimples(0)).getDataMinima();
 
-        final LocalDate fim = 
+        final LocalDate fim =
             extractPeriodo(peridoComplexo.periodoSimples(1)).getDataMaxima();
 
         return new Periodo(inicio, fim);
@@ -239,13 +239,13 @@ class CtxReader {
                 if(mesCtx != null){
                     periodo = extractPeriodo(mesCtx);
                 } else {
-                    final PeriodoReferenciadoContext 
-                            periodoReferenciadoCtx = 
+                    final PeriodoReferenciadoContext
+                            periodoReferenciadoCtx =
                                 periodoSimplesCtx.periodoReferenciado();
                     if(periodoReferenciadoCtx != null){
                         periodo = extractPeriodo(periodoReferenciadoCtx);
                     } else {
-                        periodo = 
+                        periodo =
                             extractPeriodo(periodoSimplesCtx.periodoSemana());
                     }
                 }
@@ -254,7 +254,7 @@ class CtxReader {
         return periodo;
     }
 
-    private static Periodo extractPeriodo(final DiaContext diaCtx) 
+    private static Periodo extractPeriodo(final DiaContext diaCtx)
             throws CLIException {
         final LocalDate dia = extractDia(diaCtx);
         return new Periodo(dia, dia);
@@ -274,36 +274,36 @@ class CtxReader {
         } else {
             final Variante variante = extractVariante(anoCtx.varianteMasc());
 
-            inicio = 
+            inicio =
                 LocalDate.now()
                 .withDayOfYear(1)
                 .plusYears(variante == Variante.PASSADO ? -1 : 1);
         }
 
-        return 
+        return
             new Periodo(inicio, inicio.with(TemporalAdjusters.lastDayOfYear()));
     }
 
-    private static Periodo extractPeriodo(final MesContext mesCtx) 
+    private static Periodo extractPeriodo(final MesContext mesCtx)
             throws CLIException {
 
         final YearMonth mes = extractMes(mesCtx);
 
-        return 
+        return
             new Periodo(
-                mes.atDay(1), 
+                mes.atDay(1),
                 mes.atEndOfMonth()
             );
     }
 
     private static Periodo extractPeriodo(
-            final PeriodoReferenciadoContext 
+            final PeriodoReferenciadoContext
                     periodoReferenciadoCtx) {
 
-        final NomeDePeriodoContext nomeDePeriodoCtx = 
+        final NomeDePeriodoContext nomeDePeriodoCtx =
             periodoReferenciadoCtx.nomeDePeriodo();
 
-        final Variante variante = 
+        final Variante variante =
             periodoReferenciadoCtx.varianteMasc() != null
                 ? extractVariante(periodoReferenciadoCtx.varianteMasc())
                 : null;
@@ -321,7 +321,7 @@ class CtxReader {
         final LocalDate hoje = LocalDate.now();
 
         if(nomeDePeriodoCtx.MES() != null){
-            inicio = 
+            inicio =
                 variante == Variante.QUE_VEM
                     ? hoje.with(TemporalAdjusters.firstDayOfNextMonth())
                     : variante == Variante.PASSADO
@@ -331,7 +331,7 @@ class CtxReader {
             fim = inicio.with(TemporalAdjusters.lastDayOfMonth());
 
         } else if(nomeDePeriodoCtx.ANO() != null){
-            inicio = 
+            inicio =
                 variante == Variante.QUE_VEM
                     ? hoje.with(TemporalAdjusters.firstDayOfNextYear())
                     : variante == Variante.PASSADO
@@ -340,7 +340,7 @@ class CtxReader {
 
             fim = inicio.with(TemporalAdjusters.lastDayOfYear());
         //semestre
-        } else if(hoje.getMonth().compareTo(Month.JUNE) <= 0){ 
+        } else if(hoje.getMonth().compareTo(Month.JUNE) <= 0){
             inicio = hoje.with(TemporalAdjusters.firstDayOfYear());
 
             fim = hoje
@@ -360,7 +360,7 @@ class CtxReader {
     private static Periodo extractPeriodo(
         final PeriodoSemanaContext periodoSemanaCtx) {
 
-        final VarianteFemContext varianteFemCtx = 
+        final VarianteFemContext varianteFemCtx =
             periodoSemanaCtx.varianteFem();
 
         final LocalDate inicio = LocalDate.now().with(
@@ -375,7 +375,7 @@ class CtxReader {
 
         return
             new Periodo(
-                inicio, 
+                inicio,
                 inicio.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)));
     }
 
@@ -383,7 +383,7 @@ class CtxReader {
         return Integer.valueOf(idContext.getText());
     }
 
-    private static YearMonth extractMes(final MesContext mesCtx) 
+    private static YearMonth extractMes(final MesContext mesCtx)
             throws CLIException {
 
         final YearMonth mesDoAno;
@@ -411,7 +411,7 @@ class CtxReader {
 
             final VarianteMascContext varianteMascCtx = mesCtx.varianteMasc();
 
-             final TemporalAdjuster adjuster = 
+             final TemporalAdjuster adjuster =
                 varianteMascCtx == null
                     ? DiaHelper.mesMaisPerto(mes)
                     : extractVariante(varianteMascCtx) == Variante.QUE_VEM
@@ -423,14 +423,14 @@ class CtxReader {
         return mesDoAno;
     }
 
-    private static YearMonth extract(final MesISOContext mesISOCtx) 
+    private static YearMonth extract(final MesISOContext mesISOCtx)
             throws CLIException {
         int ano = asInt(mesISOCtx.INT(0));
         int mes = asInt(mesISOCtx.INT(1));
 
-        final YearMonth mesDoAno; 
+        final YearMonth mesDoAno;
 
-        try{ 
+        try{
             mesDoAno = YearMonth.of(ano, mes);
         } catch (final DateTimeException e){
             throw new CLIException("Disse quando?", e);
@@ -445,7 +445,7 @@ class CtxReader {
             if(es[i] != null) break;
         }
         return values[i];
-    }    
+    }
 
 
     private static int asInt(final TerminalNode tn){
