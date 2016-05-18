@@ -25,7 +25,7 @@ public class CLIException extends Exception{
     public CLIException() {
         super();
     }
-    
+
     public CLIException(final String message) {
         super(message);
     }
@@ -37,6 +37,4 @@ public class CLIException extends Exception{
     public CLIException(final Throwable cause) {
         super(cause);
     }
-    
-    
 }

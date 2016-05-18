@@ -63,7 +63,6 @@ import br.nom.abdon.gastoso.ext.system.GastosoSystemExtended;
 
 import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
-
 import br.nom.abdon.gastoso.system.GastosoSystem;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.GastosoSystemRTException;
@@ -76,7 +75,7 @@ import br.nom.abdon.util.Periodo;
  *
  * @author Bruno Abdon
  */
-public class GastosoCharacterCommand {
+class GastosoCharacterCommand {
 
     private static final Logger log  = 
         Logger.getLogger(GastosoCharacterCommand.class.getName());
@@ -242,12 +241,9 @@ public class GastosoCharacterCommand {
                             "%s\t%s\n",
                             formata(s.getConta()),
                             formata(s.getValor())));
-                    
                 } else {
                     Collection<Conta> contas = gastosoSystem.getContas(null);
-
                     contas.forEach(c -> writer.println(formata(c)));
-                    
                 }
             } else {
                 final Periodo periodo = 
@@ -482,15 +478,15 @@ public class GastosoCharacterCommand {
                 writer.println("<sem lancamentos>");
             } else {
                 lancamentos.forEach(
-                        l -> {
-                            writer.printf(
-                                "  [%d/%d] - %s %s\n", 
-                                fatoId,
-                                l.getConta().getId(),
-                                l.getConta().getNome(),
-                                formata(l.getValor())
-                            );
-                        }
+                    l -> {
+                        writer.printf(
+                            "  [%d/%d] - %s %s\n", 
+                            fatoId,
+                            l.getConta().getId(),
+                            l.getConta().getNome(),
+                            formata(l.getValor())
+                        );
+                    }
                 );
             }
         }

@@ -30,14 +30,14 @@ public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
 
-    private static final Preferences prefs = 
+    private static final Preferences prefs =
         Preferences.userNodeForPackage(Main.class);
-    
+
     public static void main(String[] args) {
 
         ConsoleReader console = null;
         GastosoRestClient gastosoSystem = null;
-        
+
         try {
 
             console = buildConsole();
@@ -45,16 +45,16 @@ public class Main {
             if(args.length > 0 && args[0].equals("--askURI")){ //improve this
                 askForURI(console);
             }
-            
+
             gastosoSystem = inicializaSistema(console);
 
-            final GastosoCharacterCommand gastosoCharacterCommand = 
+            final GastosoCharacterCommand gastosoCharacterCommand =
                 new GastosoCharacterCommand(gastosoSystem, console.getOutput());
 
             String line;
             while((line = console.readLine()) != null
                     && !"exit".equals(line)){
-                
+
                 if(!StringUtils.isBlank(line)){
                     gastosoCharacterCommand.command(line);
                 }
@@ -76,8 +76,7 @@ public class Main {
                 if(console != null) {
                     ((FileHistory)console.getHistory()).flush();
                     console.shutdown();
-                } 
-
+                }
                 TerminalFactory.get().restore();
             } catch (IOException ex) {
                 log.log(Level.SEVERE, "Erro ao fechar command history.", ex);
@@ -88,11 +87,11 @@ public class Main {
     }
 
     private static ConsoleReader buildConsole() throws IOException {
-        
+
         final ConsoleReader console = new ConsoleReader();
-        
+
         final String userHome = System.getProperty("user.home");
-        final File gastosoDir = 
+        final File gastosoDir =
             FileSystems.getDefault().getPath(userHome,".gastoso").toFile();
 
         if(gastosoDir.exists() || gastosoDir.mkdir()){
@@ -103,7 +102,7 @@ public class Main {
                 console.setHistory(history);
             }
         }
-        
+
         return console;
     }
 
@@ -113,7 +112,7 @@ public class Main {
         String uriStr = prefs.get(SERVER_URI_PREF, null);
         URI uri;
         try {
-            uri = 
+            uri =
                 uriStr == null
                     ? askForURI(console)
                     : new URI(uriStr);
@@ -124,13 +123,13 @@ public class Main {
 
         return inicializaSistema(console,uri);
     }
-    
+
     private static URI askForURI(ConsoleReader console) throws IOException {
 
         URI uri = null;
-        
+
         String uriStr = console.readLine("Gastoso's Server's URI:");
-        
+
         boolean ainda = true;
         while(ainda) {
             try {
@@ -145,9 +144,9 @@ public class Main {
             }
         }
         return uri;
-    }    
+    }
     private static final String SERVER_URI_PREF = "serverUri";
-    
+
     private static GastosoRestClient inicializaSistema(
             final ConsoleReader console, final URI uri) throws IOException {
 
@@ -159,18 +158,18 @@ public class Main {
 
             final PrintWriter writer = new PrintWriter(console.getOutput());
 
-            boolean conseguiu = 
+            boolean conseguiu =
                 Boolean.parseBoolean(System.getenv("ABD_AUTH_OMNI_EST_LICET"));
             int tentativasSobrando = 3;
 
             System.out.printf(
-                "Connecting to Gastoso's severs on %s:%d.\n", 
+                "Connecting to Gastoso's severs on %s:%d.\n",
                 uri.getHost(),
                 uri.getPort());
 
             while(!conseguiu && tentativasSobrando > 0){
                 console.setEchoCharacter('*');
-                
+
                 String password = console.readLine("Senha:");
                 conseguiu = gastosoRestClient.login("", String.valueOf(password));
                 if(!conseguiu){
@@ -179,7 +178,7 @@ public class Main {
                     } else {
                         writer.println("Não rolou não.");
                         writer.flush();
-                        
+
                         System.exit(1);
                     }
                 }
@@ -207,8 +206,8 @@ public class Main {
 
     private static void printWellcome(PrintWriter writer) {
         writer.println(
-            "   ____           _\n  / ___| __ _ ___| |_ ___  ___  ___\n"
-            + " | |  _ / _` / __| __/ _ \\/ __|/ _ \\\n | |_| | (_| \\__ \\ || "
-            + "(_) \\__ \\ (_) |\n  \\____|\\__,_|___/\\__\\___/|___/\\___/\n");
+            "   ____           _\n  / ___| __ _ ___| |_ ___  ___  ___\n | |  _ "
+            + "/ _` / __| __/ _ \\/ __|/ _ \\\n | |_| | (_| \\__ \\ || (_) \\__"
+            + " \\ (_) |\n  \\____|\\__,_|___/\\__\\___/|___/\\___/\n");
     }
 }

@@ -32,35 +32,35 @@ public class DiaHelper {
 
     public static TemporalAdjuster diaDaSemanaMaisPerto(
             final DayOfWeek diaDaSemana){
-        
+
         return (temporal) ->  {
-            final int diferenca = 
+            final int diferenca =
                 temporal.get(DAY_OF_WEEK) - diaDaSemana.getValue();
-            
-            final TemporalAdjuster adjuster = 
+
+            final TemporalAdjuster adjuster =
                 diferenca <= -3 || (diferenca >= 0 && diferenca <= 4)
                     ? TemporalAdjusters.previousOrSame(diaDaSemana)
                     : TemporalAdjusters.next(diaDaSemana);
             ;
-            
+
             return temporal.with(adjuster);
         };
     }
 
     public static TemporalAdjuster mesMaisPerto(final Month mes){
-        
+
         return (temporal) ->  {
-            final int diferenca = 
+            final int diferenca =
                 temporal.get(MONTH_OF_YEAR) - mes.getValue();
-            
-            final TemporalAdjuster adjuster = 
+
+            final TemporalAdjuster adjuster =
                 diferenca <= -6 || (diferenca >= 0 && diferenca <= 6)
                     ? previousOrSame(mes)
                     : next(mes);
             return temporal.with(adjuster);
         };
     }
-    
+
     public static TemporalAdjuster previousOrSame(Month month) {
         return previousMaybeSame(month, true);
     }
@@ -69,9 +69,9 @@ public class DiaHelper {
     }
 
     private static TemporalAdjuster previousMaybeSame(
-            final Month month, 
+            final Month month,
             final boolean allowSame) {
-        
+
         int dowValue = month.getValue();
         return (temporal) -> {
             int calDow = temporal.get(MONTH_OF_YEAR);
@@ -80,8 +80,8 @@ public class DiaHelper {
             }
             int monthsDiff = dowValue - calDow;
             return temporal.minus(
-                    monthsDiff >= 0 
-                        ? 12 - monthsDiff 
+                    monthsDiff >= 0
+                        ? 12 - monthsDiff
                         : -monthsDiff
                     , MONTHS);
         };
@@ -91,11 +91,11 @@ public class DiaHelper {
         int dowValue = month.getValue();
         return (temporal) -> {
             int calDow = temporal.get(MONTH_OF_YEAR);
-            
+
             int monthsDiff = calDow - dowValue;
             return temporal.plus(
-                monthsDiff >= 0 
-                    ? 12 - monthsDiff 
+                monthsDiff >= 0
+                    ? 12 - monthsDiff
                     : -monthsDiff
                     , MONTHS);
         };
