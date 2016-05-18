@@ -46,7 +46,6 @@ import br.nom.abdon.gastoso.ext.Saldo;
  */
 @Produces({
     MediaTypes.APPLICATION_GASTOSO_SIMPLES,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_FULL,
     MediaTypes.APPLICATION_GASTOSO_PATCH,
 })
@@ -90,16 +89,18 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
         
         final String className = 
             Serial.getRelevantTypeName(ehColecao, type, genericType);
+
+        MediaType tipo = MediaTypes.getCompatibleInstance(mediaType);
         
         final ThrowingConsumer<Object, IOException> entityMarshallerMethod = 
             className.contains(Serial.FATO_CLASSNAME) 
                 || className.contains(Serial.FATO_DETALHADO_CLASSNAME) 
-                ? f -> marshaller.marshall((Fato)f)
+                ? f -> marshaller.marshall((Fato)f,tipo)
                 : className.contains(Serial.SALDO_CLASSNAME)
-                    ? s -> marshaller.marshall((Saldo)s)
+                    ? s -> marshaller.marshall((Saldo)s,tipo)
                     : className.contains(Serial.CONTA_CLASSNAME)
-                        ? c -> marshaller.marshall((Conta)c)
-                        : l -> marshaller.marshall((Lancamento)l);
+                        ? c -> marshaller.marshall((Conta)c,tipo)
+                        : l -> marshaller.marshall((Lancamento)l,tipo);
         
         final ThrowingConsumer<Object,IOException> marshallerMethod = 
             ehColecao

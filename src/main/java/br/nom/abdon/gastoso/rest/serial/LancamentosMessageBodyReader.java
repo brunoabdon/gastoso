@@ -29,7 +29,6 @@ import br.nom.abdon.gastoso.rest.MediaTypes;
 @Provider
 @Consumes({
     MediaTypes.APPLICATION_GASTOSO_SIMPLES,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_FULL,
     MediaTypes.APPLICATION_GASTOSO_PATCH,
 })

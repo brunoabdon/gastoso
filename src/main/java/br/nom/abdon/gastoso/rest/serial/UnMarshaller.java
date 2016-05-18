@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -88,7 +87,7 @@ class UnMarshaller {
                     descricao = jParser.nextTextValue();
                     break;
                 case Serial.LANCAMENTOS:
-                    lancamentos = parseLancamentos(jParser);
+                    lancamentos = makeListaLancamentos(jParser);
                     break;
                 default:
                     //see https://java.net/jira/browse/JERSEY-3005
@@ -139,8 +138,8 @@ class UnMarshaller {
         
     }
 
-    public static List<Lancamento> parseLancamentos(final JsonParser jParser) 
-            throws IOException {
+    private static List<Lancamento> makeListaLancamentos(
+                final JsonParser jParser) throws IOException {
         
         final List<Lancamento> lancamentos = new LinkedList<>();
         
@@ -191,7 +190,6 @@ class UnMarshaller {
 
         Integer id = null, contaId = null, fatoId = null, valor = null;
         Conta conta = null;
-        Fato fato = null;
         LocalDate dia = null;
         String descricao = null;
 
@@ -204,9 +202,6 @@ class UnMarshaller {
                     break;
                 case Serial.CONTA_ID:
                     contaId = jParser.nextIntValue(0);
-                    break;
-                case Serial.FATO:
-                    fato = parseFato(jParser);
                     break;
                 case Serial.FATO_ID:
                     fatoId = jParser.nextIntValue(0);
@@ -241,12 +236,10 @@ class UnMarshaller {
         lancamento.setConta(conta);
 
         if(fatoId != null){
-            fato = new Fato(fatoId);
+            Fato fato = new Fato(dia, descricao);
+            fato.setId(fatoId);
             lancamento.setFato(fato);
-        } else if(dia != null){
-            fato = new Fato(dia,descricao);
         } 
-        lancamento.setFato(fato); //pode ser null
 
         return lancamento;
     }
@@ -284,7 +277,6 @@ class UnMarshaller {
         return new Saldo(conta, dia, valor);
 
     }
-    
     
     private static List<Lancamento> makeTransferencia(
             final Fato fato, 

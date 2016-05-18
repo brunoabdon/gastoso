@@ -46,14 +46,13 @@ import br.nom.abdon.gastoso.rest.MediaTypes;
 @Provider
 @Consumes({
     MediaTypes.APPLICATION_GASTOSO_SIMPLES,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_FULL,
     MediaTypes.APPLICATION_GASTOSO_PATCH,
 })
 public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
     
     private static final Class[] KNOWN_CLASSES = {
-        Conta.class,Fato.class,FatoDetalhado.class,Lancamento.class,Saldo.class
+        Conta.class,Fato.class,FatoDetalhado.class,Saldo.class
     };
 
     @Override
@@ -92,8 +91,6 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
                 ? UnMarshaller.parseConta(jParser)
                 : Fato.class.isAssignableFrom(type)
                     ? UnMarshaller.parseFato(jParser)
-                    : Saldo.class.isAssignableFrom(type)
-                        ? UnMarshaller.parseSaldo(jParser)
-                        : UnMarshaller.parseLancamento(jParser);
+                    : UnMarshaller.parseSaldo(jParser);
     }
 }
