@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response;
 @Path(Contas.PATH)
 @Produces({
     MediaTypes.APPLICATION_GASTOSO_FULL,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
 @Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)

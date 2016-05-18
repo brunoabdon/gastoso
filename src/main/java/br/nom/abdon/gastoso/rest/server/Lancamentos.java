@@ -34,7 +34,6 @@ import br.nom.abdon.rest.AbstractRestCrud;
 @Path(Lancamentos.PATH)
 @Produces({
     MediaTypes.APPLICATION_GASTOSO_FULL,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
 @Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
@@ -63,7 +62,7 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
             final @QueryParam("mes") YearMonth mes,
             @QueryParam("dataMin") LocalDate dataMinima,
             @QueryParam("dataMax") LocalDate dataMaxima){
-        
+
         final List<Lancamento> lancamentos;
 
         final boolean temFato = fato != null;
@@ -71,23 +70,29 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
         final boolean temMes = mes != null;
         final boolean temDataMinima = dataMinima != null;
         final boolean temDataMaxima = dataMaxima != null;
-        
+
         final boolean temPeriodoValido = 
             temMes ^ (temDataMinima && temDataMaxima); //xor
-        
+
         final boolean dahPraConsultar = 
             temFato || (temConta && temPeriodoValido);
-        
+
         if(!dahPraConsultar){
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        
+
         final FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
         final FiltroFatos filtroFatos = filtroLancamentos.getFiltroFatos();
 
         if(temFato) filtroFatos.setFato(fato);
-        if(temConta) filtroLancamentos.getFiltroContas().setConta(conta);
+            
+        if(temConta) {
+            filtroLancamentos.getFiltroContas().setConta(conta);
+            filtroLancamentos.addOrdem(FiltroLancamentos.ORDEM.POR_DIA_ASC);
+        }
 
+        filtroLancamentos.addOrdem(FiltroLancamentos.ORDEM.POR_FATO_ID_ASC);
+        
         if(temPeriodoValido){
             if(temMes){
                 dataMinima = mes.atDay(1);

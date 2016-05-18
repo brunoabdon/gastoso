@@ -44,7 +44,6 @@ import br.nom.abdon.gastoso.system.FiltroLancamentos;
 @Path(Fatos.PATH)
 @Produces({
     MediaTypes.APPLICATION_GASTOSO_FULL,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
 @Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
@@ -157,22 +156,24 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         return new FatoDetalhado(fato, lancamentos);
     }
 
-//    @Override
-//    protected Fato prepararAtualizacao(
-//            final EntityManager entityManager, 
-//            final Fato fato, 
-//            final Integer id) {
-//        
-//        final Fato fatoOriginal = entityManager.find(Fato.class, id);
-//        
-//        final LocalDate dia = fato.getDia();
-//        final String descricao = fato.getDescricao();
-//        
-//        if(dia != null) fatoOriginal.setDia(fato.getDia());
-//        if(descricao != null) fatoOriginal.setDescricao(descricao);
-//        
-//        return fatoOriginal;
-// 
-//    }
+    @Override
+    protected Fato prepararAtualizacao(
+            final EntityManager entityManager, 
+            final Fato fato, 
+            final Integer id) {
+        
+        final Fato fatoOriginal = entityManager.find(Fato.class, id);
+        
+        if(fato.getDia() == null) 
+            fato.setDia(fatoOriginal.getDia());
+        
+        if(fato.getDescricao() == null) 
+            fato.setDescricao(fatoOriginal.getDescricao());
+        
+        fato.setId(id);
+        
+        return fato;
+ 
+    }
     
 }

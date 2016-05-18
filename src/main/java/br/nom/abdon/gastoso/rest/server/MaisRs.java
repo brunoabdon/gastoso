@@ -58,7 +58,6 @@ import br.nom.abdon.gastoso.rest.MediaTypes;
 @Path("")
 @Produces({
     MediaTypes.APPLICATION_GASTOSO_FULL,
-    MediaTypes.APPLICATION_GASTOSO_NORMAL,
     MediaTypes.APPLICATION_GASTOSO_SIMPLES
 })
 public class MaisRs {
