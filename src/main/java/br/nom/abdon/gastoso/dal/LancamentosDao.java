@@ -126,7 +126,6 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
                 .prepareAndRunQuery(
                     em, q, where, params, filtro.getPaginacao()
             );
-        
     }
 
     private void trataOrdenacao(
@@ -137,9 +136,9 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         
         final List<FiltroLancamentos.ORDEM> ordem = filtro.getOrdem();
         if(ordem != null && !ordem.isEmpty()){
-            List<Order> orders = new LinkedList<>();
+            final List<Order> orders = new LinkedList<>();
             
-            for(FiltroLancamentos.ORDEM itemOrdenacao : ordem) {
+            for(final FiltroLancamentos.ORDEM itemOrdenacao : ordem) {
                 final Path path;
                 
                 switch(itemOrdenacao){
