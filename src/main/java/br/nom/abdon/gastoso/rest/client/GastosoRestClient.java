@@ -23,6 +23,7 @@ import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -48,9 +49,9 @@ import br.nom.abdon.gastoso.ext.system.GastosoSystemExtended;
 
 import br.nom.abdon.gastoso.rest.MediaTypes;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
-import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
+import br.nom.abdon.gastoso.rest.serial.ContasCacheReaderInterceptor;
 import br.nom.abdon.gastoso.rest.serial.FatosMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyReader;
 import br.nom.abdon.gastoso.rest.serial.GastosoMessageBodyWriter;
@@ -114,17 +115,21 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     private final ClientRequestFilter authFilter = 
         (reqContx) -> reqContx.getHeaders().add("X-Abd-auth_token", authToken);
 
-    private static final Consumer<ClientBuilder> STATIC_CONFIGURATOR = 
-        cb -> 
-            cb.register(GastosoMessageBodyReader.class)
-                .register(GastosoMessageBodyWriter.class)
-                .register(FatosMessageBodyReader.class)
-                .register(LancamentosMessageBodyReader.class)
-                .register(SaldosMessageBodyReader.class);
+    private final ContasCacheReaderInterceptor readerInterceptor =
+        new ContasCacheReaderInterceptor();
     
     private final Consumer<ClientBuilder> configurator = 
-        STATIC_CONFIGURATOR.andThen(cb -> cb.register(authFilter));
-
+        cb -> {
+            cb.register(GastosoMessageBodyReader.class)
+            .register(GastosoMessageBodyWriter.class)
+            .register(FatosMessageBodyReader.class)
+            .register(LancamentosMessageBodyReader.class)
+            .register(SaldosMessageBodyReader.class)
+            .register(authFilter)
+            .register(readerInterceptor)
+            ;
+        }
+    ;
     
     public GastosoRestClient(final String serverUri) throws URISyntaxException {
         this(new URI(serverUri));
@@ -148,7 +153,13 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
         this.fatoWebTarget = this.fatosWebTarget.path("{id}");
         this.lancamentoWebTarget = this.lancamentosWebTarget.path("{id}");
         this.saldoWebTarget = this.saldosWebTarget.path("{id}");
-        
+
+        //carregando o cache
+        try {
+            ggetContas(null);
+        } catch (GastosoSystemException ex) {
+            log.log(Level.WARNING, "Vair dar problema....", ex);
+        }
     } 
     
     public boolean login (final String user, final String password) 
@@ -204,6 +215,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     public List<FatoDetalhado> getFatosDetalhados(
             final FiltroFatosDetalhados filtro) 
                 throws GastosoSystemException {
+        
         return get(
             FILL_PARAM_FATOS, 
             FATODEL_GEN_TYPE,
@@ -215,15 +227,30 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     @Override
     public List<Conta> getContas(final FiltroContas filtro) 
             throws GastosoSystemException {
-        
-        return get(
-            (wt,f) -> wt, 
-            CONTA_GEN_TYPE,
-            APPLICATION_GASTOSO_FULL_TYPE,
-            contasWebTarget, 
-            filtro);
+        return ggetContas(filtro);
     }
 
+    
+    /**
+     * Can't be overriden. Can be called in the constructor.
+     * @param filtro
+     * @return
+     * @throws GastosoSystemException 
+     */
+    private final List<Conta> ggetContas(final FiltroContas filtro) 
+            throws GastosoSystemException {
+        
+        final List<Conta> contas =
+            get((wt,f) -> wt, 
+                CONTA_GEN_TYPE,
+                APPLICATION_GASTOSO_FULL_TYPE,
+                contasWebTarget, 
+                filtro);
+        readerInterceptor.updateContas(contas);
+        return contas;
+    }
+
+    
     @Override
     public List<Lancamento> getLancamentos(final FiltroLancamentos filtro) 
             throws GastosoSystemException {
@@ -231,7 +258,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
         return get(
             FILL_PARAM_LANCAMENTOS, 
             LANCAMENTO_GEN_TYPE,
-            APPLICATION_GASTOSO_NORMAL_TYPE,
+            APPLICATION_GASTOSO_SIMPLES_TYPE,
             lancamentosWebTarget, 
             filtro);
     }
@@ -243,7 +270,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
         return get(
             FILL_PARAM_SALDOS, 
             SALDO_GEN_TYPE,
-            MediaTypes.APPLICATION_GASTOSO_NORMAL_TYPE,
+            APPLICATION_GASTOSO_FULL_TYPE,
             saldosWebTarget, 
             filtro);
     }
@@ -306,7 +333,9 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     
     @Override
     public Conta getConta(int id) throws GastosoSystemException {
-        return get(contaWebTarget,Conta.class,id);
+        final Conta conta = get(contaWebTarget,Conta.class,id);
+        readerInterceptor.updateConta(conta);
+        return conta;
     }
 
     @Override
@@ -322,7 +351,9 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
 
     @Override
     public Conta update(Conta conta) throws GastosoSystemException {
-        return update(contaWebTarget, conta, Conta.class);
+        final Conta updatedConta = update(contaWebTarget, conta, Conta.class);
+        readerInterceptor.updateConta(conta);
+        return updatedConta;
     }
     
     @Override
@@ -339,6 +370,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     @Override
     public void deleteConta(int id) throws GastosoSystemException {
         delete(contaWebTarget, id);
+        readerInterceptor.removeConta(id);
     }
     
     @Override
@@ -354,7 +386,9 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     @Override
     public Conta create(final Conta conta) 
             throws GastosoSystemException {
-        return create(contasWebTarget,conta,Conta.class);
+        final Conta novaConta = create(contasWebTarget,conta,Conta.class);
+        readerInterceptor.updateConta(conta);
+        return novaConta;
     }
     
     @Override
