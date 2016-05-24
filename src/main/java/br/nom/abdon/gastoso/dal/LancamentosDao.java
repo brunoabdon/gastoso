@@ -54,15 +54,18 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
     }
     
     @Override
-    protected void validarPraCriacao(EntityManager em, Lancamento lancamento) throws DalException {
+    protected void validarPraCriacao(
+            final EntityManager em, 
+            final Lancamento lancamento) throws DalException {
+
         validaBasico(lancamento);
-        
+
         final Boolean existeDuplicata = 
             em.createNamedQuery("Lancamento.existeDuplicata",Boolean.class)
             .setParameter("fato", lancamento.getFato())
             .setParameter("conta", lancamento.getConta())
             .getSingleResult();
-        
+
         if(existeDuplicata){
             throw new DalException(ERRO_DUPLICATA);
         }
