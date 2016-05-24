@@ -93,11 +93,12 @@ public class FatosDetalhadosDao extends FatosDao{
             int j = 0;
             int i = 0;
             
-            while(i < lancamentos.size()
-                    || j < lancamentosBanco.size()) {
+            while(i < lancamentos.size() || j < lancamentosBanco.size()) {
 
                 if(j >= lancamentosBanco.size()){
-                    lancamentosDao.criar(em, lancamentos.get(i++));
+                    final Lancamento l = lancamentos.get(i++);
+                    l.setFato(fato);
+                    lancamentosDao.criar(em, l);
                 } else if(i >= lancamentos.size()) {
                     lancamentosDao.deletar(em, lancamentosBanco.get(j++).getId());
                 } else {
@@ -111,6 +112,7 @@ public class FatosDetalhadosDao extends FatosDao{
                     LOG.finest(() -> "\tAnalizando " + idContaBanco);
 
                     if(idConta < idContaBanco){
+                        l.setFato(fato);
                         lancamentosDao.criar(em, l);
                         i++;
                     } else if(idConta == idContaBanco){
