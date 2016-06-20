@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.server.Server;
@@ -74,7 +75,7 @@ public class Main {
         root.setErrorHandler(errHand);
 
         GzipHandler gzip = new GzipHandler();
-        gzip.setIncludedMimeTypes("application/json");
+        gzip.setIncludedMimeTypes(MediaType.APPLICATION_JSON);
         gzip.setMinGzipSize(1024);
         gzip.setCompressionLevel(9);
         gzip.setHandler(root);        
