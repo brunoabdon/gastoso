@@ -47,7 +47,6 @@ import br.nom.abdon.gastoso.ext.system.FiltroFatosDetalhados;
 import br.nom.abdon.gastoso.ext.system.FiltroSaldos;
 import br.nom.abdon.gastoso.ext.system.GastosoSystemExtended;
 
-import br.nom.abdon.gastoso.rest.MediaTypes;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
 import static br.nom.abdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
@@ -63,6 +62,8 @@ import br.nom.abdon.gastoso.system.FiltroFatos;
 import br.nom.abdon.gastoso.system.FiltroLancamentos;
 import br.nom.abdon.gastoso.system.GastosoSystemException;
 import br.nom.abdon.gastoso.system.NotFoundException;
+import br.nom.abdon.rest.AbstractRestClient;
+import br.nom.abdon.rest.RESTResponseException;
 
 
 
@@ -237,7 +238,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
      * @return
      * @throws GastosoSystemException 
      */
-    private final List<Conta> ggetContas(final FiltroContas filtro) 
+    private List<Conta> ggetContas(final FiltroContas filtro) 
             throws GastosoSystemException {
         
         final List<Conta> contas =
