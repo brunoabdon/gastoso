@@ -1,5 +1,10 @@
 package br.nom.abdon.gastoso.cli;
 
+import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
+import br.nom.abdon.gastoso.system.GastosoSystemRTException;
+import br.nom.abdon.rest.RESTClientRTException;
+import static br.nom.abdon.rest.RESTClientRTException.SERVIDOR_FORA;
+import br.nom.abdon.rest.RESTResponseException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,11 +21,6 @@ import jline.console.history.FileHistory;
 import jline.console.history.History;
 import org.apache.commons.lang3.StringUtils;
 
-import br.nom.abdon.gastoso.rest.client.RESTResponseException;
-import br.nom.abdon.gastoso.rest.client.GastosoRestClient;
-import br.nom.abdon.gastoso.rest.client.RESTClientRTException;
-import static br.nom.abdon.gastoso.rest.client.RESTClientRTException.SERVIDOR_FORA;
-import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 
 /**
  *
