@@ -74,7 +74,7 @@ import br.nom.abdon.rest.RESTResponseException;
 public class GastosoRestClient extends AbstractRestClient<GastosoSystemException> 
         implements GastosoSystemExtended {
 
-    private static final Logger log = 
+    private static final Logger LOG = 
         Logger.getLogger(GastosoRestClient.class.getName());
     
     private static final GenericType<List<Lancamento>> LANCAMENTO_GEN_TYPE = 
@@ -159,7 +159,7 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
         try {
             ggetContas(null);
         } catch (GastosoSystemException ex) {
-            log.log(Level.WARNING, "Vair dar problema....", ex);
+            LOG.log(Level.WARNING, "Vair dar problema....", ex);
         }
     } 
     
@@ -214,8 +214,8 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
 
     @Override
     public List<FatoDetalhado> getFatosDetalhados(
-            final FiltroFatosDetalhados filtro) 
-                throws GastosoSystemException {
+        final FiltroFatosDetalhados filtro) 
+            throws GastosoSystemException {
         
         return get(
             FILL_PARAM_FATOS, 
@@ -321,37 +321,35 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     };
 
     @Override
-    public Fato getFato(int id)
-            throws GastosoSystemException {
+    public Fato getFato(final int id) throws GastosoSystemException {
         return get(fatoWebTarget,Fato.class,id);
     }
 
     @Override
-    public FatoDetalhado getFatoDetalhado(int id) 
+    public FatoDetalhado getFatoDetalhado(final int id)
             throws GastosoSystemException {
         return get(fatoWebTarget,FatoDetalhado.class,id);
     }
     
     @Override
-    public Conta getConta(int id) throws GastosoSystemException {
+    public Conta getConta(final int id) throws GastosoSystemException {
         final Conta conta = get(contaWebTarget,Conta.class,id);
         readerInterceptor.updateConta(conta);
         return conta;
     }
 
     @Override
-    public Saldo getSaldo(int id) throws GastosoSystemException {
+    public Saldo getSaldo(final int id) throws GastosoSystemException {
         return get(saldoWebTarget, Saldo.class, id);
     }
-
     
     @Override
-    public Fato update(Fato fato) throws GastosoSystemException {
+    public Fato update(final Fato fato) throws GastosoSystemException {
         return update(fatoWebTarget, fato, Fato.class);
     }
 
     @Override
-    public Conta update(Conta conta) throws GastosoSystemException {
+    public Conta update(final Conta conta) throws GastosoSystemException {
         final Conta updatedConta = update(contaWebTarget, conta, Conta.class);
         readerInterceptor.updateConta(conta);
         return updatedConta;
@@ -364,18 +362,18 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
     }
 
     @Override
-    public void deleteFato(int id) throws GastosoSystemException {
+    public void deleteFato(final int id) throws GastosoSystemException {
         delete(fatoWebTarget, id);
     }
 
     @Override
-    public void deleteConta(int id) throws GastosoSystemException {
+    public void deleteConta(final int id) throws GastosoSystemException {
         delete(contaWebTarget, id);
         readerInterceptor.removeConta(id);
     }
     
     @Override
-    public void deleteLancamento(int id) throws GastosoSystemException {
+    public void deleteLancamento(final int id) throws GastosoSystemException {
         delete(lancamentoWebTarget, id);
     }
 
