@@ -69,6 +69,7 @@ import br.nom.abdon.gastoso.system.GastosoSystemRTException;
 import br.nom.abdon.gastoso.system.NotFoundException;
 
 import br.nom.abdon.util.Periodo;
+import java.time.temporal.TemporalAdjuster;
 
 
 /**
@@ -80,6 +81,12 @@ class GastosoCharacterCommand {
     private static final Logger log  =
         Logger.getLogger(GastosoCharacterCommand.class.getName());
 
+    private static final TemporalAdjuster DOMINGO_HOJE_OU_PASSADO_ADJUSTER = 
+        TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY);
+    
+    private static final TemporalAdjuster SABADO_QUE_VEM_ADJUSTER =
+        TemporalAdjusters.next(DayOfWeek.SATURDAY);
+    
     private static final String NO_FATO_NO_CONTEXTO = "Nenhum fato no contexto";
     private static final String FATO_NO_CONTEXTO = "Já existe um fato";
 
@@ -140,7 +147,7 @@ class GastosoCharacterCommand {
         return ok;
     }
 
-    private void processCommand(CommandContext commandCtx){
+    private void processCommand(final CommandContext commandCtx){
 
         if(commandCtx.exception == null){
 
@@ -156,7 +163,8 @@ class GastosoCharacterCommand {
             } catch (GastosoSystemException | GastosoSystemRTException ex) {
                 final String msg =
                     (ex instanceof GastosoSystemException)
-                        ? "Erro" : "Problema";
+                        ? "Erro" 
+                        : "Problema";
 
                 writer.println(msg + ": " + ex.getMessage());
                 log.log(Level.FINEST, ex, () -> "Impossível processar.");
@@ -246,7 +254,7 @@ class GastosoCharacterCommand {
                     contas.forEach(c -> writer.println(formata(c)));
                 }
             } else {
-                final Periodo periodo =
+                final Periodo periodoLS =
                     CtxReader.extract(lineCommandCtx.periodo(),this.periodo);
 
                 final ContaContext contaCtx = lineCommandCtx.conta(0);
@@ -257,8 +265,8 @@ class GastosoCharacterCommand {
                     final FiltroLancamentos f = new FiltroLancamentos();
 
                     final FiltroFatos filtroFatos = f.getFiltroFatos();
-                    filtroFatos.setDataMinima(periodo.getDataMinima());
-                    filtroFatos.setDataMaxima(periodo.getDataMaxima());
+                    filtroFatos.setDataMinima(periodoLS.getDataMinima());
+                    filtroFatos.setDataMaxima(periodoLS.getDataMaxima());
 
                     f.getFiltroContas().setId(idConta);
 
@@ -278,8 +286,8 @@ class GastosoCharacterCommand {
                     );
                 } else {
                     final FiltroFatos f = new FiltroFatos();
-                    f.setDataMinima(periodo.getDataMinima());
-                    f.setDataMaxima(periodo.getDataMaxima());
+                    f.setDataMinima(periodoLS.getDataMinima());
+                    f.setDataMaxima(periodoLS.getDataMaxima());
                     f.addOrdem(FiltroFatos.ORDEM.POR_DIA);
 
                     final List<? extends Fato> fatos = gastosoSystem.getFatos(f);
@@ -439,14 +447,14 @@ class GastosoCharacterCommand {
 
             final int id = CtxReader.extractId(lineCommandCtx.id());
 
-            Fato fato = gastosoSystem.getFato(id);
+            Fato fatoMv = gastosoSystem.getFato(id);
 
-            fato.setDia(dia);
-            fato.setDescricao(desc);
+            fatoMv.setDia(dia);
+            fatoMv.setDescricao(desc);
 
-            fato = gastosoSystem.update(fato);
+            fatoMv = gastosoSystem.update(fatoMv);
 
-            printFato(fato);
+            printFato(fatoMv);
         }
     }
 
@@ -521,13 +529,10 @@ class GastosoCharacterCommand {
 
     private Periodo essaSemana() {
         final LocalDate domingoPassado =
-                LocalDate
-                    .now()
-                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+            LocalDate.now().with(DOMINGO_HOJE_OU_PASSADO_ADJUSTER);
 
         final LocalDate proximoSabado =
-                domingoPassado
-                .with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+            domingoPassado.with(SABADO_QUE_VEM_ADJUSTER);
 
         return new Periodo(domingoPassado, proximoSabado);
     }

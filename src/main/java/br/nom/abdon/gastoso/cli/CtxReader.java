@@ -150,8 +150,7 @@ class CtxReader {
         return dia;
     }
 
-    private static DayOfWeek extractDiaDaSemana(
-            final  DiaContext diaCtx) {
+    private static DayOfWeek extractDiaDaSemana(final DiaContext diaCtx) {
 
         return pick(DayOfWeek.values(),
                 diaCtx.SEG(),
@@ -192,7 +191,8 @@ class CtxReader {
     }
 
     public static Periodo extract(
-        final PeriodoContext periodoDefCtx, final Supplier<Periodo> fallback)
+        final PeriodoContext periodoDefCtx, 
+        final Supplier<Periodo> fallback)
             throws CLIException {
         return periodoDefCtx == null ? fallback.get() : extract(periodoDefCtx);
 
@@ -239,9 +239,9 @@ class CtxReader {
                 if(mesCtx != null){
                     periodo = extractPeriodo(mesCtx);
                 } else {
-                    final PeriodoReferenciadoContext
-                            periodoReferenciadoCtx =
-                                periodoSimplesCtx.periodoReferenciado();
+                    final PeriodoReferenciadoContext periodoReferenciadoCtx =
+                            periodoSimplesCtx.periodoReferenciado();
+
                     if(periodoReferenciadoCtx != null){
                         periodo = extractPeriodo(periodoReferenciadoCtx);
                     } else {
@@ -260,17 +260,15 @@ class CtxReader {
         return new Periodo(dia, dia);
     }
 
-    private static Periodo extractPeriodo(AnoContext anoCtx) {
+    private static Periodo extractPeriodo(final AnoContext anoCtx) {
 
         final LocalDate inicio;
 
         final TerminalNode INT = anoCtx.INT();
 
         if(INT != null){
-
             final int ano = Integer.parseInt(INT.getText());
             inicio = LocalDate.ofYearDay(ano, 1);
-
         } else {
             final Variante variante = extractVariante(anoCtx.varianteMasc());
 
@@ -297,8 +295,7 @@ class CtxReader {
     }
 
     private static Periodo extractPeriodo(
-            final PeriodoReferenciadoContext
-                    periodoReferenciadoCtx) {
+            final PeriodoReferenciadoContext periodoReferenciadoCtx) {
 
         final NomeDePeriodoContext nomeDePeriodoCtx =
             periodoReferenciadoCtx.nomeDePeriodo();

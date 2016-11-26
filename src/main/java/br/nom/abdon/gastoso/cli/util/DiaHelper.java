@@ -21,6 +21,7 @@ import java.time.Month;
 import static java.time.temporal.ChronoField.DAY_OF_WEEK;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoUnit.MONTHS;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
@@ -41,7 +42,6 @@ public class DiaHelper {
                 diferenca <= -3 || (diferenca >= 0 && diferenca <= 4)
                     ? TemporalAdjusters.previousOrSame(diaDaSemana)
                     : TemporalAdjusters.next(diaDaSemana);
-            ;
 
             return temporal.with(adjuster);
         };
@@ -61,10 +61,10 @@ public class DiaHelper {
         };
     }
 
-    public static TemporalAdjuster previousOrSame(Month month) {
+    public static TemporalAdjuster previousOrSame(final Month month) {
         return previousMaybeSame(month, true);
     }
-    public static TemporalAdjuster previous(Month month) {
+    public static TemporalAdjuster previous(final Month month) {
         return previousMaybeSame(month, false);
     }
 
@@ -72,27 +72,31 @@ public class DiaHelper {
             final Month month,
             final boolean allowSame) {
 
-        int dowValue = month.getValue();
+        final int dowValue = month.getValue();
         return (temporal) -> {
+            final Temporal adjuster;
+            
             int calDow = temporal.get(MONTH_OF_YEAR);
             if (allowSame && calDow == dowValue) {
-                return temporal;
+                adjuster = temporal;
+            } else {
+                int monthsDiff = dowValue - calDow;
+                adjuster = 
+                    temporal.minus(
+                        monthsDiff >= 0
+                            ? 12 - monthsDiff
+                            : -monthsDiff
+                        , MONTHS);
             }
-            int monthsDiff = dowValue - calDow;
-            return temporal.minus(
-                    monthsDiff >= 0
-                        ? 12 - monthsDiff
-                        : -monthsDiff
-                    , MONTHS);
+            return adjuster;
         };
     }
 
-    public static TemporalAdjuster next(Month month) {
-        int dowValue = month.getValue();
+    public static TemporalAdjuster next(final Month month) {
         return (temporal) -> {
-            int calDow = temporal.get(MONTH_OF_YEAR);
+            final int monthsDiff = 
+                temporal.get(MONTH_OF_YEAR) - month.getValue();
 
-            int monthsDiff = calDow - dowValue;
             return temporal.plus(
                 monthsDiff >= 0
                     ? 12 - monthsDiff
