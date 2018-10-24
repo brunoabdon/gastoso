@@ -188,7 +188,7 @@
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jetty.version>9.3.8.v20160314</jetty.version>
+        <jetty.version>9.3.24.v20180605</jetty.version>
         <hibernate.version>4.3.11.Final</hibernate.version>
         <postgresql.version>9.4.1208.jre7</postgresql.version>
         <maven.compiler.source>1.8</maven.compiler.source>
