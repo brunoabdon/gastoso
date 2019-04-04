@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+    <groupId>com.github.brunoabdon.gastoso</groupId>
+    <artifactId>gastoso</artifactId>
+	<version>2.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Parent Project Abd-Commons</name>
+    <modules>
+        <module>gastoso-rest</module>
+        <module>gastoso-rest-client</module>
+        <module>gastoso-cli</module>
+        <module>gastoso-core</module>
+        <module>gastoso-srv</module>
+    </modules>
+	
+    <licenses>
+        <license>
+            <name>GNU General Public License, Version 3</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+        </license>
+    </licenses>  
+
+    <developers>
+        <developer>
+            <name>Bruno Abdon</name>
+            <organization>Abdonia</organization>
+            <organizationUrl>https://github.com/abdonia</organizationUrl>
+        </developer>
+    </developers>    
+	
+    <build>
+      <plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-source-plugin</artifactId>
+			<version>3.0.1</version>
+			<executions>
+				<execution>
+					<id>attach-sources</id>
+					<goals>
+						<goal>jar-no-fork</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<version>3.1.0</version>
+			<executions>
+				<execution>
+					<id>attach-javadocs</id>
+					<goals>
+						<goal>jar</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+      </plugins>		
+    </build>
+	  
+    <scm>
+    	<url>https://github.com/brunoabdon/gastoso.git</url>
+        <connection>scm:git:git://github.com/brunoabdon/gastoso.git</connection>
+        <developerConnection>scm:git:git@github.com:brunoabdon/gastoso.git</developerConnection>
+    </scm>  
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <abd-commons.version>2.0.0-SNAPSHOT</abd-commons.version>
+    </properties>
+	  
+</project>
