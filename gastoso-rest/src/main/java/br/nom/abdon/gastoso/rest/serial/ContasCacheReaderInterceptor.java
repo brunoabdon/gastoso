@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Bruno Abdon
+ * Copyright (C) 2019 Bruno Abdon
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,8 +49,8 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
 
     private final ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
-    private final static Function<FatoDetalhado, Stream<Lancamento>> FL_STREAM = 
-        f-> f.getLancamentos().stream();
+    private final static Function<FatoDetalhado, Stream<Lancamento>> FL_STREAM= 
+        f -> f.getLancamentos().stream();
 
     @Override
     public Object aroundReadFrom(final ReaderInterceptorContext context) 
@@ -101,7 +101,7 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
             
             @SuppressWarnings("unchecked")
             final Collection<Lancamento> lancamentos =
-                    (Collection<Lancamento>) entity;
+                (Collection<Lancamento>) entity;
             
             streamLancamento = lancamentos.stream();
             
@@ -109,7 +109,7 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
             
             @SuppressWarnings("unchecked")
             final Collection<FatoDetalhado> fatos =
-                    (Collection<FatoDetalhado>) entity;
+                (Collection<FatoDetalhado>) entity;
             
             streamLancamento = fatos.stream().flatMap(FL_STREAM);
         } else {
