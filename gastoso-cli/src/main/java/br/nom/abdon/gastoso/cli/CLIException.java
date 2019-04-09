@@ -22,6 +22,8 @@ package br.nom.abdon.gastoso.cli;
  */
 public class CLIException extends Exception{
 
+    private static final long serialVersionUID = 3949285143338173748L;
+
     public CLIException() {
         super();
     }

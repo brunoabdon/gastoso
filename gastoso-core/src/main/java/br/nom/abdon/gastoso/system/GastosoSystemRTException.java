@@ -22,6 +22,8 @@ package br.nom.abdon.gastoso.system;
  */
 public class GastosoSystemRTException extends RuntimeException {
 
+    private static final long serialVersionUID = 7534436816325986620L;
+
     public static final int ERRO_GERAL = 0;
     
     private int code;

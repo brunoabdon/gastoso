@@ -32,6 +32,8 @@ import br.nom.abdon.modelo.EntidadeBaseInt;
 })
 public class Fato extends EntidadeBaseInt {
 
+    private static final long serialVersionUID = 612424688270067621L;
+
     public static final int DESC_MAX_LEN = 70;
     
     @Column(nullable = false)

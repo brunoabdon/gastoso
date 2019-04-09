@@ -20,6 +20,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     query = "SELECT c FROM Conta c ORDER BY c.nome")
 public class Conta extends EntidadeBaseInt {
     
+    private static final long serialVersionUID = 7321886996603362113L;
+
     public static final int NOME_MAX_LEN = 50;
 
     @Column(length = NOME_MAX_LEN, nullable = false, unique = true)

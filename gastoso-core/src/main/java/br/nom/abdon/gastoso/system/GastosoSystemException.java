@@ -22,6 +22,8 @@ package br.nom.abdon.gastoso.system;
  */
 public class GastosoSystemException extends Exception {
 
+    private static final long serialVersionUID = -5098646800565450863L;
+
     public GastosoSystemException(){
         super();
     }

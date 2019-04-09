@@ -39,6 +39,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 })
 public class Lancamento extends EntidadeBaseInt {
 
+    private static final long serialVersionUID = -3510137276546152596L;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Fato fato;
 

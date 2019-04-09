@@ -22,6 +22,8 @@ package br.nom.abdon.gastoso.system;
  */
 public class NotFoundException extends GastosoSystemException {
 
+    private static final long serialVersionUID = -3559119085047507150L;
+
     public NotFoundException(Throwable cause) {
         super(cause);
     }
