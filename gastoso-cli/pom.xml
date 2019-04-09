@@ -12,7 +12,7 @@
 
     <packaging>jar</packaging>
     
-    <name>gastoso-cli</name>
+    <name>Gastoso Command Line Interface</name>
     <description>Command Line Interface for a Gastoso REST Server</description>
     
     <url>https://github.com/brunoabdon/gastoso-cli</url>

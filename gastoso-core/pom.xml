@@ -11,7 +11,7 @@
 
     <packaging>jar</packaging>
 
-    <name>gastoso-core</name>
+    <name>Gastoso Core</name>
     <description>Gastoso project's Core model classes.</description>
     <url>https://github.com/brunoabdon/abd-commons-core</url>
 

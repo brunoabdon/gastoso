@@ -11,7 +11,7 @@
 
     <packaging>jar</packaging>
 
-    <name>gastoso-rest</name>
+    <name>Gastoso REST</name>
     <description>Client and server REST common code for Gastoso</description>
     <url>https://github.com/brunoabdon/abd-commons-dal</url>
 

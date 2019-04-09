@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>gastoso-rest-client</artifactId>
-
+    <name>Gastoso REST-Client</name>
     <packaging>jar</packaging>
     <description>A Rest Client for Gastoso</description>
     <url>https://github.com/brunoabdon/gastoso-rest-client</url>

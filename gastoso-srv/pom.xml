@@ -11,7 +11,7 @@
 
     <artifactId>gastoso-webapp</artifactId>
     <packaging>war</packaging>
-    <name>gastoso-webapp</name>
+    <name>Gastoso Web Application</name>
 
     <dependencyManagement>
         <dependencies>
