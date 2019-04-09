@@ -25,7 +25,7 @@ import br.nom.abdon.util.Identifiable;
  *
  * @author Bruno Abdon
  */
-public class Saldo implements Identifiable{
+public class Saldo implements Identifiable<Integer>{
 
     private Conta conta;
     private LocalDate dia;
