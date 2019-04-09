@@ -26,7 +26,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -47,9 +46,6 @@ import br.nom.abdon.gastoso.ext.FatoDetalhado;
 @Provider
 public class ContasCacheReaderInterceptor implements ReaderInterceptor {
 
-    private static final Logger LOG = 
-        Logger.getLogger(ContasCacheReaderInterceptor.class.getName());
-    
     private final Map<Integer,Conta> cacheContas = new HashMap<>();
 
     private final ReadWriteLock rwlock = new ReentrantReadWriteLock();
