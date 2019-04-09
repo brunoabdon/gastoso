@@ -27,7 +27,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.ext.Provider;
