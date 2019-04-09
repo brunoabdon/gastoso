@@ -70,10 +70,10 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
 
             final ParameterizedType pt = (ParameterizedType)genericType;
             final Type t = pt.getActualTypeArguments()[0];
-            final Class entityClass = 
+            final Class<?> entityClass = 
                 (t instanceof Class) 
-                    ? (Class)t 
-                    : (Class)((ParameterizedType)t).getRawType();
+                    ? (Class<?>)t 
+                    : (Class<?>)((ParameterizedType)t).getRawType();
 
             final Stream<Lancamento> streamLancamento = 
                 getStreamLancamento(entityClass, entity);
@@ -97,13 +97,14 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
     }
 
     private Stream<Lancamento> getStreamLancamento(
-            final Class entityClass, 
+            final Class<?> entityClass, 
             final Object entity) {
         
         final Stream<Lancamento> streamLancamento;
         
         if(Lancamento.class.isAssignableFrom(entityClass)){
             
+            @SuppressWarnings("unchecked")
             final Collection<Lancamento> lancamentos =
                     (Collection<Lancamento>) entity;
             
@@ -111,6 +112,7 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
             
         } else if(Fato.class.isAssignableFrom(entityClass)){
             
+            @SuppressWarnings("unchecked")
             final Collection<FatoDetalhado> fatos =
                     (Collection<FatoDetalhado>) entity;
             

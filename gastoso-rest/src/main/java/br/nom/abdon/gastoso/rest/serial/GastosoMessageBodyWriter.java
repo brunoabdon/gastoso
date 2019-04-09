@@ -56,6 +56,7 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
     public boolean isWriteable(
             final Class<?> type, 
             final Type genericType, 
+            @SuppressWarnings("unused") 
             final Annotation[] annotations, 
             final MediaType mediaType) {
 
@@ -70,6 +71,7 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
     }
 
     @Override
+    @SuppressWarnings("unused")
     public void writeTo(
         final Object entity, 
         final Class<?> type, 
@@ -106,7 +108,7 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
             ehColecao
                 ? col -> {
                             gen.writeStartArray();
-                            for(Object x : (Collection)col) {
+                            for(Object x : (Collection<?>)col) {
                                 entityMarshallerMethod.accept(x);
                             }
                             gen.writeEndArray();
@@ -118,6 +120,7 @@ public class GastosoMessageBodyWriter implements MessageBodyWriter<Object>{
     }
 
     @Override
+    @SuppressWarnings("unused")
     public long getSize(
             final Object t, Class<?> type, 
             final Type genericType, 

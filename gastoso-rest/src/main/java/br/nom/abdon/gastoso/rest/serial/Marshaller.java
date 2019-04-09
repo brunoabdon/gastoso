@@ -89,8 +89,11 @@ class Marshaller {
         gen.writeEndObject();
     }
 
-    //sempre eh simple (no marshall)
-    public void marshall(final Lancamento lancamento, final MediaType tipo) 
+    
+    public void marshall(
+                final Lancamento lancamento, 
+                @SuppressWarnings("unused") //sempre eh simple (no marshall) 
+                final MediaType tipo) 
             throws IOException {
         
         final Fato fato = lancamento.getFato();

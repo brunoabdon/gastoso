@@ -43,7 +43,9 @@ class GastosoCollectionMessageBodyReader<E>
         this.unmarshaller = unmarshaller;
     }
 
+    
     @Override
+    @SuppressWarnings("unused")
     protected E tryToReadEntity(
         final Annotation[] annotations, 
         final MediaType mediaType, 

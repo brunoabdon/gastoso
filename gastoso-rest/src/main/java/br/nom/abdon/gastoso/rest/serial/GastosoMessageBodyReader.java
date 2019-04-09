@@ -50,11 +50,12 @@ import br.nom.abdon.gastoso.rest.MediaTypes;
 })
 public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
     
-    private static final Class[] KNOWN_CLASSES = {
+    private static final Class<?>[] KNOWN_CLASSES = {
         Conta.class,Fato.class,FatoDetalhado.class,Saldo.class
     };
 
     @Override
+    @SuppressWarnings("unused")
     public boolean isReadable(
         final Class<?> type, 
         final Type genericType, 
@@ -74,6 +75,7 @@ public class GastosoMessageBodyReader implements MessageBodyReader<Object>{
     }
 
     @Override
+    @SuppressWarnings("unused")
     public Object readFrom(
         final Class<Object> type, 
         final Type genericType, 
