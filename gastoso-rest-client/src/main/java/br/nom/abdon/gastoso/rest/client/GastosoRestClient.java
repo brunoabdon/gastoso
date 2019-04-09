@@ -163,6 +163,13 @@ public class GastosoRestClient extends AbstractRestClient<GastosoSystemException
         }
     } 
     
+    /**
+     * Loga no serviço, pra pegar um token de acesso. 
+     * @param user Ignorado 
+     * @param password A senha atual.
+     * @throws RESTResponseException Se a requisição não terminar em sucesso.
+     * @return {@code true} se a requisição retornou um token.
+     */
     public boolean login (final String user, final String password) 
             throws RESTResponseException {
 
