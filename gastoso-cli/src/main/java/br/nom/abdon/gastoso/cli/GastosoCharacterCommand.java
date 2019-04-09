@@ -99,7 +99,7 @@ class GastosoCharacterCommand {
     private Fato fato;
     private Map<Integer,Lancamento> mapContaLancamento = new HashMap<>();
 
-    private final Map<String,Integer> nicks = new HashMap();
+    private final Map<String,Integer> nicks = new HashMap<>();
 
     private final boolean extSupported;
 
