@@ -61,7 +61,7 @@ public class ContasCacheReaderInterceptor implements ReaderInterceptor {
     public Object aroundReadFrom(final ReaderInterceptorContext context) 
             throws IOException, WebApplicationException {
         
-        Object entity = context.proceed();
+        final Object entity = context.proceed();
         
         final Class<?> type = context.getType();
         
