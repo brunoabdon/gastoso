@@ -28,6 +28,8 @@ import br.nom.abdon.gastoso.Lancamento;
  */
 public class FatoDetalhado extends Fato {
     
+    private static final long serialVersionUID = -4262070032559621687L;
+    
     private List<Lancamento> lancamentos;
 
     
