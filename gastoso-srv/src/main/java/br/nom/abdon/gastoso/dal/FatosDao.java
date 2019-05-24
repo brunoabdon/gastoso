@@ -54,7 +54,9 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
     }
 
     @Override
-    protected void validar(EntityManager em, Fato fato) throws DalException {
+    protected void validar(
+            final EntityManager em, 
+            final Fato fato) throws DalException {
         if(fato.getDia() == null){
             throw new DalException(ERRO_DIA_VAZIO);
         }
