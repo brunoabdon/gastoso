@@ -53,6 +53,17 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
         super(Fato.class);
     }
 
+    /**
+     * Considera válido um {@link Fato} que denha um {@linkplain Fato#getDia() 
+     * dia} não {@code null}, uma {@linkplain Fato#getDescricao() descrição}
+     * não {@linkplain StringUtils#isBlank(CharSequence) nula nem vazia} e com
+     * menos de que {@linkplain Fato#DESC_MAX_LEN a quantidade máxima de 
+     * caracteres permitida}.
+     * 
+     * @param em Ignorado.
+     * @param fato O {@link Fato} a ser validado.
+     * @throws DalException caso o fato não seja válido.  
+     */
     @Override
     protected void validar(
             final EntityManager em, 
@@ -181,7 +192,5 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
             
             q.orderBy(orders);
         }
-
-
     } 
 }
