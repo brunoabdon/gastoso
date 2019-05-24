@@ -34,7 +34,7 @@ public class DalUtil {
 
     private static void tratarPaginacao(
             final Paginacao paginacao, 
-            final TypedQuery query) {
+            final TypedQuery<?> query) {
 
         final Integer inicio = paginacao.getPrimeiro();
         final Integer quantos = paginacao.getQuantidadeMaxima();
@@ -45,7 +45,7 @@ public class DalUtil {
     
     private static void trataParams(
             final Map<String, Object> params, 
-            final TypedQuery query) {
+            final TypedQuery<?> query) {
         
         params.entrySet().stream().forEach(
             (entry) -> query.setParameter(entry.getKey(), entry.getValue())

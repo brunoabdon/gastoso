@@ -159,7 +159,7 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
             List<Order> orders = new LinkedList<>();
             
             for(FiltroFatos.ORDEM itemOrdenacao : ordem) {
-                final Path path;
+                final Path<?> path;
                 
                 switch(itemOrdenacao){
                     case POR_CRIACAO:
