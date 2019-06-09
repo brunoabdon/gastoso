@@ -4,9 +4,9 @@
     <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
     <mapping-file>META-INF/gastoso-namedQueries.xml</mapping-file>
 
-    <class>br.nom.abdon.gastoso.Conta</class>
-    <class>br.nom.abdon.gastoso.Fato</class>
-    <class>br.nom.abdon.gastoso.Lancamento</class>
+    <class>com.github.brunoabdon.gastoso.Conta</class>
+    <class>com.github.brunoabdon.gastoso.Fato</class>
+    <class>com.github.brunoabdon.gastoso.Lancamento</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     
     <properties>

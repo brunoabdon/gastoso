@@ -2,7 +2,7 @@
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <filter>
         <filter-name>CrossOriginFilter</filter-name>
-        <filter-class>br.nom.abdon.util.CrossOriginFilter</filter-class>
+        <filter-class>com.github.brunoabdon.commons.util.CrossOriginFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CrossOriginFilter</filter-name>
@@ -14,11 +14,11 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>br.nom.abdon.gastoso.rest,br.nom.abdon.rest</param-value>
+            <param-value>com.github.brunoabdon.gastoso.rest,com.github.brunoabdon.commons.rest</param-value>
         </init-param>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>br.nom.abdon.heroku.AbdApplication</param-value>
+            <param-value>com.github.brunoabdon.commons.heroku.AbdApplication</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>

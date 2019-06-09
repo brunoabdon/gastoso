@@ -98,7 +98,7 @@
       </plugins>
     </build>
     <properties>
-        <mainClass>br.nom.abdon.gastoso.cli.Main</mainClass>
+        <mainClass>com.github.brunoabdon.gastoso.cli.Main</mainClass>
         <jackson.version>2.7.4</jackson.version>
     </properties>
 </project>
