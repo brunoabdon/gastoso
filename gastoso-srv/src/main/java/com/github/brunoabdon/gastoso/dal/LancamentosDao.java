@@ -133,7 +133,7 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
 
     private void trataOrdenacao(
             final FiltroLancamentos filtro, 
-            final Root rootLancamento, 
+            final Root<?> rootLancamento, 
             final CriteriaBuilder cb, 
             final CriteriaQuery<Lancamento> q) {
         
@@ -142,7 +142,7 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
             final List<Order> orders = new LinkedList<>();
             
             for(final FiltroLancamentos.ORDEM itemOrdenacao : ordem) {
-                final Path path;
+                final Path<?> path;
                 
                 switch(itemOrdenacao){
                     case POR_CONTA_ID_ASC:
