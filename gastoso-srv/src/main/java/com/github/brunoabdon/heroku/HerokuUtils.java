@@ -20,7 +20,7 @@ public class HerokuUtils {
     public static Map<String, String> getEMFEnvProperties() {
         final String databaseUrl = System.getenv("DATABASE_URL");
         final StringTokenizer st = new StringTokenizer(databaseUrl, ":@/");
-        final String dbVendor = st.nextToken();
+        st.nextToken(); //final String dbVendor = ...
         final String userName = st.nextToken();
         final String password = st.nextToken();
         final String host = st.nextToken();
