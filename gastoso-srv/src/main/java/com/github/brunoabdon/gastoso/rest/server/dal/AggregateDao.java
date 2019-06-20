@@ -160,7 +160,7 @@ public class AggregateDao {
             orders = new LinkedList<>();
             
             for(FiltroSaldos.ORDEM itemOrdenacao : ordem) {
-                final Path path;
+                final Path<?> path;
                 
                 switch(itemOrdenacao){
                     case POR_CONTA:
