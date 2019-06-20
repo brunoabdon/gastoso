@@ -60,8 +60,6 @@ public class Contas extends AbstractRestCrud<Conta,Integer>{
             em.close();
         }
 
-        final GenericEntity<List<Conta>> genericEntity = 
-            new GenericEntity<List<Conta>>(contas){};
-        return super.buildResponse(request,httpHeaders,genericEntity);
+        return super.buildResponse(request,httpHeaders,contas);
     }
  }

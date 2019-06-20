@@ -1,10 +1,5 @@
 package com.github.brunoabdon.gastoso.rest.server;
 
-import com.github.brunoabdon.gastoso.Fato;
-import com.github.brunoabdon.gastoso.dal.FatosDao;
-import com.github.brunoabdon.gastoso.dal.LancamentosDao;
-import com.github.brunoabdon.commons.rest.AbstractRestCrud;
-
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -21,18 +16,19 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import com.github.brunoabdon.commons.dal.DalException;
+import com.github.brunoabdon.commons.rest.AbstractRestCrud;
+import com.github.brunoabdon.gastoso.Fato;
 import com.github.brunoabdon.gastoso.Lancamento;
-import com.github.brunoabdon.gastoso.rest.server.dal.FatosDetalhadosDao;
-
+import com.github.brunoabdon.gastoso.dal.FatosDao;
+import com.github.brunoabdon.gastoso.dal.LancamentosDao;
 import com.github.brunoabdon.gastoso.ext.FatoDetalhado;
-
 import com.github.brunoabdon.gastoso.rest.MediaTypes;
+import com.github.brunoabdon.gastoso.rest.server.dal.FatosDetalhadosDao;
 import com.github.brunoabdon.gastoso.system.FiltroFatos;
 import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
 
@@ -129,10 +125,7 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
             entityManager.close();
         }
 
-        final GenericEntity<List<FatoDetalhado>> genericEntity = 
-            new GenericEntity<List<FatoDetalhado>>(fatosNormais){};
-
-        return buildResponse(request, httpHeaders, genericEntity);
+        return buildResponse(request, httpHeaders, fatosNormais);
     }
 
     @Override

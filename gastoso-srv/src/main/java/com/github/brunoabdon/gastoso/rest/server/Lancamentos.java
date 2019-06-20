@@ -112,8 +112,6 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
             entityManager.close();
         }
 
-        final GenericEntity<List<Lancamento>> genericEntity = 
-            new GenericEntity<List<Lancamento>>(lancamentos){};
-        return buildResponse(request, httpHeaders, genericEntity);
+        return buildResponse(request, httpHeaders, lancamentos);
     }
 }
