@@ -49,7 +49,7 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
     }
 
     @Override
-    public LancamentosDao getDao() {
+    protected LancamentosDao getDao() {
         return dao;
     }
 
