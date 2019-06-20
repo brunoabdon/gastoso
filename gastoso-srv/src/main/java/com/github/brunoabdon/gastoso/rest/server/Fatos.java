@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -45,11 +44,7 @@ import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
 @Consumes(MediaTypes.APPLICATION_GASTOSO_PATCH)
 public class Fatos extends AbstractRestCrud<Fato,Integer>{
 
-    private static final Logger log = Logger.getLogger(Fatos.class.getName());
-    
     protected static final String PATH = "fatos";
-    
-    private static final int MAX_RESULTS = 200;
     
     private static final 
         Collector<Lancamento, ?,ConcurrentMap<Fato, List<Lancamento>>> 
@@ -166,7 +161,5 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         fato.setId(id);
         
         return fato;
- 
-    }
-    
+    }    
 }

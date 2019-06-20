@@ -1,11 +1,6 @@
 package com.github.brunoabdon.gastoso.rest.server;
 
 
-import com.github.brunoabdon.gastoso.Conta;
-import com.github.brunoabdon.gastoso.dal.ContasDao;
-import com.github.brunoabdon.gastoso.rest.MediaTypes;
-import com.github.brunoabdon.commons.rest.AbstractRestCrud;
-
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -14,10 +9,14 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+
+import com.github.brunoabdon.commons.rest.AbstractRestCrud;
+import com.github.brunoabdon.gastoso.Conta;
+import com.github.brunoabdon.gastoso.dal.ContasDao;
+import com.github.brunoabdon.gastoso.rest.MediaTypes;
 
 
 /**

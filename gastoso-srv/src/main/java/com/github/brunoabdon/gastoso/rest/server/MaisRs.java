@@ -16,8 +16,9 @@
  */
 package com.github.brunoabdon.gastoso.rest.server;
 
+import static com.github.brunoabdon.gastoso.ext.system.FiltroSaldos.ORDEM.POR_CONTA;
+
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -41,15 +42,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.github.brunoabdon.commons.dal.DalException;
 import com.github.brunoabdon.commons.dal.EntityNotFoundException;
 import com.github.brunoabdon.gastoso.Conta;
-
 import com.github.brunoabdon.gastoso.ext.Saldo;
 import com.github.brunoabdon.gastoso.ext.system.FiltroSaldos;
-import static com.github.brunoabdon.gastoso.ext.system.FiltroSaldos.ORDEM.POR_CONTA;
-
-import com.github.brunoabdon.gastoso.rest.server.dal.AggregateDao;
-
-
 import com.github.brunoabdon.gastoso.rest.MediaTypes;
+import com.github.brunoabdon.gastoso.rest.server.dal.AggregateDao;
 
 
 /**
@@ -62,8 +58,6 @@ import com.github.brunoabdon.gastoso.rest.MediaTypes;
 })
 public class MaisRs {
 
-    private static final LocalDate BIG_BANG = LocalDate.of(1979, Month.APRIL, 26);
-    
     @PersistenceUnit(unitName = "gastoso_peruni")
     protected EntityManagerFactory emf;
 
