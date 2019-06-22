@@ -159,7 +159,7 @@ public class AggregateDao {
         } else {
             orders = new LinkedList<>();
             
-            for(FiltroSaldos.ORDEM itemOrdenacao : ordem) {
+            for(final FiltroSaldos.ORDEM itemOrdenacao : ordem) {
                 final Path<?> path;
                 
                 switch(itemOrdenacao){
