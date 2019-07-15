@@ -108,6 +108,11 @@
           <artifactId>gastoso-rest</artifactId>
           <version>${project.version}</version>
         </dependency>          
+        <dependency>
+          <groupId>com.github.brunoabdon.gastoso</groupId>
+          <artifactId>gastoso-dal</artifactId>
+          <version>${project.version}</version>
+        </dependency>          
     </dependencies>
 
     <build>
