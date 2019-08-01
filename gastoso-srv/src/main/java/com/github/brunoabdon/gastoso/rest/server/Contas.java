@@ -51,7 +51,7 @@ public class Contas extends AbstractRestCrud<Conta,Integer>{
         
         final List<Conta> contas;
         
-        final EntityManager em = emf.createEntityManager();
+        final EntityManager em = entityManager;
         
         try {
             contas = dao.listar(em);

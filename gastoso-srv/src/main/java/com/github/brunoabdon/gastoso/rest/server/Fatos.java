@@ -95,8 +95,6 @@ public class Fatos extends AbstractRestCrud<Fato,Integer>{
         FiltroLancamentos filtroLancamentos = new FiltroLancamentos();
         filtroLancamentos.setFiltroFatos(filtroFatos);
         
-        final EntityManager entityManager = emf.createEntityManager();
-        
         try {
 
             fatosNormais = 

@@ -102,8 +102,6 @@ public class Lancamentos extends AbstractRestCrud<Lancamento, Integer> {
             filtroFatos.setDataMaxima(dataMaxima);
         }
 
-        final EntityManager entityManager = emf.createEntityManager();
-        
         try {
             lancamentos = dao.listar(entityManager, filtroLancamentos);
 
