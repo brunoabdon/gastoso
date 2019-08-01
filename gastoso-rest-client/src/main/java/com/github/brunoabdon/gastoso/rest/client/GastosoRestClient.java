@@ -16,10 +16,14 @@
  */
 package com.github.brunoabdon.gastoso.rest.client;
 
+import static com.github.brunoabdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
+import static com.github.brunoabdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
+import static com.github.brunoabdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
+import static java.time.format.DateTimeFormatter.ISO_DATE;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import static java.time.format.DateTimeFormatter.ISO_DATE;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -35,35 +39,23 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import pl.touk.throwing.ThrowingFunction;
-
+import com.github.brunoabdon.commons.rest.AbstractRestClient;
+import com.github.brunoabdon.commons.rest.RESTResponseException;
 import com.github.brunoabdon.gastoso.Conta;
 import com.github.brunoabdon.gastoso.Fato;
 import com.github.brunoabdon.gastoso.Lancamento;
-
 import com.github.brunoabdon.gastoso.ext.FatoDetalhado;
 import com.github.brunoabdon.gastoso.ext.Saldo;
 import com.github.brunoabdon.gastoso.ext.system.FiltroFatosDetalhados;
 import com.github.brunoabdon.gastoso.ext.system.FiltroSaldos;
 import com.github.brunoabdon.gastoso.ext.system.GastosoSystemExtended;
-
-import static com.github.brunoabdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_FULL_TYPE;
-import static com.github.brunoabdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_PATCH_TYPE;
-import static com.github.brunoabdon.gastoso.rest.MediaTypes.APPLICATION_GASTOSO_SIMPLES_TYPE;
-import com.github.brunoabdon.gastoso.rest.serial.ContasCacheReaderInterceptor;
-import com.github.brunoabdon.gastoso.rest.serial.FatosMessageBodyReader;
-import com.github.brunoabdon.gastoso.rest.serial.GastosoMessageBodyReader;
-import com.github.brunoabdon.gastoso.rest.serial.GastosoMessageBodyWriter;
-import com.github.brunoabdon.gastoso.rest.serial.LancamentosMessageBodyReader;
-import com.github.brunoabdon.gastoso.rest.serial.SaldosMessageBodyReader;
-
 import com.github.brunoabdon.gastoso.system.FiltroContas;
 import com.github.brunoabdon.gastoso.system.FiltroFatos;
 import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
 import com.github.brunoabdon.gastoso.system.GastosoSystemException;
 import com.github.brunoabdon.gastoso.system.NotFoundException;
-import com.github.brunoabdon.commons.rest.AbstractRestClient;
-import com.github.brunoabdon.commons.rest.RESTResponseException;
+
+import pl.touk.throwing.ThrowingFunction;
 
 
 
@@ -117,18 +109,9 @@ public class GastosoRestClient
     private final ClientRequestFilter authFilter = 
         (reqContx) -> reqContx.getHeaders().add("X-Abd-auth_token", authToken);
 
-    private final ContasCacheReaderInterceptor readerInterceptor =
-        new ContasCacheReaderInterceptor();
-    
     private final Consumer<ClientBuilder> configurator = 
         cb -> {
-            cb.register(GastosoMessageBodyReader.class)
-            .register(GastosoMessageBodyWriter.class)
-            .register(FatosMessageBodyReader.class)
-            .register(LancamentosMessageBodyReader.class)
-            .register(SaldosMessageBodyReader.class)
-            .register(authFilter)
-            .register(readerInterceptor)
+            cb.register(authFilter)
             ;
         }
     ;
@@ -249,14 +232,13 @@ public class GastosoRestClient
     private List<Conta> ggetContas(final FiltroContas filtro) 
             throws GastosoSystemException {
         
-        final List<Conta> contas =
+        return 
             get((wt,f) -> wt, 
                 CONTA_GEN_TYPE,
                 APPLICATION_GASTOSO_FULL_TYPE,
                 contasWebTarget, 
                 filtro);
-        readerInterceptor.updateContas(contas);
-        return contas;
+        
     }
 
     
@@ -341,9 +323,7 @@ public class GastosoRestClient
     
     @Override
     public Conta getConta(final int id) throws GastosoSystemException {
-        final Conta conta = get(contaWebTarget,Conta.class,id);
-        readerInterceptor.updateConta(conta);
-        return conta;
+        return get(contaWebTarget,Conta.class,id);
     }
 
     @Override
@@ -358,9 +338,7 @@ public class GastosoRestClient
 
     @Override
     public Conta update(final Conta conta) throws GastosoSystemException {
-        final Conta updatedConta = update(contaWebTarget, conta, Conta.class);
-        readerInterceptor.updateConta(conta);
-        return updatedConta;
+        return update(contaWebTarget, conta, Conta.class);
     }
     
     @Override
@@ -377,7 +355,6 @@ public class GastosoRestClient
     @Override
     public void deleteConta(final int id) throws GastosoSystemException {
         delete(contaWebTarget, id);
-        readerInterceptor.removeConta(id);
     }
     
     @Override
@@ -393,9 +370,7 @@ public class GastosoRestClient
     @Override
     public Conta create(final Conta conta) 
             throws GastosoSystemException {
-        final Conta novaConta = create(contasWebTarget,conta,Conta.class);
-        readerInterceptor.updateConta(conta);
-        return novaConta;
+        return create(contasWebTarget,conta,Conta.class);
     }
     
     @Override

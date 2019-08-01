@@ -56,23 +56,6 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
           <groupId>com.github.brunoabdon.gastoso</groupId>
           <artifactId>gastoso-rest-client</artifactId>
           <version>${project.version}</version>
@@ -98,6 +81,5 @@
     </build>
     <properties>
         <mainClass>com.github.brunoabdon.gastoso.cli.Main</mainClass>
-        <jackson.version>2.7.4</jackson.version>
     </properties>
 </project>
