@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>gastoso-cli</artifactId>
-
     <packaging>jar</packaging>
     
     <name>Gastoso Command Line Interface</name>

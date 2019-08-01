@@ -45,9 +45,12 @@ import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
  */
 public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
 
-    public static final String ERRO_FATO_VAZIO = "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
-    public static final String ERRO_CONTA_VAZIA = "com.github.brunoabdon.gastoso.dal.LancamentosDao.CONTA_VAZIA";
-    public static final String ERRO_DUPLICATA = "com.github.brunoabdon.gastoso.dal.LancamentosDao.DUPLICATA";
+    public static final String ERRO_FATO_VAZIO = 
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
+    public static final String ERRO_CONTA_VAZIA = 
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.CONTA_VAZIA";
+    public static final String ERRO_DUPLICATA = 
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.DUPLICATA";
 
     public LancamentosDao() {
         super(Lancamento.class);

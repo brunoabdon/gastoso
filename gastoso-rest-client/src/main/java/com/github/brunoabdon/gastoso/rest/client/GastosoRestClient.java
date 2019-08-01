@@ -71,7 +71,8 @@ import com.github.brunoabdon.commons.rest.RESTResponseException;
  *
  * @author Bruno Abdon
  */
-public class GastosoRestClient extends AbstractRestClient<GastosoSystemException> 
+public class GastosoRestClient 
+        extends AbstractRestClient<GastosoSystemException> 
         implements GastosoSystemExtended {
 
     private static final Logger LOG = 
