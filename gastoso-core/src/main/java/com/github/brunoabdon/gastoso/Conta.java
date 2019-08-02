@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -15,9 +16,19 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author bruno
  */
 @Entity
- @NamedQuery(
-    name = "Conta.all",
-    query = "SELECT c FROM Conta c ORDER BY c.nome")
+@NamedQueries({
+	@NamedQuery(
+		name="Conta.all", query="SELECT c FROM Conta c ORDER BY c.nome"
+	),
+	@NamedQuery(
+		name="Conta.nomeEmUso",
+		query="SELECT COUNT(c.id) > 0 FROM Conta c WHERE c.nome = :nome"
+	),
+	@NamedQuery(
+		name = "Conta.temLancamento",
+	query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.conta = :conta"
+	)
+})
 public class Conta extends EntidadeBaseInt {
     
     private static final long serialVersionUID = 7321886996603362113L;
