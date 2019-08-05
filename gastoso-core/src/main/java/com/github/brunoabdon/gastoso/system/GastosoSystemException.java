@@ -17,7 +17,6 @@
 package com.github.brunoabdon.gastoso.system;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class GastosoSystemException extends Exception {
@@ -36,7 +35,7 @@ public class GastosoSystemException extends Exception {
         super(cause);
     }
 
-    public GastosoSystemException(final String message, final Throwable cause) {
+    public GastosoSystemException(final String message, final Throwable cause){
         super(message, cause);
     }    
 }

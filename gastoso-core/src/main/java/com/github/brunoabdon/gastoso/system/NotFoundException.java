@@ -17,7 +17,6 @@
 package com.github.brunoabdon.gastoso.system;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class NotFoundException extends GastosoSystemException {

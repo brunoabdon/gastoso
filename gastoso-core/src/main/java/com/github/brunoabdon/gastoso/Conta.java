@@ -11,13 +11,13 @@ import javax.persistence.NamedQuery;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- *
  * @author bruno
  */
 @Entity
- @NamedQuery(
+@NamedQuery(
     name = "Conta.all",
-    query = "SELECT c FROM Conta c ORDER BY c.nome")
+    query = "SELECT c FROM Conta c ORDER BY c.nome"
+)
 public class Conta extends EntidadeBaseInt {
     
     private static final long serialVersionUID = 7321886996603362113L;
@@ -30,15 +30,15 @@ public class Conta extends EntidadeBaseInt {
     public Conta() {
     }
 
-    public Conta(Integer id) {
+    public Conta(final Integer id) {
         this(id,null);
     }
     
-    public Conta(String nome) {
+    public Conta(final String nome) {
         this.nome = nome;
     }
 
-    public Conta(Integer id, String nome) {
+    public Conta(final Integer id, final String nome) {
         this(nome);
         super.setId(id);
     }
@@ -47,11 +47,11 @@ public class Conta extends EntidadeBaseInt {
         return nome;
     }
 
-    public void setNome(String nome) {
+    public void setNome(final String nome) {
         this.nome = nome;
     }
  
-    public static Conta fromString(String str){
+    public static Conta fromString(final String str){
         return EntidadeBaseInt.fromString(Conta.class, str);
     }
 
@@ -61,7 +61,7 @@ public class Conta extends EntidadeBaseInt {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         boolean equal = obj != null && (obj instanceof Conta);
         if(equal){
             final Conta conta = (Conta) obj;
@@ -73,7 +73,8 @@ public class Conta extends EntidadeBaseInt {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(3, 11)
+        return 
+            new HashCodeBuilder(3, 11)
             .append(getId())
             .append(getNome())
             .toHashCode();

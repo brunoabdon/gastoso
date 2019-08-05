@@ -17,7 +17,6 @@
 package com.github.brunoabdon.gastoso.system;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class Paginacao {
@@ -39,6 +38,4 @@ public class Paginacao {
     public void setQuantidadeMaxima(Integer quantidadeMaxima) {
         this.quantidadeMaxima = quantidadeMaxima;
     }
-    
-    
 }

@@ -23,10 +23,10 @@ import java.util.List;
 import com.github.brunoabdon.gastoso.Fato;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class FiltroFatos {
+
     public static enum ORDEM {POR_DIA, POR_DESCRICAO, POR_CRIACAO}
 
     private LocalDate dataMinima, dataMaxima;
@@ -42,7 +42,7 @@ public class FiltroFatos {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
@@ -50,7 +50,7 @@ public class FiltroFatos {
         return dataMinima;
     }
 
-    public void setDataMinima(LocalDate dataMinima) {
+    public void setDataMinima(final LocalDate dataMinima) {
         this.dataMinima = dataMinima;
     }
 
@@ -58,7 +58,7 @@ public class FiltroFatos {
         return dataMaxima;
     }
 
-    public void setDataMaxima(LocalDate dataMaxima) {
+    public void setDataMaxima(final LocalDate dataMaxima) {
         this.dataMaxima = dataMaxima;
     }
 
@@ -66,7 +66,7 @@ public class FiltroFatos {
         return inicio;
     }
 
-    public void setInicio(Integer inicio) {
+    public void setInicio(final Integer inicio) {
         this.inicio = inicio;
     }
 
@@ -74,7 +74,7 @@ public class FiltroFatos {
         return fim;
     }
 
-    public void setFim(Integer fim) {
+    public void setFim(final Integer fim) {
         this.fim = fim;
     }
 
@@ -82,11 +82,11 @@ public class FiltroFatos {
         return quantos;
     }
 
-    public void setQuantos(Integer quantos) {
+    public void setQuantos(final Integer quantos) {
         this.quantos = quantos;
     }
 
-    public FiltroFatos addOrdem(ORDEM ordemItem){
+    public FiltroFatos addOrdem(final ORDEM ordemItem){
         if(this.ordem == null) this.ordem = new LinkedList<>();
         this.ordem.add(ordemItem);
         return this;
@@ -100,7 +100,7 @@ public class FiltroFatos {
         return fato;
     }
 
-    public void setFato(Fato fato) {
+    public void setFato(final Fato fato) {
         this.fato = fato;
     }
 

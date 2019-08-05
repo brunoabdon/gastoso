@@ -1,7 +1,5 @@
 package com.github.brunoabdon.gastoso;
 
-import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
-
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -13,6 +11,8 @@ import javax.persistence.NamedQuery;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
+
 /**
  *
  * @author bruno
@@ -21,11 +21,16 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @NamedQueries({
     @NamedQuery(
         name="Lancamento.porFato",
-        query = "SELECT l FROM Lancamento l WHERE l.fato = :fato ORDER BY l.conta"
+        query = 
+            "SELECT l FROM Lancamento l WHERE l.fato = :fato ORDER BY l.conta"
     ),
     @NamedQuery(
         name = "Lancamento.porContaPeriodo",
-        query = "SELECT l FROM Lancamento l WHERE l.conta = :conta AND l.fato.dia BETWEEN :dataMin AND :dataMax ORDER BY l.fato.dia, l.id"
+        query = 
+            "SELECT l FROM Lancamento l WHERE "
+            + "l.conta = :conta "
+            + "AND l.fato.dia BETWEEN :dataMin "
+            + "AND :dataMax ORDER BY l.fato.dia, l.id"
     ),
     
     @NamedQuery(
@@ -34,7 +39,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
     ),
     @NamedQuery(
         name = "Lancamento.existeDuplicata",
-        query = "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.fato = :fato AND l.conta = :conta"
+        query = 
+            "SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE "
+            + "l.fato = :fato "
+            + "AND l.conta = :conta"
     )
 })
 public class Lancamento extends EntidadeBaseInt {

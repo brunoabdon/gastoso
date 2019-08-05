@@ -17,7 +17,6 @@
 package com.github.brunoabdon.gastoso.system;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class GastosoSystemRTException extends RuntimeException {
@@ -42,7 +41,7 @@ public class GastosoSystemRTException extends RuntimeException {
         this(message,e,ERRO_GERAL);
     }
 
-    public GastosoSystemRTException(Throwable e) {
+    public GastosoSystemRTException(final Throwable e) {
         this(e,ERRO_GERAL);
     }
 
