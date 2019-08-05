@@ -25,14 +25,14 @@ public class GastosoSystemRTException extends RuntimeException {
 
     public static final int ERRO_GERAL = 0;
     
-    private int code;
+    private final int code;
 
-    public GastosoSystemRTException(final Throwable cause, final int errorCode){
+    public GastosoSystemRTException(final Throwable cause,final int errorCode){
         super(cause);
         this.code = errorCode;
     }
 
-    public GastosoSystemRTException(final String message, final int errorCode) {
+    public GastosoSystemRTException(final String message, final int errorCode){
         super(message);
         this.code = errorCode;
     }
@@ -56,8 +56,4 @@ public class GastosoSystemRTException extends RuntimeException {
     public int getCode() {
         return code;
     }
-
-    public void setCode(int code) {
-        this.code = code;
-    }    
 }
