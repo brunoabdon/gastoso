@@ -17,7 +17,6 @@
 package com.github.brunoabdon.gastoso.system;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class GastosoSystemRTException extends RuntimeException {
@@ -26,14 +25,14 @@ public class GastosoSystemRTException extends RuntimeException {
 
     public static final int ERRO_GERAL = 0;
     
-    private int code;
+    private final int code;
 
-    public GastosoSystemRTException(final Throwable cause, final int errorCode){
+    public GastosoSystemRTException(final Throwable cause,final int errorCode){
         super(cause);
         this.code = errorCode;
     }
 
-    public GastosoSystemRTException(final String message, final int errorCode) {
+    public GastosoSystemRTException(final String message, final int errorCode){
         super(message);
         this.code = errorCode;
     }
@@ -42,7 +41,7 @@ public class GastosoSystemRTException extends RuntimeException {
         this(message,e,ERRO_GERAL);
     }
 
-    public GastosoSystemRTException(Throwable e) {
+    public GastosoSystemRTException(final Throwable e) {
         this(e,ERRO_GERAL);
     }
 
@@ -57,8 +56,4 @@ public class GastosoSystemRTException extends RuntimeException {
     public int getCode() {
         return code;
     }
-
-    public void setCode(int code) {
-        this.code = code;
-    }    
 }

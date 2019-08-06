@@ -47,7 +47,7 @@ public class DalUtil {
             final Map<String, Object> params, 
             final TypedQuery<?> query) {
         
-        params.entrySet().stream().forEach(
+        params.entrySet().forEach(
             (entry) -> query.setParameter(entry.getKey(), entry.getValue())
         );
     }

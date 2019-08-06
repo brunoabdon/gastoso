@@ -19,7 +19,6 @@ package com.github.brunoabdon.gastoso.system;
 import com.github.brunoabdon.gastoso.Conta;
 
 /**
- *
  * @author Bruno Abdon
  */
 public class FiltroContas {
@@ -36,7 +35,7 @@ public class FiltroContas {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
@@ -44,16 +43,15 @@ public class FiltroContas {
         return ordem;
     }
 
-    public void setOrdem(ORDEM ordem) {
+    public void setOrdem(final ORDEM ordem) {
         this.ordem = ordem;
     }
-    
     
     public Conta getConta() {
         return conta;
     }
 
-    public void setConta(Conta conta) {
+    public void setConta(final Conta conta) {
         this.conta = conta;
     }
 

@@ -30,7 +30,7 @@ public class FiltroLancamentos {
         POR_CONTA_ID_ASC(true), POR_CONTA_NOME_ASC(true), 
         POR_VALOR_ASC(true),
         
-        POR_DIA_DESC(false), POR_FATO_ID_DESC(false), POR_DESC_FATO_DESC(false), 
+        POR_DIA_DESC(false),POR_FATO_ID_DESC(false),POR_DESC_FATO_DESC(false), 
         POR_CONTA_ID_DESC(false), POR_CONTA_NOME_DESC(false), 
         POR_VALOR_DESC(false);
     
@@ -53,8 +53,8 @@ public class FiltroLancamentos {
     private final Paginacao paginacao = new Paginacao();
     
     /**
-     * Diz quais os critérios que o fato de um lancamento deve cumprir para esse
-     * lancamento ser aceito por this filtro. Nunca é nulo.
+     * Diz quais os critérios que o fato de um lancamento deve cumprir para 
+     * esse lancamento ser aceito por this filtro. Nunca é nulo.
      * 
      * @return o fitro;
      */
@@ -63,8 +63,8 @@ public class FiltroLancamentos {
     }
 
     /**
-     * Diz quais os critérios que a conta de um lancamento deve cumprir para que
-     * esse lancamento seja aceito por this filtro. Nunca é nulo.
+     * Diz quais os critérios que a conta de um lancamento deve cumprir para 
+     * que esse lancamento seja aceito por this filtro. Nunca é nulo.
      * 
      * @return o filtro;
      */
@@ -72,7 +72,7 @@ public class FiltroLancamentos {
         return filtroContas;
     }
 
-    public FiltroLancamentos addOrdem(ORDEM ordem){
+    public FiltroLancamentos addOrdem(final ORDEM ordem){
         if(this.ordem == null) this.ordem = new LinkedList<>();
         this.ordem.add(ordem);
         return this;
@@ -101,7 +101,7 @@ public class FiltroLancamentos {
      * inválido.
      * @param filtroContas o filtro.
      */
-    public void setFiltroContas(FiltroContas filtroContas) {
+    public void setFiltroContas(final FiltroContas filtroContas) {
         if(filtroContas == null) throw new IllegalArgumentException();
         this.filtroContas = filtroContas;
     }

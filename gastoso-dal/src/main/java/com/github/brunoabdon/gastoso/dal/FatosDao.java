@@ -45,9 +45,12 @@ import com.github.brunoabdon.gastoso.system.FiltroFatos;
  */
 public class FatosDao extends AbstractDao<Fato,Integer>{
 
-    public static final String ERRO_DIA_VAZIO = "com.github.brunoabdon.gastoso.dal.FatosDao.DIA_VAZIO";
-    public static final String ERRO_DESCRICAO_VAZIA = "com.github.brunoabdon.gastoso.dal.FatosDao.DESCRICAO_VAZIA";
-    public static final String ERRO_DESCRICAO_GRANDE = "com.github.brunoabdon.gastoso.dal.FatosDao.DESCRICAO_GRANDE";
+    public static final String ERRO_DIA_VAZIO = 
+        "com.github.brunoabdon.gastoso.dal.FatosDao.DIA_VAZIO";
+    public static final String ERRO_DESCRICAO_VAZIA = 
+        "com.github.brunoabdon.gastoso.dal.FatosDao.DESCRICAO_VAZIA";
+    public static final String ERRO_DESCRICAO_GRANDE = 
+        "com.github.brunoabdon.gastoso.dal.FatosDao.DESCRICAO_GRANDE";
 
     public FatosDao() {
         super(Fato.class);
