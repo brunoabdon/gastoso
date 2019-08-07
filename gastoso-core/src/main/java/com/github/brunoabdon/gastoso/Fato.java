@@ -16,7 +16,9 @@ import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
 
 
 /**
- *
+ * Um evento no mundo, que acarretará em valores serem movimentados entre 
+ * {@linkplain Conta contas}.
+ * 
  * @author bruno
  */
 @Entity

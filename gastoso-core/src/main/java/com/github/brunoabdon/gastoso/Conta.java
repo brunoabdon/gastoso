@@ -12,6 +12,8 @@ import javax.persistence.NamedQuery;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
+ * Uma carteia à qual se pode associar e movimentar um valor.
+ * 
  * @author bruno
  */
 @Entity

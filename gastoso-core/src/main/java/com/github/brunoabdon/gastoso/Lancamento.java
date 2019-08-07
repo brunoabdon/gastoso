@@ -14,7 +14,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
 
 /**
- *
+ * A manifestação de um {@link #getValor() valor} numa {@link Conta} decorrente
+ * de um {@link Fato}.
+ * 
  * @author bruno
  */
 @Entity
