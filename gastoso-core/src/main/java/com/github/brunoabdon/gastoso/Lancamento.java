@@ -32,7 +32,6 @@ import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
             + "AND l.fato.dia BETWEEN :dataMin "
             + "AND :dataMax ORDER BY l.fato.dia, l.id"
     ),
-    
     @NamedQuery(
         name = "Lancamento.deletarPorFato",
         query = "DELETE FROM Lancamento l WHERE l.fato = :fato"

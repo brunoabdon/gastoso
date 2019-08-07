@@ -54,5 +54,4 @@ public class FiltroContas {
     public void setConta(final Conta conta) {
         this.conta = conta;
     }
-
 }

@@ -23,11 +23,18 @@ import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
 @NamedQueries({
     @NamedQuery(
         name="Fato.porPeriodo",
-        query = "SELECT f from Fato f where f.dia BETWEEN :dataMinima AND :dataMaxima ORDER BY f.dia, f.id"
+        query = 
+            "SELECT f from Fato f where "
+            + "f.dia BETWEEN :dataMinima AND :dataMaxima "
+            + "ORDER BY f.dia, f.id"
     ),
     @NamedQuery(
         name ="Fato.porContaPeriodo",
-        query = "SELECT l.fato from Lancamento l where l.conta = :conta and l.fato.dia <= :dataMaxima ORDER BY l.fato.dia desc, l.fato.id desc"
+        query = 
+            "SELECT l.fato from Lancamento l where "
+            + "l.conta = :conta "
+            + "and l.fato.dia <= :dataMaxima "
+            + "ORDER BY l.fato.dia desc, l.fato.id desc"
     )
 })
 public class Fato extends EntidadeBaseInt {
