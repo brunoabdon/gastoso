@@ -74,11 +74,11 @@ public class Fato extends EntidadeBaseInt {
         return descricao;
     }
 
-    public void setDescricao(String descricao) {
+    public void setDescricao(final String descricao) {
         this.descricao = descricao;
     }
     
-    public static Fato fromString(String str){
+    public static Fato fromString(final String str){
         return EntidadeBaseInt.fromString(Fato.class, str);
     }
 
@@ -89,7 +89,7 @@ public class Fato extends EntidadeBaseInt {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         boolean equal = obj != null && (obj instanceof Fato);
         if(equal){
             final Fato fato = (Fato) obj;

@@ -60,7 +60,7 @@ public class Lancamento extends EntidadeBaseInt {
     public Lancamento() {
     }
 
-    public Lancamento(Fato fato, Conta conta, int valor) {
+    public Lancamento(final Fato fato, final Conta conta, final int valor) {
         this.fato = fato;
         this.conta = conta;
         this.valor = valor;
@@ -70,7 +70,7 @@ public class Lancamento extends EntidadeBaseInt {
         return conta;
     }
 
-    public void setConta(Conta conta) {
+    public void setConta(final Conta conta) {
         this.conta = conta;
     }
 
@@ -78,7 +78,7 @@ public class Lancamento extends EntidadeBaseInt {
         return valor;
     }
 
-    public void setValor(int valor) {
+    public void setValor(final int valor) {
         this.valor = valor;
     }
     
@@ -86,12 +86,12 @@ public class Lancamento extends EntidadeBaseInt {
         return fato;
     }
 
-    public void setFato(Fato fato) {
+    public void setFato(final Fato fato) {
         this.fato = fato;
     }
     
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         boolean equal = obj != null && (obj instanceof Lancamento);
         if(equal){
             final Lancamento lancamento = (Lancamento) obj;
