@@ -74,13 +74,6 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         }
     }
 
-    @Override
-    protected void validarPraAtualizacao(
-            @SuppressWarnings("unused")
-            final EntityManager em, 
-            final Lancamento lancamento) throws DalException {
-        validaBasico(lancamento);
-    }
 
     private void validaBasico(Lancamento lancamento) throws DalException{
         if(lancamento.getFato() == null){
