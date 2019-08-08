@@ -74,8 +74,7 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         }
     }
 
-
-    private void validaBasico(Lancamento lancamento) throws DalException{
+    private void validaBasico(final Lancamento lancamento) throws DalException{
         if(lancamento.getFato() == null){
             throw new DalException(ERRO_FATO_VAZIO);
         }
