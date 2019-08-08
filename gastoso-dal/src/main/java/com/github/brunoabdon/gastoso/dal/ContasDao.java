@@ -33,10 +33,14 @@ import com.github.brunoabdon.gastoso.Conta;
  */
 public class ContasDao extends AbstractDao<Conta,Integer>{
     
-    public static final String ERRO_NOME_VAZIO = "com.github.brunoabdon.gastoso.dal.ContasDao.NOME_VAZIO";
-    public static final String ERRO_NOME_GRANDE = "com.github.brunoabdon.gastoso.dal.ContasDao.NOME_GRANDE";
-    public static final String ERRO_NOME_EM_USO = "com.github.brunoabdon.gastoso.dal.ContasDao.NOME_EM_USO";
-    public static final String ERRO_TEM_LANCAMENTOS = "com.github.brunoabdon.gastoso.dal.ContasDao.TEM_LANCAMENTOS";
+    public static final String ERRO_NOME_VAZIO = 
+        "com.github.brunoabdon.gastoso.dal.ContasDao.NOME_VAZIO";
+    public static final String ERRO_NOME_GRANDE = 
+        "com.github.brunoabdon.gastoso.dal.ContasDao.NOME_GRANDE";
+    public static final String ERRO_NOME_EM_USO = 
+        "com.github.brunoabdon.gastoso.dal.ContasDao.NOME_EM_USO";
+    public static final String ERRO_TEM_LANCAMENTOS = 
+        "com.github.brunoabdon.gastoso.dal.ContasDao.TEM_LANCAMENTOS";
 
     public ContasDao() {
         super(Conta.class);
