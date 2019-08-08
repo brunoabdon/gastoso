@@ -179,6 +179,13 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
             q.orderBy(orders);
         }
     }
+ 
+    @Override
+    protected void atualizarEntity(
+            final Lancamento source, 
+            final Lancamento dest) {
+        dest.setValor(source.getValor());
+    }
     
     public Lancamento findUnique(
         final EntityManager em, 

@@ -86,6 +86,12 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
     }
 
     @Override
+    protected void atualizarEntity(final Fato source, final Fato dest) {
+        dest.setDescricao(source.getDescricao());
+        dest.setDia(source.getDia());
+    }
+    
+    @Override
     protected void prepararDelecao(EntityManager em, Fato fato) throws DalException {
         em.createNamedQuery("Lancamento.deletarPorFato")
             .setParameter("fato", fato)

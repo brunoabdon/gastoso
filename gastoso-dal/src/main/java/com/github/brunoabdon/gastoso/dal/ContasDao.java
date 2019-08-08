@@ -69,6 +69,11 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
     }
 
     @Override
+    protected void atualizarEntity(final Conta source, final Conta dest) {
+        dest.setNome(source.getNome());
+    }
+    
+    @Override
     protected void prepararDelecao(final EntityManager em, final Conta conta)
             throws DalException {
         
