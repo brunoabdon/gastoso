@@ -21,6 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -43,6 +45,7 @@ import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
  *
  * @author Bruno Abdon
  */
+@ApplicationScoped
 public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
 
     public static final String ERRO_FATO_VAZIO = 
@@ -52,6 +55,7 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
     public static final String ERRO_DUPLICATA = 
         "com.github.brunoabdon.gastoso.dal.LancamentosDao.DUPLICATA";
 
+    @Inject
     private FatosDao fatosDao;
     
     public LancamentosDao() {

@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -43,6 +44,7 @@ import com.github.brunoabdon.gastoso.system.FiltroFatos;
  *
  * @author Bruno Abdon
  */
+@ApplicationScoped
 public class FatosDao extends AbstractDao<Fato,Integer>{
 
     public static final String ERRO_DIA_VAZIO = 

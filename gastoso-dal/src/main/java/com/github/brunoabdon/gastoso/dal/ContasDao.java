@@ -20,6 +20,7 @@ import java.util.List;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
+import javax.enterprise.context.ApplicationScoped;
 
 import com.github.brunoabdon.commons.dal.AbstractDao;
 import com.github.brunoabdon.commons.dal.DalException;
@@ -30,6 +31,7 @@ import com.github.brunoabdon.gastoso.Conta;
  *
  * @author bruno
  */
+@ApplicationScoped
 public class ContasDao extends AbstractDao<Conta,Integer>{
     
     public static final String ERRO_NOME_VAZIO = 
