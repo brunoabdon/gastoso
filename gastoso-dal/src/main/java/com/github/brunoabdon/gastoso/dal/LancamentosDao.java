@@ -116,7 +116,7 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         }
 
         final FiltroFatos filtroFatos = filtro.getFiltroFatos();
-        FatosDao.buildQuery(
+        fatosDao.buildQuery(
             cb, filtroFatos, rootLancamento.get("fato"), where, params
         );
 

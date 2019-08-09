@@ -123,7 +123,7 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
                     filtroFatos.getPaginacao());
     }
 
-    protected static void buildQuery(
+    protected void buildQuery(
             final CriteriaBuilder cb, 
             final FiltroFatos filtroFatos,
             final Path<Fato> fatoPath,
