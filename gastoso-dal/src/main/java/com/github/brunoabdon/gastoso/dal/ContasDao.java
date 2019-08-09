@@ -17,10 +17,10 @@
 package com.github.brunoabdon.gastoso.dal;
 
 import java.util.List;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.lang3.StringUtils;
 
 import com.github.brunoabdon.commons.dal.AbstractDao;
 import com.github.brunoabdon.commons.dal.DalException;
@@ -50,7 +50,7 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
     protected void validar(EntityManager em, Conta conta) throws DalException {
         final String nome = conta.getNome();
         
-        if(StringUtils.isBlank(nome)){
+        if(isBlank(nome)){
             throw new DalException(ERRO_NOME_VAZIO);
         }
         
