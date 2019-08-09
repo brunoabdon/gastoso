@@ -16,9 +16,9 @@
  */
 package com.github.brunoabdon.gastoso.dal;
 
-import java.util.List;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 
