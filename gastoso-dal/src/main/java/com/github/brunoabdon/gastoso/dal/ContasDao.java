@@ -19,7 +19,6 @@ package com.github.brunoabdon.gastoso.dal;
 import java.util.List;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import javax.persistence.EntityManager;
 
 
 import com.github.brunoabdon.commons.dal.AbstractDao;
@@ -47,7 +46,7 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
     }
     
     @Override
-    protected void validar(EntityManager em, Conta conta) throws DalException {
+    protected void validar(final Conta conta) throws DalException {
         final String nome = conta.getNome();
         
         if(isBlank(nome)){
@@ -59,7 +58,8 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
         }
         
         final Boolean nomeEmUso =
-            em.createNamedQuery("Conta.nomeEmUso", Boolean.class)
+            getEntityManager()
+            .createNamedQuery("Conta.nomeEmUso", Boolean.class)
             .setParameter("nome", nome)
             .getSingleResult();
         
@@ -74,11 +74,11 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
     }
     
     @Override
-    protected void prepararDelecao(final EntityManager em, final Conta conta)
-            throws DalException {
+    protected void prepararDelecao(final Conta conta) throws DalException {
         
         final Boolean temLancamentos = 
-            em.createNamedQuery("Conta.temLancamento", Boolean.class)
+            getEntityManager()
+            .createNamedQuery("Conta.temLancamento", Boolean.class)
             .setParameter("conta", conta)
             .getSingleResult();
         
@@ -87,7 +87,10 @@ public class ContasDao extends AbstractDao<Conta,Integer>{
         }
     }
 
-    public List<Conta> listar(final EntityManager em) {
-        return em.createNamedQuery("Conta.all", Conta.class).getResultList();
+    public List<Conta> listar() {
+        return 
+            getEntityManager()
+                .createNamedQuery("Conta.all", Conta.class)
+                .getResultList();
     }
 }

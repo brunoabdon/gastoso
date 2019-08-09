@@ -63,14 +63,11 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
      * menos de que {@linkplain Fato#DESC_MAX_LEN a quantidade máxima de 
      * caracteres permitida}.
      * 
-     * @param em Ignorado.
      * @param fato O {@link Fato} a ser validado.
      * @throws DalException caso o fato não seja válido.  
      */
     @Override
-    protected void validar(
-            final EntityManager em, 
-            final Fato fato) throws DalException {
+    protected void validar(final Fato fato) throws DalException {
         if(fato.getDia() == null){
             throw new DalException(ERRO_DIA_VAZIO);
         }
@@ -92,17 +89,19 @@ public class FatosDao extends AbstractDao<Fato,Integer>{
     }
     
     @Override
-    protected void prepararDelecao(EntityManager em, Fato fato) throws DalException {
-        em.createNamedQuery("Lancamento.deletarPorFato")
+    protected void prepararDelecao(final Fato fato) throws DalException {
+        this.getEntityManager()
+            .createNamedQuery("Lancamento.deletarPorFato")
             .setParameter("fato", fato)
             .executeUpdate();
     }
     
     public List<Fato> listar(
-        final EntityManager em, 
         final FiltroFatos filtroFatos){
 
-        final CriteriaBuilder cb = em.getCriteriaBuilder();
+        final EntityManager em = getEntityManager();
+        
+        final CriteriaBuilder cb = em .getCriteriaBuilder();
         
         final CriteriaQuery<Fato> q = cb.createQuery(Fato.class);
         

@@ -52,19 +52,21 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
     public static final String ERRO_DUPLICATA = 
         "com.github.brunoabdon.gastoso.dal.LancamentosDao.DUPLICATA";
 
+    private FatosDao fatosDao;
+    
     public LancamentosDao() {
         super(Lancamento.class);
     }
     
     @Override
     protected void validarPraCriacao(
-            final EntityManager em, 
             final Lancamento lancamento) throws DalException {
 
         validaBasico(lancamento);
 
         final Boolean existeDuplicata = 
-            em.createNamedQuery("Lancamento.existeDuplicata",Boolean.class)
+            getEntityManager()
+            .createNamedQuery("Lancamento.existeDuplicata",Boolean.class)
             .setParameter("fato", lancamento.getFato())
             .setParameter("conta", lancamento.getConta())
             .getSingleResult();
@@ -84,10 +86,10 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         }
     }
     
-    public List<Lancamento> listar(
-        final EntityManager em, 
-        final FiltroLancamentos filtro){
+    public List<Lancamento> listar(final FiltroLancamentos filtro){
 
+        final EntityManager em = getEntityManager();
+        
         final CriteriaBuilder cb = em.getCriteriaBuilder();
         
         final CriteriaQuery<Lancamento> q = cb.createQuery(Lancamento.class);
@@ -187,13 +189,12 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         dest.setValor(source.getValor());
     }
     
-    public Lancamento findUnique(
-        final EntityManager em, 
-        final FiltroLancamentos filtro) throws DalException{
+    public Lancamento findUnique(final FiltroLancamentos filtro) 
+            throws DalException{
         
         final Lancamento lancamento;
         
-        final List<Lancamento> col = this.listar(em, filtro);
+        final List<Lancamento> col = this.listar(filtro);
         if(col.isEmpty()){
             throw new EntityNotFoundException(filtro);
         } else if(col.size() != 1){
@@ -204,5 +205,4 @@ public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
         
         return lancamento;
     }
-    
 }
