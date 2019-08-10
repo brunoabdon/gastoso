@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 	),
 	@NamedQuery(
 		name="Conta.temLancamento",
-		query="SELECT COUNT(l.id) > 0 FROM Lancamento l WHERE l.conta = :conta"
+		query="SELECT COUNT(l) > 0 FROM Lancamento l WHERE l.conta = :conta"
 	)
 })
 public class Conta extends EntidadeBaseInt {

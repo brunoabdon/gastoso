@@ -46,7 +46,7 @@ import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
  * @author Bruno Abdon
  */
 @ApplicationScoped
-public class LancamentosDao extends AbstractDao<Lancamento,Integer>{
+public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
 
     public static final String ERRO_FATO_VAZIO = 
         "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
