@@ -102,9 +102,13 @@ public class Lancamento implements Identifiable<Lancamento.Id>, Serializable{
     }
 
     public Lancamento(final Fato fato, final Conta conta, final int valor) {
+    	this(valor);
         this.id = new Lancamento.Id(fato.getId(),conta.getId());
         this.fato = fato;
         this.conta = conta;
+    }
+
+    public Lancamento(final int valor) {
         this.valor = valor;
     }
     
