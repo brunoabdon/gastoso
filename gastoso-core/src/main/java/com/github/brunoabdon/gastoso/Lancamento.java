@@ -41,13 +41,6 @@ import com.github.brunoabdon.commons.util.modelo.Identifiable;
     @NamedQuery(
         name = "Lancamento.deletarPorFato",
         query = "DELETE FROM Lancamento l WHERE l.fato = :fato"
-    ),
-    @NamedQuery(
-        name = "Lancamento.existeDuplicata",
-        query = 
-            "SELECT COUNT(l) > 0 FROM Lancamento l WHERE "
-            + "l.fato = :fato "
-            + "AND l.conta = :conta"
     )
 })
 public class Lancamento implements Identifiable<Lancamento.Id>, Serializable{

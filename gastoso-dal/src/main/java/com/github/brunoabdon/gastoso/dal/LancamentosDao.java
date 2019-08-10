@@ -68,14 +68,10 @@ public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
 
         validaBasico(lancamento);
 
-        final Boolean existeDuplicata = 
-            getEntityManager()
-            .createNamedQuery("Lancamento.existeDuplicata",Boolean.class)
-            .setParameter("fato", lancamento.getFato())
-            .setParameter("conta", lancamento.getConta())
-            .getSingleResult();
+		final Lancamento duplicata = 
+			getEntityManager().find(Lancamento.class,id);
 
-        if(existeDuplicata){
+        if(duplicata != null){
             throw new DalException(ERRO_DUPLICATA);
         }
     }
