@@ -37,6 +37,7 @@ import com.github.brunoabdon.commons.dal.DalException;
 import com.github.brunoabdon.commons.dal.EntityNotFoundException;
 import com.github.brunoabdon.gastoso.Conta;
 import com.github.brunoabdon.gastoso.Lancamento;
+import com.github.brunoabdon.gastoso.Lancamento.Id;
 import com.github.brunoabdon.gastoso.system.FiltroContas;
 import com.github.brunoabdon.gastoso.system.FiltroFatos;
 import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
@@ -48,8 +49,10 @@ import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
 @ApplicationScoped
 public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
 
+    public static final String ERRO_ID_VAZIO = 
+            "com.github.brunoabdon.gastoso.dal.LancamentosDao.ID_VAZIO";
     public static final String ERRO_FATO_VAZIO = 
-        "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
+            "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
     public static final String ERRO_CONTA_VAZIA = 
         "com.github.brunoabdon.gastoso.dal.LancamentosDao.CONTA_VAZIA";
     public static final String ERRO_DUPLICATA = 
@@ -66,7 +69,11 @@ public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
     protected void validarPraCriacao(
             final Lancamento lancamento) throws DalException {
 
-        validaBasico(lancamento);
+        final Id id = lancamento.getId();
+    	
+        if(lancamento.getId() == null){
+            throw new DalException(ERRO_ID_VAZIO);
+        }
 
 		final Lancamento duplicata = 
 			getEntityManager().find(Lancamento.class,id);
@@ -76,16 +83,6 @@ public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
         }
     }
 
-    private void validaBasico(final Lancamento lancamento) throws DalException{
-        if(lancamento.getFato() == null){
-            throw new DalException(ERRO_FATO_VAZIO);
-        }
-        
-        if(lancamento.getConta() == null){
-            throw new DalException(ERRO_CONTA_VAZIA);
-        }
-    }
-    
     public List<Lancamento> listar(final FiltroLancamentos filtro){
 
         final EntityManager em = getEntityManager();
