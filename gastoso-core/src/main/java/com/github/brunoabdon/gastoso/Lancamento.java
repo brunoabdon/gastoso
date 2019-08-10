@@ -128,6 +128,10 @@ public class Lancamento implements Identifiable<Lancamento.Id>, Serializable{
         return valor;
     }
 
+    public void setId(final Id id) {
+		this.id = id;
+	}
+
     public void setValor(final int valor) {
         this.valor = valor;
     }
