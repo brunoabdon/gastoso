@@ -36,6 +36,7 @@ import com.github.brunoabdon.commons.dal.AbstractDao;
 import com.github.brunoabdon.commons.dal.DalException;
 import com.github.brunoabdon.commons.dal.EntityNotFoundException;
 import com.github.brunoabdon.gastoso.Conta;
+import com.github.brunoabdon.gastoso.Fato;
 import com.github.brunoabdon.gastoso.Lancamento;
 import com.github.brunoabdon.gastoso.Lancamento.Id;
 import com.github.brunoabdon.gastoso.system.FiltroContas;
@@ -50,11 +51,15 @@ import com.github.brunoabdon.gastoso.system.FiltroLancamentos;
 public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
 
     public static final String ERRO_ID_VAZIO = 
-            "com.github.brunoabdon.gastoso.dal.LancamentosDao.ID_VAZIO";
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.ID_VAZIO";
     public static final String ERRO_FATO_VAZIO = 
-            "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_VAZIO";
     public static final String ERRO_CONTA_VAZIA = 
         "com.github.brunoabdon.gastoso.dal.LancamentosDao.CONTA_VAZIA";
+    public static final String ERRO_FATO_INEXISTENE = 
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.FATO_INEXISTENTE";
+    public static final String ERRO_CONTA_INEXISTENE= 
+        "com.github.brunoabdon.gastoso.dal.LancamentosDao.CONTA_INEXISTENTE";
     public static final String ERRO_DUPLICATA = 
         "com.github.brunoabdon.gastoso.dal.LancamentosDao.DUPLICATA";
 
@@ -71,15 +76,24 @@ public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
 
         final Id id = lancamento.getId();
     	
-        if(lancamento.getId() == null){
-            throw new DalException(ERRO_ID_VAZIO);
-        }
+        if(id == null) throw new DalException(ERRO_ID_VAZIO);
 
-		final Lancamento duplicata = 
-			getEntityManager().find(Lancamento.class,id);
+		final EntityManager em = getEntityManager();
+		
+		final Lancamento duplicata = em.find(Lancamento.class,id);
 
         if(duplicata != null){
             throw new DalException(ERRO_DUPLICATA);
+        }
+        
+        final Conta conta = em.find(Conta.class, id.getContaId());
+        if(conta == null) {
+        	throw new DalException(ERRO_CONTA_INEXISTENE);
+        }
+        
+        final Fato fato = em.find(Fato.class, id.getFatoId());
+        if(fato == null) {
+        	throw new DalException(ERRO_FATO_INEXISTENE);
         }
     }
 
