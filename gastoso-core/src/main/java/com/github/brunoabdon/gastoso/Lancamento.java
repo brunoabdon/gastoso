@@ -127,6 +127,13 @@ public class Lancamento implements Identifiable<Lancamento.Id>, Serializable{
 
     public void setId(final Id id) {
 		this.id = id;
+		if(id == null) {
+			this.fato = null;
+			this.conta = null;
+		} else {
+			this.fato = new Fato(id.fatoId);
+			this.conta = new Conta(id.contaId);
+		}
 	}
 
     public void setValor(final int valor) {

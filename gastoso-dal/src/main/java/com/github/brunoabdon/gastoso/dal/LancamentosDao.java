@@ -86,12 +86,12 @@ public class LancamentosDao extends AbstractDao<Lancamento,Lancamento.Id>{
             throw new DalException(ERRO_DUPLICATA);
         }
         
-        final Conta conta = em.find(Conta.class, id.getContaId());
+        final Conta conta = em.find(Conta.class,lancamento.getConta().getId());
         if(conta == null) {
         	throw new DalException(ERRO_CONTA_INEXISTENE);
         }
         
-        final Fato fato = em.find(Fato.class, id.getFatoId());
+        final Fato fato = em.find(Fato.class,lancamento.getFato().getId());
         if(fato == null) {
         	throw new DalException(ERRO_FATO_INEXISTENE);
         }
