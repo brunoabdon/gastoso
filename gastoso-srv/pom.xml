@@ -86,7 +86,7 @@
         <dependency>
           <groupId>com.github.brunoabdon.commons</groupId>
           <artifactId>abd-commons-dal</artifactId>
-		  <version>2.0.0</version>
+		  <version>${abd-commons.version}</version>
         </dependency>
         <dependency>
           <groupId>com.github.brunoabdon.commons</groupId>
@@ -96,7 +96,7 @@
         <dependency>
           <groupId>com.github.brunoabdon.commons</groupId>
           <artifactId>abd-commons-rest</artifactId>
-		  <version>2.0.0</version>
+		  <version>${abd-commons.version}</version>
         </dependency>
         <dependency>
           <groupId>com.github.brunoabdon.gastoso</groupId>
