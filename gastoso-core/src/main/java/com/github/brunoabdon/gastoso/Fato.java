@@ -4,14 +4,12 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.github.brunoabdon.commons.dal.util.LocalDatePersistenceConverter;
 import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
 
 
@@ -46,7 +44,6 @@ public class Fato extends EntidadeBaseInt {
     public static final int DESC_MAX_LEN = 70;
     
     @Column(nullable = false)
-    @Convert(converter = LocalDatePersistenceConverter.class)
     private LocalDate dia;
     
     @Column(length = DESC_MAX_LEN, nullable = false, unique = false)
