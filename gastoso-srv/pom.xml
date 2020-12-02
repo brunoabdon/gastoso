@@ -190,7 +190,7 @@
         </plugins>
     </build>
     <properties>
-        <jetty.version>9.4.17.v20190418</jetty.version>
+        <jetty.version>9.4.35.v20201120</jetty.version>
         <hibernate.version>4.3.11.Final</hibernate.version>
         <postgresql.version>9.4.1208.jre7</postgresql.version>
         <abd-commons.version>2.0.0</abd-commons.version>
