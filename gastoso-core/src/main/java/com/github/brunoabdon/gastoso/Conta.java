@@ -74,7 +74,7 @@ public class Conta extends EntidadeBaseInt {
 
     @Override
     public boolean equals(final Object obj) {
-        boolean equal = obj != null && (obj instanceof Conta);
+        boolean equal = obj instanceof Conta;
         if(equal){
             final Conta conta = (Conta) obj;
             equal = Objects.equals(this.getId(), conta.getId())

@@ -95,7 +95,7 @@ public class Lancamento implements Identifiable<Lancamento.Id>, Serializable{
     @JoinColumn(insertable = false, updatable = false)
     private Conta conta;
     
-    @Column(precision=11, scale=0, nullable = false)
+    @Column(precision=11, nullable = false)
     private int valor;
 
     public Lancamento() {
@@ -146,7 +146,7 @@ public class Lancamento implements Identifiable<Lancamento.Id>, Serializable{
     
     @Override
     public boolean equals(final Object obj) {
-        boolean equal = obj != null && (obj instanceof Lancamento);
+        boolean equal = obj instanceof Lancamento;
         if(equal){
             final Lancamento lancamento = (Lancamento) obj;
             equal = 

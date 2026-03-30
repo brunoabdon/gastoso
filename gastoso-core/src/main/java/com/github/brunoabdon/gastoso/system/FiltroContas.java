@@ -23,7 +23,7 @@ import com.github.brunoabdon.gastoso.Conta;
  */
 public class FiltroContas {
 
-    public static enum ORDEM {ID, NOME};
+    public enum ORDEM {ID, NOME}
     
     private Integer id;
     

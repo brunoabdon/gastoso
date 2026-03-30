@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -20,14 +19,13 @@ import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
  * @author bruno
  */
 @Entity
-@NamedQueries({
     @NamedQuery(
         name="Fato.porPeriodo",
         query = 
             "SELECT f from Fato f where "
             + "f.dia BETWEEN :dataMinima AND :dataMaxima "
             + "ORDER BY f.dia, f.id"
-    ),
+    )
     @NamedQuery(
         name ="Fato.porContaPeriodo",
         query = 
@@ -36,7 +34,7 @@ import com.github.brunoabdon.commons.modelo.EntidadeBaseInt;
             + "and l.fato.dia <= :dataMaxima "
             + "ORDER BY l.fato.dia desc, l.fato.id desc"
     )
-})
+
 public class Fato extends EntidadeBaseInt {
 
     private static final long serialVersionUID = 612424688270067621L;
@@ -46,7 +44,7 @@ public class Fato extends EntidadeBaseInt {
     @Column(nullable = false)
     private LocalDate dia;
     
-    @Column(length = DESC_MAX_LEN, nullable = false, unique = false)
+    @Column(length = DESC_MAX_LEN, nullable = false)
     private String descricao;
     
     public Fato() {
@@ -89,7 +87,7 @@ public class Fato extends EntidadeBaseInt {
 
     @Override
     public boolean equals(final Object obj) {
-        boolean equal = obj != null && (obj instanceof Fato);
+        boolean equal = obj instanceof Fato;
         if(equal){
             final Fato fato = (Fato) obj;
             equal = 
