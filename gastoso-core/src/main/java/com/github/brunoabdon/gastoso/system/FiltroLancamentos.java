@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class FiltroLancamentos {
 
-    public static enum ORDEM {
+    public enum ORDEM {
         POR_DIA_ASC(true), POR_FATO_ID_ASC(true), POR_DESC_FATO_ASC(true), 
         POR_CONTA_ID_ASC(true), POR_CONTA_NOME_ASC(true), 
         POR_VALOR_ASC(true),
@@ -43,7 +43,7 @@ public class FiltroLancamentos {
         public boolean isAsc(){
             return isAsc;
         }
-    };
+    }
     
     private FiltroFatos filtroFatos = new FiltroFatos();
     private FiltroContas filtroContas = new FiltroContas();

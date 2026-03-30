@@ -59,7 +59,7 @@ public class DalUtil {
             final Map<String, Object> params,
             final Paginacao paginacao) {
 
-        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));};
+        if(!where.isEmpty()) { q.where(where.toArray(new Predicate[]{}));}
         
         final TypedQuery<X> query = em.createQuery(q);
         

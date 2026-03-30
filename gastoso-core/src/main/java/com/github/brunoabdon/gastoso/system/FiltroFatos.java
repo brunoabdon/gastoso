@@ -27,7 +27,7 @@ import com.github.brunoabdon.gastoso.Fato;
  */
 public class FiltroFatos {
 
-    public static enum ORDEM {POR_DIA, POR_DESCRICAO, POR_CRIACAO}
+    public enum ORDEM {POR_DIA, POR_DESCRICAO, POR_CRIACAO}
 
     private LocalDate dataMinima, dataMaxima;
     private Integer inicio, fim, quantos;

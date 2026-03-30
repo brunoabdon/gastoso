@@ -28,61 +28,53 @@ import java.util.List;
  */
 public interface GastosoSystem {
 
-    public List<Fato> getFatos(FiltroFatos filtro)
+    List<Fato> getFatos(FiltroFatos filtro)
         throws GastosoSystemRTException, GastosoSystemException;
 
-    public Fato getFato(int id)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    Fato getFato(int id)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public List<Conta> getContas(FiltroContas filtro)
+    List<Conta> getContas(FiltroContas filtro)
         throws GastosoSystemRTException, GastosoSystemException;
 
-    public Conta getConta(int id)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    Conta getConta(int id)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public List<Lancamento> getLancamentos(FiltroLancamentos fitro)
+    List<Lancamento> getLancamentos(FiltroLancamentos fitro)
         throws GastosoSystemRTException, GastosoSystemException;
 
-    public Fato update(Fato fato)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    Fato update(Fato fato)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public Conta update(Conta conta)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    Conta update(Conta conta)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public Lancamento update(Lancamento lancamento)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    Lancamento update(Lancamento lancamento)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void deleteFato(int id)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    void deleteFato(int id)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void deleteConta(int id)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    void deleteConta(int id)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public void deleteLancamento(int id)
-        throws NotFoundException,
-                GastosoSystemRTException,
+    void deleteLancamento(int id)
+        throws GastosoSystemRTException,
                 GastosoSystemException;
 
-    public Fato create(Fato fato)
+    Fato create(Fato fato)
         throws GastosoSystemRTException, GastosoSystemException;
 
-    public Conta create(Conta conta)
+    Conta create(Conta conta)
         throws GastosoSystemRTException, GastosoSystemException;
 
-    public Lancamento create(Lancamento lancamento)
+    Lancamento create(Lancamento lancamento)
         throws GastosoSystemRTException, GastosoSystemException;
 }
